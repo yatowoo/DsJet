@@ -27,6 +27,7 @@ Dspp:
       nsigTOF_Pr_0: -999.
 
   nprongs: 3
+  prongformultsub: [1,0,0]
   doml: true
   doml_asprefilter: null #null = 1 training, true = 2 training-prefilter step, false = 2 training-analysis step
   mass: 1.968
