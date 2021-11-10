@@ -276,23 +276,23 @@ DsJetpp:
 
   mlapplication:
     data:
-      pkl_skimmed_dec: [/data/Derived/DsppvsMult/vAN-20210223_ROOT6-1/593_20210223-2051/pp_2016_data/binary/pklskdec,
-                        /data/Derived/DsppvsMult/vAN-20210223_ROOT6-1/593_20210223-2051/pp_2017_data/binary/pklskdec,
-                        /data/Derived/DsppvsMult/vAN-20210223_ROOT6-1/593_20210223-2051/pp_2018_data/binary/pklskdec] #list of periods
+      pkl_skimmed_dec: [/data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/593_20210223-2051/pp_2016_data/pklskdec,
+                        /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/593_20210223-2051/pp_2017_data/binary/pklskdec,
+                        /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/593_20210223-2051/pp_2018_data/binary/pklskdec] #list of periods
       pkl_skimmed_decmerged: [~/NOTNEEDED/skpkldecmerged,
                               ~/NOTNEEDED/skpkldecmerged,
                               ~/NOTNEEDED/skpkldecmerged] #list of periods
     mc_Ds:
-      pkl_skimmed_dec: [/mnt/temp/OngoingAnalysis_D2HvsMult/Derived/DsppvsMult/vAN-20210223_ROOT6-1/595_20210224-0854/pp_2016_sim_Ds/binary/pklskdec,
-                        /mnt/temp/OngoingAnalysis_D2HvsMult/Derived/DsppvsMult/vAN-20210223_ROOT6-1/595_20210224-0854/pp_2017_sim_Ds/binary/pklskdec,
-                        /mnt/temp/OngoingAnalysis_D2HvsMult/Derived/DsppvsMult/vAN-20210223_ROOT6-1/595_20210224-0854/pp_2018_sim_Ds/binary/pklskdec] #list of periods
+      pkl_skimmed_dec: [/data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/595_20210224-0854/pp_2016_sim_Ds/binary/pklskdec,
+                        /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/595_20210224-0854/pp_2017_sim_Ds/binary/pklskdec,
+                        /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/595_20210224-0854/pp_2018_sim_Ds/binary/pklskdec] #list of periods
       pkl_skimmed_decmerged: [~/NOTNEEDED/skpkldecmerged_DsMB,
                               ~/NOTNEEDED/skpkldecmerged_DsMB,
                               ~/NOTNEEDED/skpkldecmerged_DsMB] #list of periods
     mc:
-      pkl_skimmed_dec: [/mnt/temp/OngoingAnalysis_D2HvsMult/Derived/DsppvsMult/vAN-20210223_ROOT6-1/594_20210301-1015/pp_2016_sim_D2H/binary/pklskdec,
-                        /mnt/temp/OngoingAnalysis_D2HvsMult/Derived/DsppvsMult/vAN-20210223_ROOT6-1/594_20210301-1015/pp_2017_sim_D2H/binary/pklskdec,
-                        /mnt/temp/OngoingAnalysis_D2HvsMult/Derived/DsppvsMult/vAN-20210223_ROOT6-1/594_20210301-1015/pp_2018_sim_D2H/binary/pklskdec] #list of periods
+      pkl_skimmed_dec: [/data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/594_20210301-1015/pp_2016_sim_D2H/binary/pklskdec,
+                        /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/594_20210301-1015/pp_2017_sim_D2H/binary/pklskdec,
+                        /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/594_20210301-1015/pp_2018_sim_D2H/binary/pklskdec] #list of periods
       pkl_skimmed_decmerged: [~/NOTNEEDED/skpkldecmerged_D2HMB,
                               ~/NOTNEEDED/skpkldecmerged_D2HMB,
                               ~/NOTNEEDED/skpkldecmerged_D2HMB] #list of periods
