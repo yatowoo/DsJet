@@ -103,9 +103,16 @@ DsJetpp:
     pt_jet, eta_jet, phi_jet, delta_eta_jet, delta_phi_jet, delta_r_jet]
     var_evt_match: [run_number, ev_id, ev_id_ext]
     #Same as NP Ds analysis (and re-analysis 5.02 TeV)
-    var_training: [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, sig_vert, delta_mass_KK,
-                   cos_PiKPhi_3, max_norm_d0d0exp,
-                   nsigComb_Pi_0, nsigComb_K_0, nsigComb_Pi_1, nsigComb_K_1, nsigComb_Pi_2, nsigComb_K_2]
+    var_training: [[d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, sig_vert, delta_mass_KK, cos_PiKPhi_3, max_norm_d0d0exp, nsigComb_Pi_0, nsigComb_K_0, nsigComb_Pi_1, nsigComb_K_1, nsigComb_Pi_2, nsigComb_K_2],
+    [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, sig_vert, delta_mass_KK, cos_PiKPhi_3, max_norm_d0d0exp, nsigComb_Pi_0, nsigComb_K_0, nsigComb_Pi_1, nsigComb_K_1, nsigComb_Pi_2, nsigComb_K_2],
+    [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, sig_vert, delta_mass_KK, cos_PiKPhi_3, max_norm_d0d0exp, nsigComb_Pi_0, nsigComb_K_0, nsigComb_Pi_1, nsigComb_K_1, nsigComb_Pi_2, nsigComb_K_2],
+    [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, sig_vert, delta_mass_KK, cos_PiKPhi_3, max_norm_d0d0exp, nsigComb_Pi_0, nsigComb_K_0, nsigComb_Pi_1, nsigComb_K_1, nsigComb_Pi_2, nsigComb_K_2],
+    [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, sig_vert, delta_mass_KK, cos_PiKPhi_3, max_norm_d0d0exp, nsigComb_Pi_0, nsigComb_K_0, nsigComb_Pi_1, nsigComb_K_1, nsigComb_Pi_2, nsigComb_K_2],
+    [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, sig_vert, delta_mass_KK, cos_PiKPhi_3, max_norm_d0d0exp, nsigComb_Pi_0, nsigComb_K_0, nsigComb_Pi_1, nsigComb_K_1, nsigComb_Pi_2, nsigComb_K_2]]
+    var_boundaries: [cos_PiKPhi_3, pt_cand]
+    var_correlation:
+      - [cos_PiKPhi_3]
+      - [pt_cand]
     var_signal: signal
     var_inv_mass: inv_mass
 
@@ -251,8 +258,10 @@ DsJetpp:
     #mlplot: /data/Derived/DsppvsMult/vAN-20210223_ROOT6-1/593_20210223-2051/mlplot_AOD235_multi_P8_comb # to be removed
     #mlout: /data/Derived/DsppvsMult/vAN-20210223_ROOT6-1/593_20210223-2051/mlout_AOD235_multi_P8_comb # to be removed
     #Combination of trigger_hasbit_INT7==1 for <8 and no selection for >8
-    mlplot: /data/Derived/DsppvsMult/vAN-20210223_ROOT6-1/593_20210223-2051/mlplot_AOD235_binary_P8_comb # to be removed
-    mlout: /data/Derived/DsppvsMult/vAN-20210223_ROOT6-1/593_20210223-2051/mlout_AOD235_binary_P8_comb # to be removed
+    #mlplot: /data/Derived/DsppvsMult/vAN-20210223_ROOT6-1/593_20210223-2051/mlplot_AOD235_binary_P8_comb # to be removed
+    #mlout: /data/Derived/DsppvsMult/vAN-20210223_ROOT6-1/593_20210223-2051/mlout_AOD235_binary_P8_comb # to be removed
+    mlplot: /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/593_20210223-2051/mlplot # to be removed
+    mlout: /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/593_20210223-2051/mlout # to be removed
     opt:
       isFONLLfromROOT: true
       #TODO: UPDATE
@@ -277,32 +286,32 @@ DsJetpp:
   mlapplication:
     data:
       pkl_skimmed_dec: [/data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/593_20210223-2051/pp_2016_data/pklskdec,
-                        /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/593_20210223-2051/pp_2017_data/binary/pklskdec,
-                        /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/593_20210223-2051/pp_2018_data/binary/pklskdec] #list of periods
-      pkl_skimmed_decmerged: [~/NOTNEEDED/skpkldecmerged,
-                              ~/NOTNEEDED/skpkldecmerged,
-                              ~/NOTNEEDED/skpkldecmerged] #list of periods
+                        /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/593_20210223-2051/pp_2017_data/pklskdec,
+                        /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/593_20210223-2051/pp_2018_data/pklskdec] #list of periods
+      pkl_skimmed_decmerged: [/home/yitao/NOTNEEDED/skpkldecmerged,
+                              /home/yitao/NOTNEEDED/skpkldecmerged,
+                              /home/yitao/NOTNEEDED/skpkldecmerged] #list of periods
     mc_Ds:
-      pkl_skimmed_dec: [/data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/595_20210224-0854/pp_2016_sim_Ds/binary/pklskdec,
-                        /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/595_20210224-0854/pp_2017_sim_Ds/binary/pklskdec,
-                        /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/595_20210224-0854/pp_2018_sim_Ds/binary/pklskdec] #list of periods
-      pkl_skimmed_decmerged: [~/NOTNEEDED/skpkldecmerged_DsMB,
-                              ~/NOTNEEDED/skpkldecmerged_DsMB,
-                              ~/NOTNEEDED/skpkldecmerged_DsMB] #list of periods
+      pkl_skimmed_dec: [/data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/595_20210224-0854/pp_2016_sim_Ds/pklskdec,
+                        /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/595_20210224-0854/pp_2017_sim_Ds/pklskdec,
+                        /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/595_20210224-0854/pp_2018_sim_Ds/pklskdec] #list of periods
+      pkl_skimmed_decmerged: [/home/yitao/NOTNEEDED/skpkldecmerged_DsMB,
+                              /home/yitao/NOTNEEDED/skpkldecmerged_DsMB,
+                              /home/yitao/NOTNEEDED/skpkldecmerged_DsMB] #list of periods
     mc:
-      pkl_skimmed_dec: [/data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/594_20210301-1015/pp_2016_sim_D2H/binary/pklskdec,
-                        /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/594_20210301-1015/pp_2017_sim_D2H/binary/pklskdec,
-                        /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/594_20210301-1015/pp_2018_sim_D2H/binary/pklskdec] #list of periods
-      pkl_skimmed_decmerged: [~/NOTNEEDED/skpkldecmerged_D2HMB,
-                              ~/NOTNEEDED/skpkldecmerged_D2HMB,
-                              ~/NOTNEEDED/skpkldecmerged_D2HMB] #list of periods
+      pkl_skimmed_dec: [/data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/594_20210301-1015/pp_2016_sim_D2H/pklskdec,
+                        /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/594_20210301-1015/pp_2017_sim_D2H/pklskdec,
+                        /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/594_20210301-1015/pp_2018_sim_D2H/pklskdec] #list of periods
+      pkl_skimmed_decmerged: [/home/yitao/NOTNEEDED/skpkldecmerged_D2HMB,
+                              /home/yitao/NOTNEEDED/skpkldecmerged_D2HMB,
+                              /home/yitao/NOTNEEDED/skpkldecmerged_D2HMB] #list of periods
     modelname: xgboost
-    modelsperptbin: [Model_pT_1_2.model,
-                     Model_pT_2_4.model,
-                     Model_pT_4_6.model,
-                     Model_pT_6_8.model,
-                     Model_pT_8_12.model,
-                     Model_pT_12_24.model]
+    modelsperptbin: [Model_pT_1_2.sav,
+                     Model_pT_2_4.sav,
+                     Model_pT_4_6.sav,
+                     Model_pT_6_8.sav,
+                     Model_pT_8_12.sav,
+                     Model_pT_12_24.sav]
     modelsperptbin_hipe4ml: [ModelHandler_pT_1_2.pkl,
                              ModelHandler_pT_2_4.pkl,
                              ModelHandler_pT_4_6.pkl,
