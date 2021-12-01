@@ -47,8 +47,8 @@ def DrawRegion(histo, name, left, right, color, style = 3004):
   binMin = histo.FindBin(left)
   binMax = histo.FindBin(right)
   xLeft = histo.GetBinCenter(binMin) - 0.5 * histo.GetBinWidth(binMin)
-  xRight = histo.GetBinCenter(binMax) - 0.5 * histo.GetBinWidth(binMax)
-  hRegion = ROOT.TH1F(name,'',binMax-binMin+1, xLeft, xRight)
+  xRight = histo.GetBinCenter(binMax) + 0.5 * histo.GetBinWidth(binMax)
+  hRegion = TH1F(name,'',binMax-binMin+1, xLeft, xRight)
   for i in range(binMin, binMax+1):
     hRegion.Fill(histo.GetBinCenter(i), histo.GetBinContent(i))
   hRegion.SetFillColor(color)
@@ -58,26 +58,39 @@ def DrawRegion(histo, name, left, right, color, style = 3004):
 
 confAna = datap[case]['analysis'][typeana]
 n_sigma_signal = 3
-n_sigma_sideband_min = 4
-n_sigma_sideband_max = 9
+n_sigma_sideband = 5
+sideband_left = 1.75
+n_sigma_sideband_min = 5
+n_sigma_sideband_max = 10
+canvas = TCanvas('cFit','Fit Ds pt bins',2100,1400)
+canvas.Divide(3,2)
 for iPtBin in confAna['binning_matching']:
   ptMin = confAna['sel_an_binmin'][iPtBin]
   ptMax = confAna['sel_an_binmax'][iPtBin]
+  sideband_left = confAna['massmin'][iPtBin] + 0.02
   fit = fitter.get_central_fit(iPtBin, 0) # Var2 0 = Mult. 0-9999
   mean = fit.kernel.GetMean()
   sigma = fit.kernel.GetSigma()
   nSignal = fit.kernel.GetRawYield()
-  nBkg = Double()
-  errBkg = Double()
-  self.kernel.Background(n_sigma_signal, nBkg, errBkg)
+  fit2 = fit.kernel.GetSecondPeakFunc()
+  mean2 = fit2.GetParameter(1)
+  sigma2 = fit2.GetParameter(2)
+  #nBkg = Double()
+  #errBkg = Double()
+  #self.kernel.Background(n_sigma_signal, nBkg, errBkg)
   # Draw signal
-  canvas = TCanvas(f'cFit{iPtBin}',f'{ptMin:.1f}' + '< #it{p}_{T,D_{s}} <' + f'{ptMax:.1f}', 700, 700)
-  fit.draw(canvas.cd())
-  hSignal = DrawRegion(fit.histo, f'hSig{iPtBin}', mean - n_sigma_signal * sigma, mean + n_sigma_signal, kBlue, 3444)
+  canvas.cd(iPtBin+1)
+  fout.cd()
+  fit.draw(canvas.cd(iPtBin+1),title=f'{ptMin:.1f}' + '< #it{p}_{T,cand} <' + f'{ptMax:.1f}')
+  hSignal = DrawRegion(fit.histo, f'hSig{iPtBin}', mean - n_sigma_signal * sigma, mean + n_sigma_signal * sigma, kBlue, 3444)
+  hSignal.Write()
   # Draw sideband
-  hSBleft = DrawRegion(fit.histo, f'hSBleft{iPtBin}', mean - n_sigma_sideband_max * sigma, mean - n_sigma_sideband_min, kRed, 3354)
-  hSBleft = DrawRegion(fit.histo, f'hSBright{iPtBin}', mean + n_sigma_sideband_min * sigma, mean + n_sigma_sideband_max, kRed, 3345)
-  canvas.Write()
+  hSBleft = DrawRegion(fit.histo, f'hSBleft{iPtBin}', mean2 - n_sigma_sideband * (sigma + sigma2), mean2 - n_sigma_sideband * sigma2, kRed, 3354)
+  hSBleft.Write()
+  hSBright = DrawRegion(fit.histo, f'hSBright{iPtBin}', mean + n_sigma_sideband_min * sigma, mean + n_sigma_sideband_max * sigma, kRed, 3345)
+  hSBright.Write()
 
+fout.cd()
+canvas.Write()
 fout.Close()
 
