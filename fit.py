@@ -91,6 +91,7 @@ for iPtBin in confAna['binning_matching']:
   hSBright.Write()
 
 fout.cd()
+canvas.SaveAs(dirOut + '/yield_invmass_fit.pdf')
 canvas.Write()
 fout.Close()
 
