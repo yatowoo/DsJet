@@ -182,9 +182,9 @@ DsJetpp:
       max_frac_merge: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0] #list of pT bins
       period: [LHC16pp_Ds, LHC17pp_Ds, LHC18pp_Ds] #list of periods
       select_children: [["child_1"], ["child_2"], ["child_3"]] # select children explicitly
-      unmerged_tree_dir: [/data/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_sim/595_20210224-0854/merged,
-                          /data/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_sim/595_20210224-0854/merged,
-                          /data/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_sim/595_20210224-0854/merged] #list of periods
+      unmerged_tree_dir: [/mnt/temp/Paper_DsvsMult/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_sim/595_20210224-0854/merged,
+                          /mnt/temp/Paper_DsvsMult/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_sim/595_20210224-0854/merged,
+                          /mnt/temp/Paper_DsvsMult/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_sim/595_20210224-0854/merged] #list of periods
       pkl: [/data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/595_20210224-0854/pp_2016_sim_Ds/pkl,
             /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/595_20210224-0854/pp_2017_sim_Ds/pkl,
             /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/595_20210224-0854/pp_2018_sim_Ds/pkl] #list of periods
@@ -212,9 +212,9 @@ DsJetpp:
       max_frac_merge: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0] #list of pT bins
       period: [LHC16pp_D2H, LHC17pp_D2H, LHC18pp_D2H] #list of periods
       select_children: [["child_1"], ["child_2"], ["child_3"]] # select children explicitly
-      unmerged_tree_dir: [/data/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_sim/594_20210301-1015/merged,
-                          /data/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_sim/594_20210301-1015/merged,
-                          /data/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_sim/594_20210301-1015/merged] #list of periods
+      unmerged_tree_dir: [/mnt/temp/Paper_DsvsMult/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_sim/594_20210301-1015/merged,
+                          /mnt/temp/Paper_DsvsMult/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_sim/594_20210301-1015/merged,
+                          /mnt/temp/Paper_DsvsMult/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_sim/594_20210301-1015/merged] #list of periods
       pkl: [/data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/594_20210301-1015/pp_2016_sim_D2H/pkl,
             /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/594_20210301-1015/pp_2017_sim_D2H/pkl,
             /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/594_20210301-1015/pp_2018_sim_D2H/pkl] #list of periods
