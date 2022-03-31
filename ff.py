@@ -3,6 +3,7 @@
 import string
 import ROOT
 from machine_learning_hep.fitting.fitters import FitAliHF
+from copy import deepcopy
 
 f = ROOT.TFile("../DsJet-pre/pp_data/masshisto.root")
 
@@ -77,6 +78,10 @@ def DrawRegion(histo, name, left, right, color, style = 3004):
   hRegion.Draw('same hist')
   return hRegion
 
+# Drawing - TODO
+def DrawFitter(pad, fitter):
+  return None
+
 fitters = []
 for i in range(len(pt_jet_l)):
   fitters.append({"root_obj":[]})
@@ -92,6 +97,19 @@ for i in range(len(pt_jet_l)):
     fitters[i]["fit_ptcand"].append(FitAliHF(fit_pars, histo=htmp))
     fitTmp = fitters[i]["fit_ptcand"][j]
     fitTmp.fit()
+    # Attempt: pol1 for bkg.
+    if(not fitTmp.success):
+      fit_pars_opt = deepcopy(fit_pars)
+      fit_pars_opt["bkg_func_name"] = 1
+      fitters[i]["fit_ptcand"][j] = FitAliHF(fit_pars_opt, histo=htmp)
+      fitTmp = fitters[i]["fit_ptcand"][j]
+      fitTmp.fit()
+    # Attempt: rebin to 12 MeV/c
+    if(not fitTmp.success):
+      htmp.Rebin(2)
+      fitters[i]["fit_ptcand"][j] = FitAliHF(fit_pars, histo=htmp)
+      fitTmp = fitters[i]["fit_ptcand"][j]
+      fitTmp.fit()
     c.cd(j+1)
     fitTmp.draw(c.cd(j+1))
     # PaveText
@@ -132,7 +150,7 @@ for i in range(len(pt_jet_l)):
   add_text(fitters[i]["root_obj"][-1],
     f"{pt_cand_l[0]:.1f} < #it{{p}}_{{T,cand}} < {min(pt_jet_u[i], pt_cand_u[-1]):.1f} (GeV/#it{{c}})",
     size=0.03)
-  fitters[i]["root_obj"][-1].Draw()    
+  fitters[i]["root_obj"][-1].Draw()
   # Values
   result = fitters[i]["core"].kernel
   mu = result.GetMean()
