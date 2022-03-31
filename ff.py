@@ -58,6 +58,21 @@ def add_text(pave : ROOT.TPaveText, str : string, color=None, size=0.024, align=
     text.SetTextColor(color)
   return text
 
+# Fit results
+def DrawRegion(histo, name, left, right, color, style = 3004):
+  binMin = histo.FindBin(left)
+  binMax = histo.FindBin(right)
+  xLeft = histo.GetBinCenter(binMin) - 0.5 * histo.GetBinWidth(binMin)
+  xRight = histo.GetBinCenter(binMax) + 0.5 * histo.GetBinWidth(binMax)
+  hRegion = ROOT.TH1F(name,'',binMax-binMin+1, xLeft, xRight)
+  for i in range(binMin, binMax+1):
+    hRegion.Fill(histo.GetBinCenter(i), histo.GetBinContent(i))
+  hRegion.SetDirectory(0)
+  hRegion.SetFillColor(color)
+  hRegion.SetFillStyle(style)
+  hRegion.Draw('same hist')
+  return hRegion
+
 fitters = []
 for i in range(len(pt_jet_l)):
   fitters.append({"root_obj":[]})
@@ -97,6 +112,28 @@ for i in range(len(pt_jet_l)):
   sigma = result.GetSigma()
   mu_sec = result.GetSecondPeakFunc().GetParameter(1)
   sigma_sec = result.GetSecondPeakFunc().GetParameter(2)
+  # Sideband
+  n_sigma_signal = 3
+  n_sigma_sideband = 5
+  sideband_left = 1.75
+  n_sigma_sideband_min = 5
+  n_sigma_sideband_max = 10
+  fitters[i]["signal_l"] = mu - n_sigma_signal * sigma
+  fitters[i]["signal_u"] = mu + n_sigma_signal * sigma
+  fitters[i]["sideband_left_l"] = mu_sec - n_sigma_sideband * (sigma + sigma_sec)
+  fitters[i]["sideband_left_u"] = mu_sec - n_sigma_sideband * sigma_sec
+  fitters[i]["sideband_right_l"] = mu + n_sigma_sideband_min * sigma
+  fitters[i]["sideband_right_u"] = mu + n_sigma_sideband_max * sigma
+    # Signal region
+  fitters[i]["hSignal"] = DrawRegion(fitters[i]["core"].histo, f'hSignal_{i}',
+    fitters[i]["signal_l"], fitters[i]["signal_u"],
+    ROOT.kBlue, 3444)
+  fitters[i]["hSBleft"] = DrawRegion(fitters[i]["core"].histo, f'hSBleft_{i}',
+    fitters[i]["sideband_left_l"], fitters[i]["sideband_left_u"],
+    ROOT.kRed, 3354)
+  fitters[i]["hSBright"] = DrawRegion(fitters[i]["core"].histo, f'hSBright_{i}',
+    fitters[i]["sideband_right_l"], fitters[i]["sideband_right_u"],
+    ROOT.kRed, 3354)
 
 c.SaveAs("test.pdf")
 
