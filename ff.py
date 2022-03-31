@@ -1,5 +1,6 @@
 #!/bin/env python3
 
+import string
 import ROOT
 from machine_learning_hep.fitting.fitters import FitAliHF
 
@@ -48,9 +49,18 @@ fit_pars = {'bkg_func_name': 2,
 def histname(prefix, ptCandL, ptCandU, ptJetL, ptJetU, probVal):
   return f'{prefix}pt_cand{ptCandL:.0f}_{ptCandU:.0f}_{probVal:.2f}pt_jet_{ptJetL:.2f}_{ptJetU:.2f}'
 
+def add_text(pave : ROOT.TPaveText, str : string, color=None, size=0.024, align=11):
+  text = pave.AddText(str)
+  text.SetTextAlign(align)
+  text.SetTextSize(size)
+  text.SetTextFont(42)
+  if(color):
+    text.SetTextColor(color)
+  return text
+
 fitters = []
 for i in range(len(pt_jet_l)):
-  fitters.append({})
+  fitters.append({"root_obj":[]})
   fitters[i]["pt_jet_l"] = pt_jet_l[i]
   fitters[i]["pt_jet_u"] = pt_jet_u[i]
   fitters[i]["hmass"] = None
@@ -68,6 +78,25 @@ for i in range(len(pt_jet_l)):
   fitters[i]["core"].fit()
   c.cd(i+1)
   fitters[i]["core"].draw(ROOT.gPad)
+  # PaveText
+    # Jet pt bin
+  fitters[i]["root_obj"].append(fitters[i]["core"].add_pave_helper_(0.3, 0.9, 0.7, 0.99, "NDC"))
+  add_text(fitters[i]["root_obj"][-1],
+    f"{pt_jet_l[i]:.1f} < #it{{p}}_{{T,jet}} < {pt_jet_u[i]:.1f} (GeV/#it{{c}})",
+    size=0.05, align=22)
+  fitters[i]["root_obj"][-1].Draw()
+    # Ds cand. pt bin
+  fitters[i]["root_obj"].append(fitters[i]["core"].add_pave_helper_(0.15, 0.55, 0.4, 0.7, "NDC"))
+  add_text(fitters[i]["root_obj"][-1],
+    f"{pt_cand_l[0]:.1f} < #it{{p}}_{{T,cand}} < {min(pt_jet_u[i], pt_cand_u[-1]):.1f} (GeV/#it{{c}})",
+    size=0.03)
+  fitters[i]["root_obj"][-1].Draw()    
+  # Values
+  result = fitters[i]["core"].kernel
+  mu = result.GetMean()
+  sigma = result.GetSigma()
+  mu_sec = result.GetSecondPeakFunc().GetParameter(1)
+  sigma_sec = result.GetSecondPeakFunc().GetParameter(2)
 
 c.SaveAs("test.pdf")
 
