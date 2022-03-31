@@ -16,13 +16,17 @@ pt_cand_l = [3,4,6,8, 12]
 pt_cand_u = [4,6,8, 12, 24]
 prob = [0.98, 0.98, 0.94, 0.97, 0.96]
 
-c = ROOT.TCanvas("c1","Fitting",2400,800)
-c.Divide(3,1)
+c = ROOT.TCanvas("c1","Fitting",2400,1600)
+c.Divide(3,2)
 c.Draw()
+
+cnew = ROOT.TCanvas("c2","Fitting",2400,800)
+cnew.Divide(3,1)
+cnew.Draw()
 
 # Check fitters
   # Parameters
-fit_pars = {'bkg_func_name': 2,
+fit_pars = {'bkg_func_name': 2, # Pol2, change to 1=Pol1 if failed
 		 'fit_range_low': 1.75,
 		 'fit_range_up': 2.15,
 		 'fix_mean': False,
@@ -79,8 +83,30 @@ for i in range(len(pt_jet_l)):
   fitters[i]["pt_jet_l"] = pt_jet_l[i]
   fitters[i]["pt_jet_u"] = pt_jet_u[i]
   fitters[i]["hmass"] = None
+  fitters[i]["fit_ptcand"] = []
+  c.Clear()
+  c.Divide(3,2)
   for j in range(len(pt_cand_l)):
     hname = histname('hmass', pt_cand_l[j], pt_cand_u[j], pt_jet_l[i], pt_jet_u[i], prob[j])
+    htmp = f.Get(hname)
+    fitters[i]["fit_ptcand"].append(FitAliHF(fit_pars, histo=htmp))
+    fitTmp = fitters[i]["fit_ptcand"][j]
+    fitTmp.fit()
+    c.cd(j+1)
+    fitTmp.draw(c.cd(j+1))
+    # PaveText
+      # Jet pt bin
+    fitters[i]["root_obj"].append(fitTmp.add_pave_helper_(0.3, 0.9, 0.7, 0.99, "NDC"))
+    add_text(fitters[i]["root_obj"][-1],
+      f"{pt_jet_l[i]:.1f} < #it{{p}}_{{T,jet}} < {pt_jet_u[i]:.1f} (GeV/#it{{c}})",
+      size=0.05, align=22)
+    fitters[i]["root_obj"][-1].Draw()
+      # Ds cand. pt bin
+    fitters[i]["root_obj"].append(fitTmp.add_pave_helper_(0.15, 0.55, 0.4, 0.7, "NDC"))
+    add_text(fitters[i]["root_obj"][-1],
+      f"{pt_cand_l[j]:.1f} < #it{{p}}_{{T,cand}} < {pt_cand_u[j]:.1f} (GeV/#it{{c}})",
+      size=0.03)
+    fitters[i]["root_obj"][-1].Draw()   
     if(not fitters[i]["hmass"]):
       try:
         fitters[i]["hmass"] = f.Get(hname).Clone(f'hmass_jet_{pt_jet_l[i]:.0f}_{pt_jet_u[i]:.0f}')
@@ -89,10 +115,11 @@ for i in range(len(pt_jet_l)):
         exit()
     else:
       fitters[i]["hmass"].Add(f.Get(hname))
+  c.SaveAs(f"massfit_ptcand_{i}.pdf")
   fitters[i]["core"] = FitAliHF(fit_pars, histo=fitters[i]["hmass"])
   fitters[i]["core"].fit()
-  c.cd(i+1)
-  fitters[i]["core"].draw(ROOT.gPad)
+  cnew.cd(i+1)
+  fitters[i]["core"].draw(cnew.cd(i+1))
   # PaveText
     # Jet pt bin
   fitters[i]["root_obj"].append(fitters[i]["core"].add_pave_helper_(0.3, 0.9, 0.7, 0.99, "NDC"))
@@ -134,7 +161,8 @@ for i in range(len(pt_jet_l)):
   fitters[i]["hSBright"] = DrawRegion(fitters[i]["core"].histo, f'hSBright_{i}',
     fitters[i]["sideband_right_l"], fitters[i]["sideband_right_u"],
     ROOT.kRed, 3354)
+  # Raw FF - hzvsmass
 
-c.SaveAs("test.pdf")
+cnew.SaveAs("test.pdf")
 
 f.Close()
