@@ -21,8 +21,8 @@ c = ROOT.TCanvas("c1","Fitting",2400,1600)
 c.Divide(3,2)
 c.Draw()
 
-cnew = ROOT.TCanvas("c2","Fitting",2400,800)
-cnew.Divide(3,1)
+cnew = ROOT.TCanvas("c2","Fitting",2400,1600)
+cnew.Divide(3,2)
 cnew.Draw()
 
 # Check fitters
@@ -91,7 +91,9 @@ for i in range(len(pt_jet_l)):
   fitters[i]["fit_ptcand"] = []
   c.Clear()
   c.Divide(3,2)
+  # Loop on pt_cand bins
   for j in range(len(pt_cand_l)):
+    # inv. mass
     hname = histname('hmass', pt_cand_l[j], pt_cand_u[j], pt_jet_l[i], pt_jet_u[i], prob[j])
     htmp = f.Get(hname)
     fitters[i]["fit_ptcand"].append(FitAliHF(fit_pars, histo=htmp))
@@ -133,6 +135,7 @@ for i in range(len(pt_jet_l)):
         exit()
     else:
       fitters[i]["hmass"].Add(f.Get(hname))
+  # End - all pt_cand bins
   c.SaveAs(f"massfit_ptcand_{i}.pdf")
   fitters[i]["core"] = FitAliHF(fit_pars, histo=fitters[i]["hmass"])
   fitters[i]["core"].fit()
@@ -180,6 +183,44 @@ for i in range(len(pt_jet_l)):
     fitters[i]["sideband_right_l"], fitters[i]["sideband_right_u"],
     ROOT.kRed, 3354)
   # Raw FF - hzvsmass
+  fitters[i]["hzvsmass"] = []
+  for j in range(len(pt_cand_l)):
+    # z vs mass
+    hzname = histname('hzvsmass', pt_cand_l[j], pt_cand_u[j], pt_jet_l[i], pt_jet_u[i], prob[j])
+    fitters[i]["hzvsmass"].append(f.Get(hzname).Clone(f"hzmass_{i}_{j}"))
+    h2tmp = fitters[i]["hzvsmass"][j]
+    # Signal
+    h2tmp_profileZ = h2tmp.ProjectionY(f"_pz_sig",
+      h2tmp.FindBin(fitters[i]["signal_l"]),
+      h2tmp.FindBin(fitters[i]["signal_u"]))
+    if(not fitters[i].get("hz_signal")):
+      fitters[i]["hz_signal"] = h2tmp_profileZ.Clone(f"hz_signal_{i}")
+    else:
+      fitters[i]["hz_signal"].Add(h2tmp_profileZ)
+    # Sideband left
+    h2tmp_profileZ = h2tmp.ProjectionY(f"_pz_sbl",
+      h2tmp.FindBin(fitters[i]["sideband_left_l"]),
+      h2tmp.FindBin(fitters[i]["sideband_left_u"]))
+    if(not fitters[i].get("hz_sidebandL")):
+      fitters[i]["hz_sidebandL"] = h2tmp_profileZ.Clone(f"hz_sidebandL_{i}")
+    else:
+      fitters[i]["hz_sidebandL"].Add(h2tmp_profileZ)
+    # Sideband right
+    h2tmp_profileZ = h2tmp.ProjectionY(f"_pz_sbr",
+      h2tmp.FindBin(fitters[i]["sideband_right_l"]),
+      h2tmp.FindBin(fitters[i]["sideband_right_u"]))
+    if(not fitters[i].get("hz_sidebandR")):
+      fitters[i]["hz_sidebandR"] = h2tmp_profileZ.Clone(f"hz_sidebandR_{i}")
+    else:
+      fitters[i]["hz_sidebandR"].Add(h2tmp_profileZ)
+  fitters[i]["hz_signal"].SetLineColor(ROOT.kBlue)
+  fitters[i]["hz_sideband"] = fitters[i]["hz_sidebandR"].Clone(f"hz_sideband_{i}")
+  fitters[i]["hz_sideband"].Add(fitters[i]["hz_sidebandL"])
+  fitters[i]["hz_sideband"].SetLineColor(ROOT.kRed)
+  cnew.cd(4+i)
+  fitters[i]["hz_signal"].GetYaxis().SetRangeUser(0, 2 * fitters[i]["hz_signal"].GetMaximum())
+  fitters[i]["hz_signal"].Draw()
+  fitters[i]["hz_sideband"].Draw('same')
 
 cnew.SaveAs("test.pdf")
 
