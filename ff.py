@@ -4,6 +4,7 @@ import string
 import ROOT
 from machine_learning_hep.fitting.fitters import FitAliHF
 from copy import deepcopy
+from ctypes import c_double
 
 f = ROOT.TFile("../DsJet-pre/pp_data/masshisto.root")
 
@@ -155,13 +156,17 @@ for i in range(len(pt_jet_l)):
     size=0.03)
   fitters[i]["root_obj"][-1].Draw()
   # Values
+  n_sigma_signal = 3
   result = fitters[i]["core"].kernel
   mu = result.GetMean()
   sigma = result.GetSigma()
   mu_sec = result.GetSecondPeakFunc().GetParameter(1)
   sigma_sec = result.GetSecondPeakFunc().GetParameter(2)
+  nBkg = c_double()
+  errBkg = c_double()
+  result.Background(n_sigma_signal, nBkg, errBkg)
+  fitBkg = result.GetBackgroundRecalcFunc()
   # Sideband
-  n_sigma_signal = 3
   n_sigma_sideband = 5
   sideband_left = 1.75
   n_sigma_sideband_min = 5
@@ -221,6 +226,16 @@ for i in range(len(pt_jet_l)):
   fitters[i]["hz_signal"].GetYaxis().SetRangeUser(0, 2 * fitters[i]["hz_signal"].GetMaximum())
   fitters[i]["hz_signal"].Draw()
   fitters[i]["hz_sideband"].Draw('same')
+    # Substracted
+  area_bkg = fitBkg.Integral(fitters[i]["signal_l"], fitters[i]["signal_u"])
+  area_sideband = fitBkg.Integral(fitters[i]["sideband_left_l"], fitters[i]["sideband_left_u"]) + fitBkg.Integral(fitters[i]["sideband_right_l"], fitters[i]["sideband_right_u"])
+  area_scale = area_bkg / area_sideband
+  fitters[i]["hz_sub"] = fitters[i]["hz_signal"].Clone(f"hz_sub_{i}")
+  fitters[i]["hz_sub"].Add(fitters[i]["hz_sideband"], -1 * area_scale)
+  fitters[i]["hz_sub"].SetLineColor(ROOT.kBlack)
+  fitters[i]["hz_sub"].SetLineWidth(2)
+  fitters[i]["hz_sub"].Draw("same")
+  # Efficiency weight
 
 cnew.SaveAs("test.pdf")
 
