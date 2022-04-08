@@ -1,5 +1,19 @@
 #!/bin/env python3
 
+# Analyzer script for Ds jet analysis
+#
+# Dependencies: ROOT, machine_learning_hep
+#
+# Input
+# - masshisto.root: Inv. mass - TH1, Inv. mass vs z - TH2 (for each pT bin)
+# - effhisto.root: Yield/counts of hadron - TH1 (generated/selected, prompt/feeddown, for each jet pT bin)
+# 
+# Output:
+# - fitting result: signal, background, sideband and stats
+# - raw z shape: signal+background, sideband, subtracted
+# - efficiency: prompt & non-prompt
+# - z corrected: scale by efficiency
+
 import string
 import ROOT
 from machine_learning_hep.fitting.fitters import FitAliHF
