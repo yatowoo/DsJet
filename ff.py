@@ -15,10 +15,14 @@
 # - z corrected: scale by efficiency
 
 import string
+
+from matplotlib.pyplot import title
 import ROOT
 from machine_learning_hep.fitting.fitters import FitAliHF
 from copy import deepcopy
 from ctypes import c_double
+
+from painter import Painter
 
 f = ROOT.TFile("../DsJet-pre/pp_data/masshisto.root")
 fEff = ROOT.TFile("../DsJet-pre/pp_mc_prodD2H/effhisto.root")
@@ -96,10 +100,84 @@ def DrawRegion(histo, name, left, right, color, style = 3004):
   return hRegion
 
 # Drawing - TODO
-def DrawFitter(pad, fitter):
-  return None
+def AnalyzerJet(canvas, fitter):
+  # Get histo inv. mass
+  nameSuffix = f'cand{fitter["pt_cand_l"]:.0f}-{fitter["pt_cand_u"]:.0f}_jet{fitter["pt_jet_l"]:.0f}-{fitter["pt_jet_u"]:.0f}'
+  fitter["hmass"]
+  fitter["eff_val"] # value
+  fitter # pt binning
+  fitter["root_obj"] = []
+  # Fitting
+  fitter["core"] = FitAliHF(fit_pars, histo=fitter["hmass"])
+  fitter["core"].fit()
+  # Attempt: pol1 for bkg.
+  if(not fitter["core"].success):
+    fit_pars_opt = deepcopy(fit_pars)
+    fit_pars_opt["bkg_func_name"] = 1
+    fitter["core"] = FitAliHF(fit_pars_opt, histo=fitter["hmass"])
+    fitter["core"].fit()
+  # Attempt: rebin to 12 MeV/c
+  if(not fitter["core"].success):
+    fitter["hmass"].Rebin(2)
+    fitter["core"] = FitAliHF(fit_pars, histo=fitter["hmass"])
+    fitter["core"].fit()
+  canvas.NextPad()
+  fitter["core"].draw(ROOT.gPad)
+  if(not fitter["core"].success):
+    canvas.NextPage(title='_FAIL_'+nameSuffix)
+    return False
+  # PaveText
+    # Jet pt bin
+  fitter["root_obj"].append(fitter["core"].add_pave_helper_(0.3, 0.9, 0.7, 0.99, "NDC"))
+  add_text(fitter["root_obj"][-1],
+    f'{fitter["pt_jet_l"]:.1f} < #it{{p}}_{{T,jet}} < {fitter["pt_jet_u"]:.1f} (GeV/#it{{c}})',
+    size=0.05, align=22)
+  fitter["root_obj"][-1].Draw()
+    # Ds cand. pt bin
+  fitter["root_obj"].append(fitter["core"].add_pave_helper_(0.15, 0.55, 0.4, 0.7, "NDC"))
+  add_text(fitter["root_obj"][-1],
+    f'{fitter["pt_cand_l"]:.1f} < #it{{p}}_{{T,cand}} < {min(fitter["pt_cand_u"], pt_cand_u[-1]):.1f} (GeV/#it{{c}})',
+    size=0.03)
+  fitter["root_obj"][-1].Draw()
+  # Values
+  n_sigma_signal = 3
+  result = fitter["core"].kernel
+  mu = result.GetMean()
+  sigma = result.GetSigma()
+  mu_sec = result.GetSecondPeakFunc().GetParameter(1)
+  sigma_sec = result.GetSecondPeakFunc().GetParameter(2)
+  nBkg = c_double()
+  errBkg = c_double()
+  result.Background(n_sigma_signal, nBkg, errBkg)
+  fitBkg = result.GetBackgroundRecalcFunc()
+  # Sideband
+  n_sigma_sideband = 5
+  n_sigma_sideband_min = 5
+  n_sigma_sideband_max = 10
+  fitter["signal_l"] = mu - n_sigma_signal * sigma
+  fitter["signal_u"] = mu + n_sigma_signal * sigma
+  fitter["sideband_left_l"] = mu_sec - n_sigma_sideband * (sigma + sigma_sec)
+  fitter["sideband_left_u"] = mu_sec - n_sigma_sideband * sigma_sec
+  fitter["sideband_right_l"] = mu + n_sigma_sideband_min * sigma
+  fitter["sideband_right_u"] = mu + n_sigma_sideband_max * sigma
+    # Signal region
+  fitter["hSignal"] = DrawRegion(fitter["core"].histo, f'hSignal_{i}',
+    fitter["signal_l"], fitter["signal_u"],
+    ROOT.kBlue, 3444)
+  fitter["hSBleft"] = DrawRegion(fitter["core"].histo, f'hSBleft_{i}',
+    fitter["sideband_left_l"], fitter["sideband_left_u"],
+    ROOT.kRed, 3354)
+  fitter["hSBright"] = DrawRegion(fitter["core"].histo, f'hSBright_{i}',
+    fitter["sideband_right_l"], fitter["sideband_right_u"],
+    ROOT.kRed, 3354)
+  # Output
+  canvas.NextPage(title=nameSuffix)
+  return fitter
 
 fitters = []
+fitters_ana = []
+padAna = Painter(None,printer='analyzer.pdf', nx=3,ny=2,winX=2400,winY=1600)
+padAna.PrintCover(title='D_{s}-Jet Analyzer')
 for i in range(len(pt_jet_l)):
   fitters.append({"root_obj":[]})
   fitters[i]["pt_jet_l"] = pt_jet_l[i]
@@ -108,11 +186,22 @@ for i in range(len(pt_jet_l)):
   fitters[i]["fit_ptcand"] = []
   c.Clear()
   c.Divide(3,2)
+  fitters_ana.append([])
   # Loop on pt_cand bins
   for j in range(len(pt_cand_l)):
+    # Test analyzer
+    fitters_ana[i].append({})
+    fitter = fitters_ana[i][j]
+    fitter["pt_jet_l"] = pt_jet_l[i]
+    fitter["pt_jet_u"] = pt_jet_u[i]
+    fitter["pt_cand_l"] = pt_cand_l[j]
+    fitter["pt_cand_u"] = pt_cand_u[j]
     # inv. mass
     hname = histname('hmass', pt_cand_l[j], pt_cand_u[j], pt_jet_l[i], pt_jet_u[i], prob[j])
     htmp = f.Get(hname)
+    fitter['hmass'] = htmp
+    fitter["eff_val"] = 1.0
+    AnalyzerJet(padAna, fitter)
     fitters[i]["fit_ptcand"].append(FitAliHF(fit_pars, histo=htmp))
     fitTmp = fitters[i]["fit_ptcand"][j]
     fitTmp.fit()
@@ -297,6 +386,7 @@ for i in range(len(pt_jet_l)):
   fitters[i]["hz_sub_corrected"].Draw("")
 cnew.SaveAs("test.pdf")
 
+padAna.PrintBackCover()
 f.Close()
 fEff.Close()
 fOut.Close()
