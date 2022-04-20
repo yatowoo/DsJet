@@ -100,7 +100,7 @@ def DrawRegion(histo, name, left, right, color, style = 3004):
   return hRegion
 
 # Drawing - TODO
-def AnalyzerJet(canvas, fitter):
+def AnalyzerJet(p : Painter, fitter):
   # Get histo inv. mass
   nameSuffix = f'cand{fitter["pt_cand_l"]:.0f}-{fitter["pt_cand_u"]:.0f}_jet{fitter["pt_jet_l"]:.0f}-{fitter["pt_jet_u"]:.0f}'
   fitter["hmass"]
@@ -118,13 +118,14 @@ def AnalyzerJet(canvas, fitter):
     fitter["core"].fit()
   # Attempt: rebin to 12 MeV/c
   if(not fitter["core"].success):
+    fitter["hmass"] = fitter["hmass"].Clone("hmass_rebin_"+nameSuffix)
     fitter["hmass"].Rebin(2)
     fitter["core"] = FitAliHF(fit_pars, histo=fitter["hmass"])
     fitter["core"].fit()
-  canvas.NextPad()
-  fitter["core"].draw(ROOT.gPad)
+  p.NextPad()
+  fitter["core"].draw(p.canvas.cd(p.padIndex))
   if(not fitter["core"].success):
-    canvas.NextPage(title='_FAIL_'+nameSuffix)
+    p.NextPage(title='_FAIL_'+nameSuffix)
     return False
   # PaveText
     # Jet pt bin
@@ -171,7 +172,7 @@ def AnalyzerJet(canvas, fitter):
     fitter["sideband_right_l"], fitter["sideband_right_u"],
     ROOT.kRed, 3354)
   # Output
-  canvas.NextPage(title=nameSuffix)
+  p.NextPage(title=nameSuffix)
   return fitter
 
 fitters = []
