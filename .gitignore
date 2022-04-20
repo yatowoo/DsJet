@@ -2,6 +2,7 @@
 *.pdf
 *.eps
 *.root
+.vscode/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

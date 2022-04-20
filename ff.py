@@ -24,6 +24,11 @@ from ctypes import c_double
 
 from painter import Painter
 
+ROOT.gStyle.SetOptStat(False)
+ROOT.gStyle.SetLegendBorderSize(0)
+ROOT.gStyle.SetLegendFillColor(ROOT.kWhite)
+ROOT.gStyle.SetLegendFont(42)
+
 f = ROOT.TFile("../DsJet-pre/pp_data/masshisto.root")
 fEff = ROOT.TFile("../DsJet-pre/pp_mc_prodD2H/effhisto.root")
 fOut = ROOT.TFile("DsJet-ff.root","RECREATE")
@@ -100,12 +105,39 @@ def DrawRegion(histo, name, left, right, color, style = 3004):
   return hRegion
 
 # Drawing - TODO
+def DrawLegend(fitter, objs, labels, xlow, ylow, xup, yup):
+  fitter["root_obj"].append(ROOT.TLegend(xlow, ylow, xup, yup))
+  ltmp = fitter["root_obj"][-1]
+  for obj, label in zip(objs, labels):
+    ltmp.AddEntry(obj, label)
+  ltmp.Draw("same")
+def DrawRawFF(p : Painter, fitter):
+  p.NextPad()
+  fitter["hz_signal"].SetLineColor(ROOT.kBlue)
+  fitter["hz_signal"].SetMarkerColor(ROOT.kBlue)
+  fitter["hz_sideband"].SetLineColor(ROOT.kRed)
+  fitter["hz_sideband"].SetMarkerColor(ROOT.kRed)
+  fitter["hz_signal"].GetYaxis().SetRangeUser(0, 2 * fitter["hz_signal"].GetMaximum())
+  fitter["hz_signal"].SetTitle("Raw z-distribution, bkg. subtraction using sideband")
+  fitter["hz_signal"].Draw()
+  fitter["hz_sideband"].Draw('same')
+    # Substracted
+  fitter["hz_sub"].SetLineColor(ROOT.kBlack)
+  fitter["hz_sub"].SetMarkerColor(ROOT.kBlack)
+  fitter["hz_sub"].SetLineWidth(2)
+  fitter["hz_sub"].Draw("same")
+  # Legend
+  DrawLegend(fitter, [fitter["hz_signal"], fitter["hz_sideband"], fitter["hz_sub"]], ['Signal', 'Sideband', 'Substracted'],
+    0.7, 0.7, 0.9, 0.85)
+  # pT range
+  fitter["root_obj"].append(fitter["core"].add_pave_helper_(0.2, 0.75, 0.45, 0.9, "NDC"))
+  add_text(fitter["root_obj"][-1], fitter["draw_ptcand"], size=0.03)
+  add_text(fitter["root_obj"][-1], fitter["draw_ptjet"], size=0.03)
+  fitter["root_obj"][-1].Draw()
+  return fitter
 def AnalyzerJet(p : Painter, fitter):
   # Get histo inv. mass
   nameSuffix = f'cand{fitter["pt_cand_l"]:.0f}-{fitter["pt_cand_u"]:.0f}_jet{fitter["pt_jet_l"]:.0f}-{fitter["pt_jet_u"]:.0f}'
-  fitter["hmass"]
-  fitter["eff_val"] # value
-  fitter # pt binning
   fitter["root_obj"] = []
   # Fitting
   fitter["core"] = FitAliHF(fit_pars, histo=fitter["hmass"])
@@ -130,15 +162,14 @@ def AnalyzerJet(p : Painter, fitter):
   # PaveText
     # Jet pt bin
   fitter["root_obj"].append(fitter["core"].add_pave_helper_(0.3, 0.9, 0.7, 0.99, "NDC"))
+  fitter["draw_ptjet"] = f'{fitter["pt_jet_l"]:.1f} < #it{{p}}_{{T,jet}} < {fitter["pt_jet_u"]:.1f} (GeV/#it{{c}})'
   add_text(fitter["root_obj"][-1],
-    f'{fitter["pt_jet_l"]:.1f} < #it{{p}}_{{T,jet}} < {fitter["pt_jet_u"]:.1f} (GeV/#it{{c}})',
-    size=0.05, align=22)
+    fitter["draw_ptjet"], size=0.05, align=22)
   fitter["root_obj"][-1].Draw()
     # Ds cand. pt bin
   fitter["root_obj"].append(fitter["core"].add_pave_helper_(0.15, 0.55, 0.4, 0.7, "NDC"))
-  add_text(fitter["root_obj"][-1],
-    f'{fitter["pt_cand_l"]:.1f} < #it{{p}}_{{T,cand}} < {min(fitter["pt_cand_u"], pt_cand_u[-1]):.1f} (GeV/#it{{c}})',
-    size=0.03)
+  fitter["draw_ptcand"] = f'{fitter["pt_cand_l"]:.1f} < #it{{p}}_{{T,cand}} < {min(fitter["pt_cand_u"], pt_cand_u[-1]):.1f} (GeV/#it{{c}})'
+  add_text(fitter["root_obj"][-1], fitter["draw_ptcand"], size=0.03)
   fitter["root_obj"][-1].Draw()
   # Values
   n_sigma_signal = 3
@@ -171,12 +202,65 @@ def AnalyzerJet(p : Painter, fitter):
   fitter["hSBright"] = DrawRegion(fitter["core"].histo, f'hSBright_{i}',
     fitter["sideband_right_l"], fitter["sideband_right_u"],
     ROOT.kRed, 3354)
+  # Raw FF
+  recoEff = fitter["eff_val"]
+  if(recoEff < 0.0 or recoEff > 1.0):
+    print('[X] Error: invalid efficiency found')
+    exit()
+  h2tmp = fitter['hzvsmass']
+  # Signal
+  h2tmp_profileZ = h2tmp.ProjectionY(f"_pz_sig",
+    h2tmp.FindBin(fitter["signal_l"]),
+    h2tmp.FindBin(fitter["signal_u"]))
+  fitter["hz_signal"] = h2tmp_profileZ.Clone(f"hz_signal_"+nameSuffix)
+  fitter["hz_signal_corrected"] = h2tmp_profileZ.Clone(f"hz_signal_corrected_"+nameSuffix)
+  fitter["hz_signal_corrected"].Scale(1. / recoEff)
+  # Sideband left
+  h2tmp_profileZ = h2tmp.ProjectionY(f"_pz_sbl",
+    h2tmp.FindBin(fitter["sideband_left_l"]),
+    h2tmp.FindBin(fitter["sideband_left_u"]))
+  fitter["hz_sidebandL"] = h2tmp_profileZ.Clone(f"hz_sidebandL_"+nameSuffix)
+  fitter["hz_sidebandL_corrected"] = h2tmp_profileZ.Clone(f"hz_sidebandL_corrected_"+nameSuffix)
+  fitter["hz_sidebandL_corrected"].Scale(1. / recoEff)
+  # Sideband right
+  h2tmp_profileZ = h2tmp.ProjectionY(f"_pz_sbr",
+    h2tmp.FindBin(fitter["sideband_right_l"]),
+    h2tmp.FindBin(fitter["sideband_right_u"]))
+  fitter["hz_sidebandR"] = h2tmp_profileZ.Clone(f"hz_sidebandR_"+nameSuffix)
+  fitter["hz_sidebandR_corrected"] = h2tmp_profileZ.Clone(f"hz_sidebandL_corrected_"+nameSuffix)
+  fitter["hz_sidebandR_corrected"].Scale(1. / recoEff)
+    # Substracted
+  fitter["hz_sideband"] = fitter["hz_sidebandR"].Clone(f"hz_sideband_"+nameSuffix)
+  fitter["hz_sideband"].Add(fitter["hz_sidebandL"])
+  area_bkg = fitBkg.Integral(fitter["signal_l"], fitter["signal_u"])
+  area_sideband = fitBkg.Integral(fitter["sideband_left_l"], fitter["sideband_left_u"]) + fitBkg.Integral(fitter["sideband_right_l"], fitter["sideband_right_u"])
+  area_scale = area_bkg / area_sideband
+  fitter["hz_sub"] = fitter["hz_signal"].Clone(f"hz_sub_"+nameSuffix)
+  fitter["hz_sub"].Add(fitter["hz_sideband"], -1 * area_scale)
+    # Drawing
+  DrawRawFF(p, fitter)
+    # Corrected
+  p.NextPad()
+  fitter["hz_sideband_corrected"] = fitter["hz_sidebandL_corrected"].Clone(f"hz_sideband_corrected_"+nameSuffix)
+  fitter["hz_sideband_corrected"].Add(fitter["hz_sidebandR_corrected"])
+  fitter["hz_sub_corrected"] = fitter["hz_signal_corrected"].Clone(f"hz_sub_corrected_"+nameSuffix)
+  fitter["hz_sub_corrected"].Add(fitter["hz_sideband_corrected"], -1 * area_scale)
+  fitter["hz_sub_corrected"].GetYaxis().SetRangeUser(0, 2.*fitter["hz_sub_corrected"].GetMaximum())
+  fitter["hz_sub_corrected"].SetTitle("Corrected z-distribution")
+  fitter["hz_sub_corrected"].SetLineColor(ROOT.kGreen+3)
+  fitter["hz_sub_corrected"].SetLineWidth(2)
+  fitter["hz_sub_corrected"].Draw("")
+    # pT range
+  fitter["root_obj"].append(fitter["core"].add_pave_helper_(0.2, 0.75, 0.45, 0.9, "NDC"))
+  add_text(fitter["root_obj"][-1], fitter["draw_ptcand"], size=0.03)
+  add_text(fitter["root_obj"][-1], fitter["draw_ptjet"], size=0.03)
+  fitter["root_obj"][-1].Draw()
   # Output
   p.NextPage(title=nameSuffix)
   return fitter
 
-fitters = []
-fitters_ana = []
+fitters = [] # integrated pt_cand bins
+fitters_ana = [] # (pt_jet, pt_cand)
 padAna = Painter(None,printer='analyzer.pdf', nx=3,ny=2,winX=2400,winY=1600)
 padAna.PrintCover(title='D_{s}-Jet Analyzer')
 for i in range(len(pt_jet_l)):
@@ -188,6 +272,26 @@ for i in range(len(pt_jet_l)):
   c.Clear()
   c.Divide(3,2)
   fitters_ana.append([])
+  # Efficiency weight
+  nameSuffix = f'_pt_jet_{fitters[i]["pt_jet_l"]:.2f}_{fitters[i]["pt_jet_u"]:.2f}'
+    # Prompt
+  h_gen_pr = fEff.Get('h_gen_pr' + nameSuffix)
+  h_sel_pr = fEff.Get('h_sel_pr' + nameSuffix)
+  fitters[i]["heff_pr"] = h_sel_pr.Clone("heff_pr_" + nameSuffix)
+  fitters[i]["heff_pr"].SetTitle('D_{s} reco. eff. in |y|<0.5')
+  fitters[i]["heff_pr"].SetDirectory(0)
+  fitters[i]["heff_pr"].Divide(h_gen_pr)
+  cnew.cd(7+i)
+  fitters[i]["heff_pr"].SetLineColor(ROOT.kRed)
+  fitters[i]["heff_pr"].Draw()
+    # Non-Prompt / Feed-down
+  h_gen_fd = fEff.Get('h_gen_fd' + nameSuffix)
+  h_sel_fd = fEff.Get('h_sel_fd' + nameSuffix)
+  fitters[i]["heff_fd"] = h_sel_fd.Clone("heff_fd_" + nameSuffix)
+  fitters[i]["heff_fd"].SetDirectory(0)
+  fitters[i]["heff_fd"].Divide(h_gen_fd)
+  fitters[i]["heff_fd"].SetLineColor(ROOT.kBlack)
+  fitters[i]["heff_fd"].Draw("same")
   # Loop on pt_cand bins
   for j in range(len(pt_cand_l)):
     # Test analyzer
@@ -201,39 +305,12 @@ for i in range(len(pt_jet_l)):
     hname = histname('hmass', pt_cand_l[j], pt_cand_u[j], pt_jet_l[i], pt_jet_u[i], prob[j])
     htmp = f.Get(hname)
     fitter['hmass'] = htmp
-    fitter["eff_val"] = 1.0
+    fitter["eff_val"] = fitters[i]["heff_pr"].GetBinContent(j+1)
+    # hz vs mass
+    hzname = histname('hzvsmass', pt_cand_l[j], pt_cand_u[j], pt_jet_l[i], pt_jet_u[i], prob[j])
+    fitter['hzvsmass'] = f.Get(hzname).Clone(f"hzmass_{i}_{j}")
     AnalyzerJet(padAna, fitter)
-    fitters[i]["fit_ptcand"].append(FitAliHF(fit_pars, histo=htmp))
-    fitTmp = fitters[i]["fit_ptcand"][j]
-    fitTmp.fit()
-    # Attempt: pol1 for bkg.
-    if(not fitTmp.success):
-      fit_pars_opt = deepcopy(fit_pars)
-      fit_pars_opt["bkg_func_name"] = 1
-      fitters[i]["fit_ptcand"][j] = FitAliHF(fit_pars_opt, histo=htmp)
-      fitTmp = fitters[i]["fit_ptcand"][j]
-      fitTmp.fit()
-    # Attempt: rebin to 12 MeV/c
-    if(not fitTmp.success):
-      htmp.Rebin(2)
-      fitters[i]["fit_ptcand"][j] = FitAliHF(fit_pars, histo=htmp)
-      fitTmp = fitters[i]["fit_ptcand"][j]
-      fitTmp.fit()
-    c.cd(j+1)
-    fitTmp.draw(c.cd(j+1))
-    # PaveText
-      # Jet pt bin
-    fitters[i]["root_obj"].append(fitTmp.add_pave_helper_(0.3, 0.9, 0.7, 0.99, "NDC"))
-    add_text(fitters[i]["root_obj"][-1],
-      f"{pt_jet_l[i]:.1f} < #it{{p}}_{{T,jet}} < {pt_jet_u[i]:.1f} (GeV/#it{{c}})",
-      size=0.05, align=22)
-    fitters[i]["root_obj"][-1].Draw()
-      # Ds cand. pt bin
-    fitters[i]["root_obj"].append(fitTmp.add_pave_helper_(0.15, 0.55, 0.4, 0.7, "NDC"))
-    add_text(fitters[i]["root_obj"][-1],
-      f"{pt_cand_l[j]:.1f} < #it{{p}}_{{T,cand}} < {pt_cand_u[j]:.1f} (GeV/#it{{c}})",
-      size=0.03)
-    fitters[i]["root_obj"][-1].Draw()   
+    # Integrated 
     if(not fitters[i]["hmass"]):
       try:
         fitters[i]["hmass"] = f.Get(hname).Clone(f'hmass_jet_{pt_jet_l[i]:.0f}_{pt_jet_u[i]:.0f}')
@@ -293,26 +370,6 @@ for i in range(len(pt_jet_l)):
   fitters[i]["hSBright"] = DrawRegion(fitters[i]["core"].histo, f'hSBright_{i}',
     fitters[i]["sideband_right_l"], fitters[i]["sideband_right_u"],
     ROOT.kRed, 3354)
-  # Efficiency weight
-  nameSuffix = f'_pt_jet_{fitters[i]["pt_jet_l"]:.2f}_{fitters[i]["pt_jet_u"]:.2f}'
-    # Prompt
-  h_gen_pr = fEff.Get('h_gen_pr' + nameSuffix)
-  h_sel_pr = fEff.Get('h_sel_pr' + nameSuffix)
-  fitters[i]["heff_pr"] = h_sel_pr.Clone("heff_pr_" + nameSuffix)
-  fitters[i]["heff_pr"].SetTitle('D_{s} reco. eff. in |y|<0.5')
-  fitters[i]["heff_pr"].SetDirectory(0)
-  fitters[i]["heff_pr"].Divide(h_gen_pr)
-  cnew.cd(7+i)
-  fitters[i]["heff_pr"].SetLineColor(ROOT.kRed)
-  fitters[i]["heff_pr"].Draw()
-    # Non-Prompt / Feed-down
-  h_gen_fd = fEff.Get('h_gen_fd' + nameSuffix)
-  h_sel_fd = fEff.Get('h_sel_fd' + nameSuffix)
-  fitters[i]["heff_fd"] = h_sel_fd.Clone("heff_fd_" + nameSuffix)
-  fitters[i]["heff_fd"].SetDirectory(0)
-  fitters[i]["heff_fd"].Divide(h_gen_fd)
-  fitters[i]["heff_fd"].SetLineColor(ROOT.kBlack)
-  fitters[i]["heff_fd"].Draw("same")
   # Raw FF - hzvsmass
   fitters[i]["hzvsmass"] = []
   for j in range(len(pt_cand_l)):
