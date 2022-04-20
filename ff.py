@@ -328,14 +328,14 @@ for i in range(len(pt_jet_l)):
   # PaveText
     # Jet pt bin
   fitters[i]["root_obj"].append(fitters[i]["core"].add_pave_helper_(0.3, 0.9, 0.7, 0.99, "NDC"))
-  add_text(fitters[i]["root_obj"][-1],
-    f"{pt_jet_l[i]:.1f} < #it{{p}}_{{T,jet}} < {pt_jet_u[i]:.1f} (GeV/#it{{c}})",
+  fitters[i]["draw_ptjet"] = f"{pt_jet_l[i]:.1f} < #it{{p}}_{{T,jet}} < {pt_jet_u[i]:.1f} (GeV/#it{{c}})"
+  add_text(fitters[i]["root_obj"][-1],fitters[i]["draw_ptjet"],
     size=0.05, align=22)
   fitters[i]["root_obj"][-1].Draw()
     # Ds cand. pt bin
   fitters[i]["root_obj"].append(fitters[i]["core"].add_pave_helper_(0.15, 0.55, 0.4, 0.7, "NDC"))
-  add_text(fitters[i]["root_obj"][-1],
-    f"{pt_cand_l[0]:.1f} < #it{{p}}_{{T,cand}} < {min(pt_jet_u[i], pt_cand_u[-1]):.1f} (GeV/#it{{c}})",
+  fitters[i]["draw_ptcand"] = f"{pt_cand_l[0]:.1f} < #it{{p}}_{{T,cand}} < {min(pt_jet_u[i], pt_cand_u[-1]):.1f} (GeV/#it{{c}})"
+  add_text(fitters[i]["root_obj"][-1],fitters[i]["draw_ptcand"],
     size=0.03)
   fitters[i]["root_obj"][-1].Draw()
   # Values
@@ -437,12 +437,48 @@ for i in range(len(pt_jet_l)):
   fitters[i]["hz_sideband_corrected"].Add(fitters[i]["hz_sidebandR_corrected"])
   fitters[i]["hz_sub_corrected"] = fitters[i]["hz_signal_corrected"].Clone(f"hz_sub_corrected_{i}")
   fitters[i]["hz_sub_corrected"].Add(fitters[i]["hz_sideband_corrected"], -1 * area_scale)
+  fitters[i]["hz_sub_corrected"].GetYaxis().SetRangeUser(0, 2.*fitters[i]["hz_sub_corrected"].GetMaximum())
   fitters[i]["hz_sub_corrected"].SetTitle("Corrected z-distribution")
   fitters[i]["hz_sub_corrected"].SetLineColor(ROOT.kGreen+3)
   fitters[i]["hz_sub_corrected"].SetLineWidth(2)
   cnew.cd(10+i)
   fitters[i]["hz_sub_corrected"].Draw("")
+    # pT range
+  fitters[i]["root_obj"].append( fitters[i]["core"].add_pave_helper_(0.2, 0.75, 0.45, 0.9, "NDC"))
+  add_text(fitters[i]["root_obj"][-1], fitters[i]["draw_ptcand"], size=0.03)
+  add_text(fitters[i]["root_obj"][-1], fitters[i]["draw_ptjet"], size=0.03)
+  fitters[i]["root_obj"][-1].Draw()
+  fitters[i]["draw_ptpave"] = fitters[i]["root_obj"][-1]
 cnew.SaveAs("test.pdf")
+
+for i in range(len(pt_jet_l)):
+  for j in range(len(pt_cand_l)):
+    padAna.NextPad()
+    fitters_ana[i][j]['core'].draw(ROOT.gPad)
+  padAna.NextPage(f'InvMassFit_jet{pt_jet_l[i]:.0f}-{pt_jet_u[i]:.0f}')
+
+for i in range(len(pt_jet_l)):
+  # Merge plots
+  padAna.NextPad()
+    # Efficiency
+  fitters[i]["heff_pr"].SetLineColor(ROOT.kRed)
+  fitters[i]["heff_pr"].SetMarkerColor(ROOT.kRed)
+  fitters[i]["heff_pr"].GetYaxis().SetRangeUser(0, 1.5*fitters[i]["heff_pr"].GetMaximum())
+  fitters[i]["heff_pr"].Draw()
+    # Non-Prompt / Feed-down
+  fitters[i]["heff_fd"].SetLineColor(ROOT.kBlack)
+  fitters[i]["heff_fd"].SetMarkerColor(ROOT.kBlack)
+  fitters[i]["heff_fd"].Draw("same")
+  fitters[i]["draw_ptpave"].Draw("same")
+  DrawLegend(fitters[i], [fitters[i]["heff_pr"], fitters[i]["heff_fd"]], ['Prompt','Feed-down'], 0.7, 0.25, 0.9, 0.35)
+padAna.NextPage('Efficiency')
+
+for i in range(len(pt_jet_l)):
+  # Merge plots
+  padAna.NextPad()
+  fitters[i]["hz_sub_corrected"].Draw("")
+  fitters[i]["draw_ptpave"].Draw("same")
+padAna.NextPage('FF_EffCorrected')
 
 padAna.PrintBackCover()
 f.Close()
