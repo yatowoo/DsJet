@@ -111,6 +111,8 @@ def DrawLegend(fitter, objs, labels, xlow, ylow, xup, yup):
   for obj, label in zip(objs, labels):
     ltmp.AddEntry(obj, label)
   ltmp.Draw("same")
+def SetTextFF(hz : ROOT.TH1, xtitle='', ytitle=''):
+  hz
 def DrawRawFF(p : Painter, fitter):
   p.NextPad()
   fitter["hz_signal"].SetLineColor(ROOT.kBlue)
@@ -460,6 +462,11 @@ for i in range(len(pt_jet_l)):
 for i in range(len(pt_jet_l)):
   # Merge plots
   padAna.NextPad()
+  for j in range(len(pt_cand_l)):
+    ptCenter = fitters[i]["heff_pr"].GetBinCenter(j+1)
+    if(ptCenter > pt_jet_u[i]):
+      fitters[i]["heff_pr"].SetBinContent(j+1, 0.)
+      fitters[i]["heff_fd"].SetBinContent(j+1, 0.)
     # Efficiency
   fitters[i]["heff_pr"].SetLineColor(ROOT.kRed)
   fitters[i]["heff_pr"].SetMarkerColor(ROOT.kRed)
