@@ -399,7 +399,7 @@ DsJetpp:
       bin_width: 0.001 # bin width of the invariant mass histogram
 
       # simple fitter START
-      sgnfunc: [0,0,0,0,0] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2
+      sgnfunc: [1,1,1,1,1] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2
       bkgfunc: [2,2,2,2,2] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5
       masspeak: 2.2864
       massmin: [1.75, 1.78, 1.75, 1.75, 1.75]
@@ -414,7 +414,7 @@ DsJetpp:
       SetArraySigma: [false, false, false, false, false]
       sigmaarray: [0.011,0.012,0.014,0.016,0.02] # initial sigma
 
-      fix_sigmasec: [true, true, true, true, true]
+      fix_sigmasec: [false, false, false, false, false]
       sigmaarraysec: [0.007497,0.01,0.01,0.01,0.01]
       # simple fitter END
 
