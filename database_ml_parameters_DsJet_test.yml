@@ -349,7 +349,7 @@ DsJetpp:
       useperiod: [1,1,1] #list of periods
       usejetptbinned_deff: false
 
-      latexnamehadron: "#D_{s}^{#pm}"
+      latexnamehadron: "D_{s}^{#pm}"
       latexnamedecay: "K^{+}K^{-} #pi^{#pm}"
 
       var_binning2: pt_jet
@@ -439,9 +439,10 @@ DsJetpp:
       doprior: false
       doeff_resp: false
 
-      powheg_path_nonprompt: /data/POWHEG/trees_powheg_fd_central.root
+      powheg_path_nonprompt: /home/yitao/work/alice-fast-simulation/output/trees_powheg+pythia6+evtgen_beauty.root
 
-      powheg_path_prompt: /data/POWHEG/trees_powheg_pr_central.root
+      powheg_path_prompt: /home/yitao/work/alice-fast-simulation/output/trees_powheg+pythia6_charm.root
+      
       powheg_prompt_variations_path: /data/POWHEG/trees_powheg_pr_
       powheg_prompt_variations: ["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow"]
 
