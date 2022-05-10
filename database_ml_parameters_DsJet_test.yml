@@ -349,8 +349,8 @@ DsJetpp:
       useperiod: [1,1,1] #list of periods
       usejetptbinned_deff: false
 
-      latexnamehadron: "D_{s}^{#pm}"
-      latexnamedecay: "K^{+}K^{-} #pi^{#pm}"
+      latexnamehadron: "D_{s}^{#plus}"
+      latexnamedecay: "K^{+}K^{-} #pi^{#plus}"
 
       var_binning2: pt_jet
       var_binning2_gen: pt_gen_jet
@@ -366,14 +366,15 @@ DsJetpp:
       sel_binmaxshape_reco:     [0.6,0.7,0.8,0.9,1.0]
       sel_binminshape_gen:  [0.4,0.6,0.7,0.8,0.9]
       sel_binmaxshape_gen:      [0.6,0.7,0.8,0.9,1.0]
-      sel_closure_frac: 0.2
+      sel_closure_frac: 0.4
       triggerbit: INT7
       sel_an_binmin:    [3,4,6,8,12] #list of pt nbins
       sel_an_binmax:      [4,6,8,12,24] #list of pt nbins
       binning_matching:   [1,2,3,4, 5] #list of pt nbins
       jetsel_gen: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
       jetsel_sim: "abs(y_cand) < 0.5 and abs(eta_jet) < 0.5" # jet selection in simulations
-      jetsel_reco: "abs(eta_jet) < 0.5"
+      jetsel_reco: "abs(y_cand) < 0.5 and abs(z_vtx_reco) < 10 and abs(eta_jet) < 0.5"
+      jetsel_gen_matched_reco: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_gen_jet) < 0.5"
       evtsel: is_ev_rej==0
       triggersel:
         data: "trigger_hasbit_INT7==1"
@@ -401,7 +402,7 @@ DsJetpp:
       # simple fitter START
       sgnfunc: [1,1,1,1,1] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2
       bkgfunc: [2,2,2,2,2] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5
-      masspeak: 2.2864
+      masspeak: 1.969
       massmin: [1.75, 1.78, 1.75, 1.75, 1.75]
       massmax: [2.15, 2.12, 2.15, 2.15, 2.15]
       rebin: [6,6,6,6,6]
@@ -410,8 +411,8 @@ DsJetpp:
 
       # If SetArraySigma true: sigma_initial is taken from sigmaarray; false: sigma_initial is taken from MC
       # If SetFixGaussianSigma true: sigma fixed to sigma_initial
-      SetFixGaussianSigma: [true, true, true, true, true]
-      SetArraySigma: [false, false, false, false, false]
+      SetFixGaussianSigma: [false, false, false, false, false]
+      SetArraySigma: [true, true, true, true, true]
       sigmaarray: [0.011,0.012,0.014,0.016,0.02] # initial sigma
 
       fix_sigmasec: [false, false, false, false, false]
