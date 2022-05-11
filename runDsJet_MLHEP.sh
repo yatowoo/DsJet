@@ -25,5 +25,6 @@ nice python do_entire_analysis.py -r $SCRIPTPATH/$submission -d $SCRIPTPATH/$dat
 
 # Clean dir by year
 rm -rf $workdir/pp_20*
-cp -a $workdir ana-$config_name
+cp -a $workdir ~/work/ana-$config_name
 rm -rf $workdir/*
+tar cvf ~/work/ana-$config_name.tar.gz ~/work/ana-$config_name/ 
