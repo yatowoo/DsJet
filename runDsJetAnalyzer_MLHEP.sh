@@ -8,16 +8,10 @@ rundir=/home/yitao/MachineLearningHEP/machine_learning_hep
 SCRIPT=`realpath $0`
 SCRIPTPATH=`dirname $SCRIPT`
 database=database_ml_parameters_DsJet_test.yml
-submission=submission_DsJet.yml
+submission=submission_DsJetAnalyzer.yml
 analysis=jet_FF
 config_name=$1
 log_name=~/log/runDsJet-$config_name-$(date +%Y%m%d%H%M).log
-
-# Empty work dir
-if [ -z $workdir_data ];then
-  echo "[X] Work dir not empty : "$workdir_data
-  exit
-fi
 
 # Run analysis
 cd $rundir
@@ -25,7 +19,6 @@ nice python do_entire_analysis.py -r $SCRIPTPATH/$submission -d $SCRIPTPATH/$dat
 
 # Clean dir by year
 cd $workdir/../
-rm -rf $workdir/pp_20*
-cp -a $workdir ~/work/ana-$config_name
-rm -rf $workdir/*
-tar cvf ana-$config_name.tar.gz ana-$config_name/ 
+cp -a $workdir ana-$config_name
+tar cvf ana-$config_name.tar.gz ana-$config_name/
+cd $rundir
