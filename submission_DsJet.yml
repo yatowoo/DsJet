@@ -65,15 +65,15 @@ analysis:
   mc:
     histomass: true # processer: process_histomass
     efficiency: true # processer: process_efficiency
-    efficiency_resp: true # analyzer: efficiency
+    efficiency_resp: true # analyzer: efficiency_inclusive
     response: true # processer: process_response
-    feeddown: false # analyzer: feeddown
-    dounfolding: false # analyzer: unfolding, unfolding_closure
+    feeddown: true # analyzer: feeddown
+    dounfolding: true # analyzer: unfolding, unfolding_closure
   dofit: true # analyzer: fit
   # Control the yield systematic uncertainty
   dosyst: false # analyzer: yield_syst
   dojetstudies: true # analyzer: fit, efficiency, sideband_sub
-  doeff: true # analyzer: efficiency
+  doeff: false # analyzer: efficiency
   docross: false # analyzer: makenormyields
   doplots: false # analyzer: plotternormyields
   doplotsval: false # analyzer: plottervalidation
