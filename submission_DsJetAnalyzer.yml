@@ -67,8 +67,8 @@ analysis:
     efficiency: false # processer: process_efficiency
     efficiency_resp: false # analyzer: efficiency
     response: false # processer: process_response
-    feeddown: true # analyzer: feeddown
-    dounfolding: true # analyzer: unfolding, unfolding_closure
+    feeddown: false # analyzer: feeddown
+    dounfolding: false # analyzer: unfolding, unfolding_closure
   dofit: true # analyzer: fit
   # Control the yield systematic uncertainty
   dosyst: false # analyzer: yield_syst

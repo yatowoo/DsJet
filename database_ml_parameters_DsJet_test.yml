@@ -328,9 +328,9 @@ DsJetpp:
       data: [0.3,0.3,0.3,0.3,0.3,0.3] #list of nbins
       mc: [0.3,0.3,0.3,0.3,0.3,0.3] #list of nbins
     #probcutoptimal: [0.978,0.985,0.985,0.962,0.988,0.974] #list of nbins
-    #probcutoptimal: [0.9791025, 0.985, 0.976675, 0.936485, 0.97296, 0.9616025] #list of nbins #opti_1 after cutvar ±50%
+    probcutoptimal: [0.9791025, 0.985, 0.976675, 0.936485, 0.97296, 0.9616025] #list of nbins #opti_1 after cutvar ±50%
     #probcutoptimal: [0.98296125, 0.985, 0.976675, 0.936485, 0.97296, 0.9616025] #list of nbins #opti_2 after cutvar ±50%
-    probcutoptimal: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5] #opt for fitting, sb check
+    #probcutoptimal: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5] #opt for fitting, sb check
     #probcutoptimal: [0, 0, 0, 0, 0, 0]
 
   analysis:
@@ -411,26 +411,26 @@ DsJetpp:
       masspeak: 1.969
       massmin: [1.75, 1.78, 1.75, 1.75, 1.75]
       massmax: [2.15, 2.12, 2.15, 2.15, 2.15]
-      rebin: [6,6,6,6,6]
+      rebin: [[6,6,6,6,6],[6,6,6,6,6],[8,8,8,6,6]]
       fix_mean: [false, false, false, false, false]
       masspeaksec: 1.869
 
       # If SetArraySigma true: sigma_initial is taken from sigmaarray; false: sigma_initial is taken from MC
       # If SetFixGaussianSigma true: sigma fixed to sigma_initial
-      SetFixGaussianSigma: [false, false, false, false, false]
-      SetArraySigma: [true, true, true, true, true]
-      sigmaarray: [0.011,0.012,0.014,0.016,0.02] # initial sigma
+      SetFixGaussianSigma: [true, false, false, true, true]
+      SetArraySigma: [false, false, false, false, false]
+      sigmaarray: [0.011,0.008,0.008,0.011,0.012] # initial sigma
 
       fix_sigmasec: [false, false, false, false, false]
-      sigmaarraysec: [0.007497,0.01,0.01,0.01,0.01]
+      sigmaarraysec: [0.008,0.008,0.008,0.008,0.008]
       # simple fitter END
 
       signal_sigma: 2.0
       sigma_scale: 0.9545
-      sideband_sigma_1_left: 4
-      sideband_sigma_2_left: 9
-      sideband_sigma_1_right: 4
-      sideband_sigma_2_right: 9
+      sideband_sigma_1_left: 5
+      sideband_sigma_2_left: 10
+      sideband_sigma_1_right: 5
+      sideband_sigma_2_right: 10
       sidebandleftonly: false
 
       niterunfolding: 15
