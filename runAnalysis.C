@@ -29,4 +29,8 @@ void runAnalysis()
   mgr->StartAnalysis("local", chain);
 
   auto aod = (AliAODEvent*)(task->InputEvent());
+  auto mcarray = (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+  auto candarray = (TClonesArray*)aod->GetList()->FindObject("Charm3Prong");
+  
+  auto mcpar = (AliAODMCParticle*)(mcarray->UncheckedAt(367));
 }
