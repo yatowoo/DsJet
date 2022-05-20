@@ -14,9 +14,9 @@ do
   subpath=$runnumber/$subjob
   echo "> Processing "$subpath;
   mkdir -p $subpath;
-  for file in $filenames;
+  for file in ${filenames[@]};
   do
-    echo ">> Downloading "$subpath;
-    alien_cp -a -retry 3 $alien_path/$subjob/$file file:$subpath/
+    echo ">> Downloading "$subpath/$file;
+    alien_cp -retry 3 $alien_path/$subjob/$file file:$subpath/
   done
 done
