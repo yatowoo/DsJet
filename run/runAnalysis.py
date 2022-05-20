@@ -2,12 +2,19 @@
 
 # AliPhysics run local analysis
 
-import os, sys
+import os, argparse
 import ROOT
 from ROOT import kTRUE, kFALSE
 from ROOT import AliHFTreeHandler
 
 # Configurations
+parser = argparse.ArgumentParser(description='AliPhysics local debug')
+parser.add_argument('--run', default='286350', help='Path with runnumber')
+parser.add_argument('--all', help='Loop all subjobs under run path', default=False, action='store_true')
+parser.add_argument('--debug', help='Print info. without starting analysis', default=False, action='store_true')
+parser.add_argument('--sub', default='0001', help='Dir. name of sub-job')
+args = parser.parse_args()
+
 ALICE_PHYSICS = os.environ['ALICE_PHYSICS']
 
 # ALICE includes
@@ -37,12 +44,22 @@ __R_ADDTASK__.SetSoftDropBeta(0.)
 
 aodChain = ROOT.TChain("aodTree")
 vtxChain = ROOT.TChain("aodTree")
-runpath='286350'
-for subdir in os.listdir(runpath):
+runpath = args.run
+subdirList = sorted(os.listdir(runpath)) if args.all else [args.sub]
+
+print('[-] Path to run number : ' + runpath)
+print('>>> Sub-dir list : ' + ', '.join(subdirList))
+
+for subdir in subdirList:
   filepath=runpath + '/' + subdir
   aodChain.Add(filepath + "/AliAOD.root")
   vtxChain.Add(filepath + "/AliAOD.VertexingHF.root")
 aodChain.AddFriend(vtxChain)
 
-mgr.InitAnalysis()
-mgr.StartAnalysis("local",aodChain)
+if(args.debug):
+  print('[-] DEBUG - STOP before mgr.InitAnalysis & StartAnalysis')
+else:
+  mgr.InitAnalysis()
+  mgr.StartAnalysis("local",aodChain)
+  
+# ISSUE: segmentation violation => ~AliAnalysisTaskSEHFTreeCreator
