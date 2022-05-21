@@ -1,14 +1,14 @@
 #!/bin/bash - 
 
-workdir=/home/yitao/work/DsJet-test
+workdir=$HOME/work/DsJet-test
 workdir_data=$workdir/pp_data
 
-rundir=/home/yitao/MachineLearningHEP/machine_learning_hep
+rundir=$HOME/MachineLearningHEP/machine_learning_hep
 
 SCRIPT=`realpath $0`
 SCRIPTPATH=`dirname $SCRIPT`
-database=database_ml_parameters_DsJet_test.yml
-submission=submission_DsJet.yml
+database=db/database_ml_parameters_DsJet_test.yml
+submission=db/submission_DsJet.yml
 analysis=jet_FF
 config_name=$1
 log_name=~/log/runDsJet-$config_name-$(date +%Y%m%d%H%M).log

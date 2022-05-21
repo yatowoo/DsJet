@@ -29,10 +29,10 @@ void runAnalysis()
 
   // if you want to run locally, we need to define some input
   TChain *chain = new TChain("aodTree");
-  chain->Add("286350/001/AliAOD.root");
+  chain->Add("286350/0002/AliAOD.root");
 
   TChain *vtxHF = new TChain("aodTree");
-  vtxHF->Add("286350/001/AliAOD.VertexingHF.root");
+  vtxHF->Add("286350/0002/AliAOD.VertexingHF.root");
   chain->AddFriend(vtxHF);
 
   // start the analysis locally
