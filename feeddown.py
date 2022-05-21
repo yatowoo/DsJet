@@ -1,10 +1,16 @@
-#!/bin/env python3
+#!/usr/bin/env python3
 
 # Processing feeddown output
-
+import argparse
 from ROOT import gStyle
 from ROOT import TFile, TH1D, TCanvas, TLegend, TPaveText
 from ROOT import kRed, kBlack, kBlue, kWhite
+
+parser = argparse.ArgumentParser(description='Feeddown outputs')
+parser.add_argument('-f','--file', default='/mnt/d/DsJet/fastsimu/trees_powheg+pythia6+evtgen_beauty.root', help='HF_TreeCreator Generated outputs')
+parser.add_argument('--cand', default='Ds', help='HF candidates (tree name suffix)')
+parser.add_argument('-o', '--output', help='Output file prefix', default='test')
+args = parser.parse_args()
 
 gStyle.SetOptStat(False)
 gStyle.SetLegendBorderSize(0)
@@ -12,11 +18,11 @@ gStyle.SetLegendFillColor(kWhite)
 gStyle.SetLegendFont(42)
 gStyle.SetLineWidth(2)
 
-file_input = '/mnt/d/DsJet/fastsimu/trees_powheg+pythia6+evtgen_beauty.root'
-file_out = 'fastsimu_draw.root'
+file_input = args.file
+file_out = args.output + '_fastsimu_draw.root'
 fInput = TFile.Open(file_input)
 fOutput = TFile.Open(file_out,'RECREATE')
-HFcand = 'Ds'
+HFcand = args.cand
 
 treeSimu = fInput.Get(f'tree_{HFcand}')
 
@@ -65,14 +71,14 @@ def add_text(pave : TPaveText, s : str, color=None, size=0.04, align=11):
 
 pave = TPaveText(0.6,0.7,0.88,0.88,"NDC")
 pave.SetFillColor(kWhite)
-add_text(pave, "#it{p}_{T,D_{s}^{+}} > 3 GeV/#it{c}")
+add_text(pave, "#it{p}_{T,cand} > 3 GeV/#it{c}")
 add_text(pave, "|#eta_{jet}| < 0.5")
 pave.Draw("same")
 
 lgd.Draw("same")
 lgd.Write()
 c.Write()
-c.SaveAs("hz.pdf")
+c.SaveAs(f"{args.output}_hz_{HFcand}.pdf")
 
 fInput.Close()
 fOutput.Close()
