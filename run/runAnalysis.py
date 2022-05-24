@@ -14,6 +14,7 @@ parser.add_argument('--sub', default='0001', help='Dir. name of sub-job, add com
 parser.add_argument('--lib', default=None, help='User defined libraries')
 parser.add_argument('--grid', help='Submit jobs to grid, input mode', default=None)
 parser.add_argument('-o', '--output', help='Work dir in grid', default='test')
+parser.add_argument('--prod', help='Select production', type=int,default=2018)
 
 args = parser.parse_args()
 
@@ -25,7 +26,7 @@ ALICE_PHYSICS = os.environ['ALICE_PHYSICS']
 ROOT.gInterpreter.ProcessLine(".include $ROOTSYS/include")
 ROOT.gInterpreter.ProcessLine(".include $ALICE_ROOT/include")
 
-def SetupGridHandler(mode : str = 'local', isMC : bool = True, task_name : str = 'DsJet_pp', work_dir='test'):
+def SetupGridHandler(mode : str = 'local', isMC : bool = True, task_name : str = 'DsJet_pp', work_dir='test', prod=2018):
   alienHandler = ROOT.AliAnalysisAlien()
   # Include Path
   alienHandler.AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include")
@@ -36,7 +37,7 @@ def SetupGridHandler(mode : str = 'local', isMC : bool = True, task_name : str =
   #alienHandler.SetAnalysisSource("AliHFJetFinder.cxx")
   # Data path
   config = yaml.load(open('DsJet_pp13TeV.yml'),Loader=yaml.FullLoader)
-  runList = config['RunList']['MCpp13TeV_MB_Pythia8_AOD235'][2018]
+  runList = config['RunList']['MCpp13TeV_MB_Pythia8_AOD235'][prod]
   alienHandler.AddRunNumber(' '.join([str(run) for run in runList]))
     # MC production
   if(isMC):
@@ -61,8 +62,10 @@ def SetupGridHandler(mode : str = 'local', isMC : bool = True, task_name : str =
   alienHandler.SetSplitMaxInputFileNumber(20)
 
   alienHandler.SetTTL(43200) # 12 hours
-
-  alienHandler.SetGridWorkingDir(f'{task_name}-{work_dir}-{time.strftime("%Y%m%d%H%M%S")}')
+  if(mode =='full'):
+    alienHandler.SetGridWorkingDir(f'{task_name}-{work_dir}')
+  else:
+    alienHandler.SetGridWorkingDir(f'{task_name}-{work_dir}-{time.strftime("%Y%m%d%H%M%S")}')
   alienHandler.SetGridOutputDir("OutputAOD")
 
   alienHandler.SetAnalysisMacro(task_name + ".C")
@@ -120,7 +123,7 @@ if(not mgr.InitAnalysis()):
 # Running analysis
 if(args.grid is not None):
   # Grid mode
-  alienHandler = SetupGridHandler(mode=args.grid, work_dir=args.output)
+  alienHandler = SetupGridHandler(mode=args.grid, work_dir=args.output, prod=args.prod)
   mgr.SetGridHandler(alienHandler)
   alienHandler.CreateJDL()
   jdl = alienHandler.GetGridJDL()
