@@ -17,6 +17,6 @@ do
   for file in ${filenames[@]};
   do
     echo ">> Downloading "$subpath/$file;
-    alien_cp -retry 3 $alien_path/$subjob/$file file:$subpath/
+    alien_cp -f -retry 3 $alien_path/$subjob/$file file:$subpath/
   done
 done

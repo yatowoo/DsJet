@@ -3,9 +3,6 @@
 # AliPhysics run local analysis
 
 import os, argparse
-import ROOT
-from ROOT import kTRUE, kFALSE
-from ROOT import AliHFTreeHandler
 
 # Configurations
 parser = argparse.ArgumentParser(description='AliPhysics local debug')
@@ -13,8 +10,11 @@ parser.add_argument('--run', default='286350', help='Path with runnumber')
 parser.add_argument('--all', help='Loop all subjobs under run path', default=False, action='store_true')
 parser.add_argument('--debug', help='Print info. without starting analysis', default=False, action='store_true')
 parser.add_argument('--sub', default='0001', help='Dir. name of sub-job, add comma to separate multiple jobs')
+parser.add_argument('--lib', default=None, help='User defined libraries')
 args = parser.parse_args()
 
+import ROOT
+from ROOT import kTRUE, kFALSE
 ALICE_PHYSICS = os.environ['ALICE_PHYSICS']
 
 # ALICE includes
@@ -32,6 +32,9 @@ ROOT.gInterpreter.ExecuteMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelecti
   # PID pp TuneOnData
 ROOT.gInterpreter.ExecuteMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C(1)")
   # Tree creator
+if(args.lib is not None):
+  for lib in args.lib.split(','):
+    ROOT.gSystem.Load(lib)
 taskMacro = 'PWGHF/treeHF/macros/AddTaskHFTreeCreator.C'
 __R_ADDTASK__ = ROOT.gInterpreter.ExecuteMacro("$ALICE_PHYSICS/PWGHF/treeHF/macros/AddTaskHFTreeCreator.C(1, 0, \"HFTreeCreator_pp_kAny\", \"D0DsDplusDstarLcBplusBsLbCuts_pp_kAny.root\", 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 9, 1, 0, 0, 0, 0)")
 __R_ADDTASK__ = mgr.GetTask("TreeCreatorTask")
