@@ -4,6 +4,7 @@
 
 import os, time, datetime
 import argparse, yaml
+import subprocess
 
 # Configurations
 parser = argparse.ArgumentParser(description='AliPhysics local debug')
@@ -15,6 +16,7 @@ parser.add_argument('--lib', default=None, help='User defined libraries')
 parser.add_argument('--grid', help='Submit jobs to grid, input mode', default=None)
 parser.add_argument('-o', '--output', help='Work dir in grid', default='test')
 parser.add_argument('--prod', help='Select production', type=int,default=2018)
+parser.add_argument('--job', help='Select job under output dir.', type=str,default='000')
 
 args = parser.parse_args()
 
@@ -25,6 +27,16 @@ ALICE_PHYSICS = os.environ['ALICE_PHYSICS']
 # ALICE includes
 ROOT.gInterpreter.ProcessLine(".include $ROOTSYS/include")
 ROOT.gInterpreter.ProcessLine(".include $ALICE_ROOT/include")
+
+def SubmitMerge(stage:int =1):
+  workdir=args.output
+  outputdir='OutputAOD'
+  jobdir=args.job
+  mergedir=f'alien://{workdir}/{outputdir}/{jobdir}/'
+  subprocess.call(['alien_find', f'{mergedir}/*root_archive.zip', '-x', f'{mergedir}/Stage_{stage}.xml'])
+  # Submit
+  subprocess.call(['alien_submit',f'{mergedir}/../DsJet_pp_merge.jdl', '{stage}'])
+  return kTRUE
 
 def SetupGridHandler(mode : str = 'local', isMC : bool = True, task_name : str = 'DsJet_pp', work_dir='test', prod=2018):
   alienHandler = ROOT.AliAnalysisAlien()
@@ -37,11 +49,13 @@ def SetupGridHandler(mode : str = 'local', isMC : bool = True, task_name : str =
   #alienHandler.SetAnalysisSource("AliHFJetFinder.cxx")
   # Data path
   config = yaml.load(open('DsJet_pp13TeV.yml'),Loader=yaml.FullLoader)
-  runList = config['RunList']['MCpp13TeV_MB_Pythia8_AOD235'][prod]
-  alienHandler.AddRunNumber(' '.join([str(run) for run in runList]))
+  runList = config['RunList']['MCpp13TeV_MB_Pythia8_AOD235']
+  alienHandler.AddRunNumber(' '.join([str(run) for run in runList[prod]]))
     # MC production
   if(isMC):
-    alienHandler.SetGridDataDir("/alice/sim/2020/LHC20f4a/")
+    i = runList['child'].index(prod)
+    mcProd = runList['production'][i]
+    alienHandler.SetGridDataDir(f"/alice/sim/2020/{mcProd}/")
     alienHandler.SetDataPattern("AOD235/*/*AOD.root")
     alienHandler.SetFriendChainName("AliAOD.VertexingHF.root")
     alienHandler.SetRunPrefix("")
@@ -62,7 +76,7 @@ def SetupGridHandler(mode : str = 'local', isMC : bool = True, task_name : str =
   alienHandler.SetSplitMaxInputFileNumber(20)
 
   alienHandler.SetTTL(43200) # 12 hours
-  if(mode =='full'):
+  if(mode != 'test'):
     alienHandler.SetGridWorkingDir(f'{task_name}-{work_dir}')
   else:
     alienHandler.SetGridWorkingDir(f'{task_name}-{work_dir}-{time.strftime("%Y%m%d%H%M%S")}')
