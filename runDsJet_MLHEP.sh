@@ -8,24 +8,38 @@ rundir=$HOME/MachineLearningHEP/machine_learning_hep
 SCRIPT=`realpath $0`
 SCRIPTPATH=`dirname $SCRIPT`
 database=db/database_ml_parameters_DsJet_test.yml
-submission=db/submission_DsJet.yml
+if [ -f "$2" ];then
+  submission=`realpath $2`
+else
+  submission=$SCRIPTPATH/db/submission_DsJet.yml
+fi
+
 analysis=jet_FF
 config_name=$1
 log_name=~/log/runDsJet-$config_name-$(date +%Y%m%d%H%M).log
 
+exec > $log_name
+exec 2>&1
+
+set -x
 # Empty work dir
-if [ -z $workdir_data ];then
-  echo "[X] Work dir not empty : "$workdir_data
-  exit
+if [ -e "$workdir_data" ];then
+  echo "[+] WARNING Work dir not empty : "$workdir_data
 fi
 
 # Run analysis
 cd $rundir
-nice python do_entire_analysis.py -r $SCRIPTPATH/$submission -d $SCRIPTPATH/$database -a $analysis 2>&1 | tee $log_name
+nice python do_entire_analysis.py -r $submission -d $SCRIPTPATH/$database -a $analysis 2>&1 | tee -a $log_name
 
 # Clean dir by year
 cd $workdir/../
-rm -rf $workdir/pp_20*
-cp -a $workdir ~/work/ana-$config_name
-rm -rf $workdir/*
-tar cvf ana-$config_name.tar.gz ana-$config_name/ 
+cp $log_name $workdir/
+if [ -d "$workdir/pp_2016_data" ];then
+  rm -rf $workdir/pp_20*
+fi
+if [ -d "$workdir_data" ];then
+  cp -a $workdir ~/work/ana-$config_name
+  tar cf ana-$config_name.tar.gz ana-$config_name/
+  rm $workdir/*.log
+fi
+set +x

@@ -199,8 +199,37 @@ DsJetpp:
       mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodDs_16, 
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodDs_17, 
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodDs_18]
+    mc: #Fix HFJetFinder
+      nprocessesparallel: 50
+      maxfiles: [-1,-1,-1] #list of periods
+      chunksizeunp: [100, 100, 100] #list of periods
+      chunksizeskim: [100, 100, 100] #list of periods
+      seedmerge: [12,12,12] #list of periods
+      fracmerge : [[1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+                   [1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+                   [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]] #list of pT bin in list of periods.
+      max_frac_merge: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0] #list of pT bins
+      period: [LHC16pp_D2H, LHC17pp_D2H, LHC18pp_D2H] #list of periods
+      select_children: [["child_1"], ["child_2"], ["child_3"]] # select children explicitly
+      unmerged_tree_dir: [/mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_HOTFIX/TTree/,
+                          /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_HOTFIX/TTree/,
+                          /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_HOTFIX/TTree/] #list of periods
+      pkl: [/mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_HOTFIX/Derived/pp_2016_sim_D2H/pkl,
+            /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_HOTFIX/Derived/pp_2017_sim_D2H/pkl,
+            /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_HOTFIX/Derived/pp_2018_sim_D2H/pkl] #list of periods
+      pkl_skimmed: [/mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_HOTFIX/Derived/pp_2016_sim_D2H/pklsk,
+                    /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_HOTFIX/Derived/pp_2017_sim_D2H/pklsk,
+                    /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_HOTFIX/Derived/pp_2018_sim_D2H/pklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [/mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_HOTFIX/Derived/pp_2016_sim_D2H/pklskml,
+                                 /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_HOTFIX/Derived/pp_2017_sim_D2H/pklskml,
+                                 /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_HOTFIX/Derived/pp_2018_sim_D2H/pklskml] #list of periods
+      pkl_skimmed_merge_for_ml_all: /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_HOTFIX/Derived/pp_mc_prodD2H_mltot
+      pkl_evtcounter_all: /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_HOTFIX/Derived/pp_mc_prodD2H_evttot
+      mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_16,
+                    ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_17,
+                    ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_18]
 
-    mc: #mc_D2H:
+    mc_D2H: #mc_D2H:
       nprocessesparallel: 50
       maxfiles: [-1,-1,-1] #list of periods
       chunksizeunp: [100, 100, 100] #list of periods
@@ -299,12 +328,20 @@ DsJetpp:
                               /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/595_20210224-0854/pp_2016_sim_Ds/skpkldecmerged_DsMB,
                               /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/595_20210224-0854/pp_2016_sim_Ds/skpkldecmerged_DsMB] #list of periods
     mc:
+      pkl_skimmed_dec: [/mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_HOTFIX/Derived/pp_2016_sim_D2H/pklskdec,
+                        /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_HOTFIX/Derived/pp_2017_sim_D2H/pklskdec,
+                        /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_HOTFIX/Derived/pp_2018_sim_D2H/pklskdec] #list of periods
+      pkl_skimmed_decmerged: [/mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_HOTFIX/Derived/pp_2016_sim_D2H/skpkldecmerged_D2HMB,
+                              /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_HOTFIX/Derived/pp_2016_sim_D2H/skpkldecmerged_D2HMB,
+                              /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_HOTFIX/Derived/pp_2016_sim_D2H/skpkldecmerged_D2HMB] #list of periods
+    mc_D2H:
       pkl_skimmed_dec: [/data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/594_20210301-1015/pp_2016_sim_D2H/pklskdec,
                         /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/594_20210301-1015/pp_2017_sim_D2H/pklskdec,
                         /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/594_20210301-1015/pp_2018_sim_D2H/pklskdec] #list of periods
       pkl_skimmed_decmerged: [/data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/594_20210301-1015/pp_2016_sim_D2H/skpkldecmerged_D2HMB,
                               /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/594_20210301-1015/pp_2016_sim_D2H/skpkldecmerged_D2HMB,
                               /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/594_20210301-1015/pp_2016_sim_D2H/skpkldecmerged_D2HMB] #list of periods
+
     modelname: xgboost
     modelsperptbin: [Model_pT_1_2.sav,
                      Model_pT_2_4.sav,
