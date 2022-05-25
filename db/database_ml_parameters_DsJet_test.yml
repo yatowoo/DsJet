@@ -325,22 +325,22 @@ DsJetpp:
                         /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/595_20210224-0854/pp_2017_sim_Ds/pklskdec,
                         /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/595_20210224-0854/pp_2018_sim_Ds/pklskdec] #list of periods
       pkl_skimmed_decmerged: [/data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/595_20210224-0854/pp_2016_sim_Ds/skpkldecmerged_DsMB,
-                              /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/595_20210224-0854/pp_2016_sim_Ds/skpkldecmerged_DsMB,
-                              /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/595_20210224-0854/pp_2016_sim_Ds/skpkldecmerged_DsMB] #list of periods
+                              /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/595_20210224-0854/pp_2017_sim_Ds/skpkldecmerged_DsMB,
+                              /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/595_20210224-0854/pp_2018_sim_Ds/skpkldecmerged_DsMB] #list of periods
     mc:
       pkl_skimmed_dec: [/mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_HOTFIX/Derived/pp_2016_sim_D2H/pklskdec,
                         /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_HOTFIX/Derived/pp_2017_sim_D2H/pklskdec,
                         /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_HOTFIX/Derived/pp_2018_sim_D2H/pklskdec] #list of periods
       pkl_skimmed_decmerged: [/mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_HOTFIX/Derived/pp_2016_sim_D2H/skpkldecmerged_D2HMB,
-                              /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_HOTFIX/Derived/pp_2016_sim_D2H/skpkldecmerged_D2HMB,
-                              /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_HOTFIX/Derived/pp_2016_sim_D2H/skpkldecmerged_D2HMB] #list of periods
+                              /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_HOTFIX/Derived/pp_2017_sim_D2H/skpkldecmerged_D2HMB,
+                              /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_HOTFIX/Derived/pp_2018_sim_D2H/skpkldecmerged_D2HMB] #list of periods
     mc_D2H:
       pkl_skimmed_dec: [/data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/594_20210301-1015/pp_2016_sim_D2H/pklskdec,
                         /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/594_20210301-1015/pp_2017_sim_D2H/pklskdec,
                         /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/594_20210301-1015/pp_2018_sim_D2H/pklskdec] #list of periods
       pkl_skimmed_decmerged: [/data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/594_20210301-1015/pp_2016_sim_D2H/skpkldecmerged_D2HMB,
-                              /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/594_20210301-1015/pp_2016_sim_D2H/skpkldecmerged_D2HMB,
-                              /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/594_20210301-1015/pp_2016_sim_D2H/skpkldecmerged_D2HMB] #list of periods
+                              /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/594_20210301-1015/pp_2017_sim_D2H/skpkldecmerged_D2HMB,
+                              /data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/594_20210301-1015/pp_2018_sim_D2H/skpkldecmerged_D2HMB] #list of periods
 
     modelname: xgboost
     modelsperptbin: [Model_pT_1_2.sav,

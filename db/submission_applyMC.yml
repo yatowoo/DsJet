@@ -3,22 +3,22 @@ download:
     activate: false
 conversion:
   mc:
-    activate: true
+    activate: false
   data:
     activate: false
 skimming:
   mc:
-    activate: true
+    activate: false
   data:
     activate: false
 merging:
   mc:
-    activate: true
+    activate: false
   data:
     activate: false
 mergingperiods:
   mc:
-    activate: true
+    activate: false
   data:
     activate: false
 
@@ -47,14 +47,14 @@ mlapplication:
   data:
     doapply: false
     domergeapply: false
-    docontinueafterstop: false
+    docontinueafterstop: false 
   mc:
     doapply: true
     domergeapply: false
-    docontinueafterstop: true
+    docontinueafterstop: false
 
 analysis:
-  type: YYYY 
+  type: YYYY
   # Do each period separately including merged (true)
   # Do only merged (false)
   doperperiod: true

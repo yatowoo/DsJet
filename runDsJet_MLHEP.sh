@@ -18,9 +18,7 @@ analysis=jet_FF
 config_name=$1
 log_name=~/log/runDsJet-$config_name-$(date +%Y%m%d%H%M).log
 
-exec > $log_name
-exec 2>&1
-
+echo $* > $log_name
 set -x
 # Empty work dir
 if [ -e "$workdir_data" ];then
@@ -32,6 +30,9 @@ cd $rundir
 nice python do_entire_analysis.py -r $submission -d $SCRIPTPATH/$database -a $analysis 2>&1 | tee -a $log_name
 
 # Clean dir by year
+exec >> $log_name
+exec 2>&1
+
 cd $workdir/../
 cp $log_name $workdir/
 if [ -d "$workdir/pp_2016_data" ];then
@@ -41,5 +42,6 @@ if [ -d "$workdir_data" ];then
   cp -a $workdir ~/work/ana-$config_name
   tar cf ana-$config_name.tar.gz ana-$config_name/
   rm $workdir/*.log
+  echo "[+] Results saved to "$workdir/$ana-$config_name"[.tar.gz]"
 fi
 set +x
