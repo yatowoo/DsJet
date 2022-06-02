@@ -19,7 +19,7 @@ gStyle.SetLegendFont(42)
 gStyle.SetLineWidth(2)
 
 file_input = args.file
-file_out = args.output + '_fastsimu_draw.root'
+file_out = args.output + f'_fastsimu_{args.cand}.root'
 fInput = TFile.Open(file_input)
 fOutput = TFile.Open(file_out,'RECREATE')
 HFcand = args.cand
