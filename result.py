@@ -17,24 +17,17 @@ import ROOT
 from ROOT import TFile, TH1D, TCanvas, TLegend, TPaveText
 from ROOT import kRed, kBlack, kBlue, kWhite
 from array import array
+import root_plot
 
-ROOT.gStyle.SetOptTitle(False)
-ROOT.gStyle.SetOptStat(False)
-ROOT.gStyle.SetLegendBorderSize(0)
-ROOT.gStyle.SetLegendFillColor(kWhite)
-ROOT.gStyle.SetLegendFont(42)
-ROOT.gStyle.SetLineWidth(2)
-ROOT.gStyle.SetPadTopMargin(0.02)
-ROOT.gStyle.SetPadBottomMargin(0.12)
-ROOT.gStyle.SetPadLeftMargin(0.14)
-ROOT.gStyle.SetPadRightMargin(0.02)
+root_plot.ALICEStyle()
 
 Z_BINNING = [0.4,0.6,0.7,0.8,0.9,1.0]
-
+PT_JET_BINNING = [5, 7, 15, 35]
+N_JETBINS = 3
 fResult = TFile.Open(args.file)
 fModel = TFile.Open(args.model)
-c = TCanvas('c1','draw',2400,600)
-c.Divide(3,1)
+c = TCanvas('c1','draw',2400,800)
+c.Divide(N_JETBINS,1)
 
 def add_text(pave : TPaveText, s : str, color=None, size=0.04, align=11):
   text = pave.AddText(s)
@@ -46,8 +39,8 @@ def add_text(pave : TPaveText, s : str, color=None, size=0.04, align=11):
   return text
 
 root_objs = []
-PT_JET_BINNING = [5, 7, 15, 35]
-for iptjet in range(3):
+
+for iptjet in range(N_JETBINS):
   pt_jet_l = PT_JET_BINNING[iptjet]
   pt_jet_u = PT_JET_BINNING[iptjet+1]
   hResult = fResult.Get(f'unfolded_z_{args.iter}_pt_jet_{pt_jet_l:.2f}_{pt_jet_u:.2f}')
@@ -63,12 +56,17 @@ for iptjet in range(3):
   hResult.SetLineColor(kBlack)
   hResult.SetMarkerColor(kBlack)
   hResult.SetXTitle('z_{#parallel}^{ch}')
-  hResult.GetYaxis().SetRangeUser(0, 2* hResult.GetMaximum())
+  hResult.GetYaxis().SetRangeUser(0.1, 2* hResult.GetMaximum())
   hResult.SetYTitle("1/#it{N}_{jets} d#it{N}/d#it{z_{#parallel}^{ch}} (self normalised)")
   hModel.SetLineColor(kRed+1)
   hModel.SetMarkerColor(kRed+1)
   #hModel.SetFillColor(kRed-10)
   hModel.SetDrawOption('E0')
+  root_objs.append(hResult.Clone(f'hratio_ptjet_{pt_jet_l:.0f}_{pt_jet_u:.0f}'))
+  hRatio = root_objs[-1]
+  hRatio.Divide(hModel)
+  hRatio.SetYTitle('Data/Model')
+  hRatio.SetXTitle('z_{#parallel}^{ch}')
   # Legend
   root_objs.append(TLegend(0.15,0.7,0.45,0.85))
   lgd = root_objs[-1]
@@ -82,9 +80,18 @@ for iptjet in range(3):
   add_text(pave, f'{pt_jet_l} < #it{{p}}_{{T,jet}} < {pt_jet_u} GeV/#it{{c}}')
   add_text(pave, "|#it{#eta}_{jet}| < 0.5")
   c.cd(iptjet+1)
+  # Ratio
+  root_objs.append(root_plot.NewRatioPads(c.cd(iptjet+1), f'padz_ptjet_{pt_jet_l:.0f}_{pt_jet_u:.0f}', f'padratio_ptjet_{pt_jet_l:.0f}_{pt_jet_u:.0f}', gap=0.0))
+  pMain, pRatio = root_objs[-1]
+  pMain.cd()
   hResult.Draw('E0')
   hModel.Draw('same')
   lgd.Draw('same')
   pave.Draw("same")
+  pRatio.cd()
+  root_plot.SetRatioPlot(hRatio, 0.01, 2.98)
+  hRatio.Draw('E0')
+  hResult.GetXaxis().SetLabelSize(0.0)
 
+c.SaveAs('results_pythia6.png')
 cmd = input('<exit>')
