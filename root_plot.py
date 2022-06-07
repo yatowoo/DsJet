@@ -3,6 +3,8 @@
 # Utility lib for general purpose in post-processing
 
 import ROOT
+  # Drawing objects
+from ROOT import TPaveText
   # Colors
 from ROOT import kBlack, kRed, kBlue, kGreen, kViolet, kCyan, kOrange, kPink, kYellow, kMagenta, kGray, kWhite
 from ROOT import kFullCircle, kFullSquare, kOpenCircle, kOpenSquare, kOpenDiamond, kOpenCross, kFullCross, kFullDiamond, kFullStar, kOpenStar, kOpenCircle, kOpenSquare, kOpenTriangleUp, kOpenTriangleDown, kOpenStar, kOpenDiamond, kOpenCross, kOpenThreeTriangles, kOpenFourTrianglesX, kOpenDoubleDiamond, kOpenFourTrianglesPlus, kOpenCrossX, kFullTriangleUp, kOpenTriangleUp, kFullCrossX, kOpenCrossX, kFullTriangleDown, kFullThreeTriangles, kOpenThreeTriangles, kFullFourTrianglesX, kFullDoubleDiamond, kFullFourTrianglesPlus
@@ -110,6 +112,15 @@ def H2ProjectionX(hname, h2, ylow, yup):
   if(yup > h2.GetYaxis().GetBinCenter(yBinUp)):
     yBinUp -= 1
   return h2.ProjectionX(hname, yBinLow, yBinUp)
+
+def add_text(pave : TPaveText, s : str, color=None, size=0.04, align=11):
+  text = pave.AddText(s)
+  text.SetTextAlign(align)
+  text.SetTextSize(size)
+  text.SetTextFont(42)
+  if(color):
+    text.SetTextColor(color)
+  return text
 
 # Normalize by column
   # X=measured, Y=true

@@ -76,9 +76,9 @@ for iptjet in range(N_JETBINS):
   root_objs.append(TPaveText(0.6,0.7,0.88,0.92,"NDC"))
   pave = root_objs[-1]
   pave.SetFillColor(kWhite)
-  add_text(pave, f'3 < #it{{p}}_{{T,D_{{s}}}} < {pt_jet_u} GeV/#it{{c}}')
-  add_text(pave, f'{pt_jet_l} < #it{{p}}_{{T,jet}} < {pt_jet_u} GeV/#it{{c}}')
-  add_text(pave, "|#it{#eta}_{jet}| < 0.5")
+  root_plot.add_text(pave, f'3 < #it{{p}}_{{T,D_{{s}}}} < {pt_jet_u} GeV/#it{{c}}')
+  root_plot.add_text(pave, f'{pt_jet_l} < #it{{p}}_{{T,jet}} < {pt_jet_u} GeV/#it{{c}}')
+  root_plot.add_text(pave, "|#it{#eta}_{jet}| < 0.5")
   c.cd(iptjet+1)
   # Ratio
   root_objs.append(root_plot.NewRatioPads(c.cd(iptjet+1), f'padz_ptjet_{pt_jet_l:.0f}_{pt_jet_u:.0f}', f'padratio_ptjet_{pt_jet_l:.0f}_{pt_jet_u:.0f}', gap=0.0))

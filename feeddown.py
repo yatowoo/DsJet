@@ -43,8 +43,8 @@ for i, jetpt in enumerate(jet_pt_l):
   treeSimu.Draw("z>>htemp",f'pt_cand>{pt_cand_l}&&pt_jet>{jet_pt_l[i]}&&pt_jet<{jet_pt_u[i]}&&{jet_selection}')
   hz.append(htemp.Clone(f'hz_ptjet_{jet_pt_l[i]}_{jet_pt_u[i]}'))
   htmp = hz[-1]
-  htmp.SetXTitle("z_{#parallel}^{ch}")
-  htmp.SetYTitle("1/#it{N} d#it{N}/d#it{z} (self normalised)")
+  htmp.SetXTitle("#it{z_{#parallel}^{ch}}")
+  htmp.SetYTitle("1/#it{N_{jets}} d#it{N}/d#it{z_{#parallel}^{ch}} (self normalised)")
   htmp.Sumw2()
   htmp.Scale(1./htmp.Integral(),'width')
   htmp.SetLineColor(colorset[i])
