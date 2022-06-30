@@ -29,6 +29,7 @@ treeSimu = fInput.Get(f'tree_{HFcand}')
 jet_pt_l = [5,7,15]
 jet_pt_u = [7,15,35]
 pt_cand_l = 3
+pt_cand_u = 24
 jet_selection = 'abs(eta_jet)<0.5'
 
 colorset = [kBlack, kRed, kBlue]
@@ -40,7 +41,7 @@ c.Draw()
 lgd = TLegend(0.15,0.7,0.45,0.85)
 for i, jetpt in enumerate(jet_pt_l):
   htemp = TH1D('htemp',f'Fragmentation function of {HFcand} in jets', 22, 0, 1.1)
-  treeSimu.Draw("z>>htemp",f'pt_cand>{pt_cand_l}&&pt_jet>{jet_pt_l[i]}&&pt_jet<{jet_pt_u[i]}&&{jet_selection}')
+  treeSimu.Draw("z>>htemp",f'pt_cand>{pt_cand_l}&&pt_cand<{pt_cand_u}&&pt_jet>{jet_pt_l[i]}&&pt_jet<{jet_pt_u[i]}&&{jet_selection}')
   hz.append(htemp.Clone(f'hz_ptjet_{jet_pt_l[i]}_{jet_pt_u[i]}'))
   htmp = hz[-1]
   htmp.SetXTitle("#it{z_{#parallel}^{ch}}")
