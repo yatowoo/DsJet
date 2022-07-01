@@ -40,7 +40,7 @@ if [ -d "$workdir/pp_2016_data" ];then
 fi
 if [ -d "$workdir_data" ];then
   cp -a $workdir ~/work/ana-$config_name
-  tar cf ana-$config_name.tar.gz ana-$config_name/
+  tar czf ana-$config_name.tar.gz ana-$config_name/
   rm $workdir/*.log
   echo "[+] Results saved to "$workdir/$ana-$config_name"[.tar.gz]"
 fi
