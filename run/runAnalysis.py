@@ -17,6 +17,7 @@ parser.add_argument('--grid', help='Submit jobs to grid, input mode', default=No
 parser.add_argument('-o', '--output', help='Work dir in grid', default='test')
 parser.add_argument('--prod', help='Select production', type=int,default=2018)
 parser.add_argument('--job', help='Select job under output dir.', type=str,default='000')
+parser.add_argument('--trackeff', help='Track efficiency for MC', default=False, action='store_true')
 
 args = parser.parse_args()
 
@@ -44,7 +45,7 @@ def SetupGridHandler(mode : str = 'local', isMC : bool = True, task_name : str =
   alienHandler.AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include")
   # User files - copy to alien
     # ISSUE: Fail to copy .so libs
-  alienHandler.SetAdditionalLibs("runAnalysis.py libPWGHFtreeHF_FixMC.so libPWGHFtreeHF_FixMC.rootmap AliHFJetFinder.h AliHFJetFinder.cxx D0DsDplusDstarLcBplusBsLbCuts_pp_kAny.root")
+  alienHandler.SetAdditionalLibs("runAnalysis.py D0DsDplusDstarLcBplusBsLbCuts_pp_kAny.root")
   # Source file to compile - gROOT->ProcessLine(".L [.cxx]+g");
   #alienHandler.SetAnalysisSource("AliHFJetFinder.cxx")
   # Data path
@@ -61,6 +62,10 @@ def SetupGridHandler(mode : str = 'local', isMC : bool = True, task_name : str =
     alienHandler.SetRunPrefix("")
     alienHandler.SetNrunsPerMaster(1000)
     alienHandler.SetOutputToRunNo(kFALSE)
+    if args.trackeff:
+      task_name = f'{task_name}_MCtrkeff_{prod}'
+    else:
+      task_name = f'{task_name}_MC_{prod}'
     # Data
   else:
     alienHandler.SetGridDataDir("/alice/data/2018/LHC18l")
@@ -68,6 +73,7 @@ def SetupGridHandler(mode : str = 'local', isMC : bool = True, task_name : str =
     alienHandler.SetRunPrefix("000")
     alienHandler.SetNrunsPerMaster(200)
     alienHandler.SetOutputToRunNo(kTRUE)
+    task_name = f'{task_name}_{prod}'
   # Package
   tagDate = datetime.date.today() - datetime.timedelta(days=2)
   alienHandler.SetAliPhysicsVersion(f'vAN-{tagDate.strftime("%Y%m%d")}_ROOT6-1')
@@ -114,6 +120,8 @@ mgr.SetInputEventHandler(aodH)
 ROOT.gInterpreter.ExecuteMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C(1,1)")
   # PID pp TuneOnData
 ROOT.gInterpreter.ExecuteMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C(1)")
+  # ITS improver
+ROOT.gInterpreter.ExecuteMacro("$ALICE_PHYSICS/PWGHF/vertexingHF/macros/AddTaskImproveITSCVMFS.C(0,\"\",\"\",0)")
   # Tree creator
 if(args.lib is not None):
   for lib in args.lib.split(','):
@@ -129,6 +137,8 @@ __R_ADDTASK__.SetDoJetSubstructure(kTRUE)
 __R_ADDTASK__.SetJetSubRadius(0.)
 __R_ADDTASK__.SetSoftDropZCut(0.1)
 __R_ADDTASK__.SetSoftDropBeta(0.)
+if args.trackeff:
+  __R_ADDTASK__.SetTrackingEfficiency(0.96)
 
 if(not mgr.InitAnalysis()):
   print('[X] ERROR - Fail to InitAnalysis')
@@ -141,9 +151,9 @@ if(args.grid is not None):
   mgr.SetGridHandler(alienHandler)
   alienHandler.CreateJDL()
   jdl = alienHandler.GetGridJDL()
-  jdl.AddToInputSandbox("LF:/alice/cern.ch/user/y/yitao/DsJet_pp/libPWGHFtreeHF_FixMC.so")
   alienHandler.WriteJDL(kTRUE)
   if(args.debug):
+    alienHandler.Print()
     print('[-] DEBUG - STOP before StartAnalysis')
   else:
     mgr.StartAnalysis("grid")
