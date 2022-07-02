@@ -2,6 +2,11 @@
 # Database for ALICE DsJet Analysis @ pp 13TeV
 ###
 
+Job:
+  MC_TrackEff:
+    child_1:
+      grid_data_dir: "/alice/sim/2020/"
+
 RunList:
   MCpp13TeV_MB_Pythia8_AOD235:
     comment: "D2H MB P8 2018"
