@@ -8,7 +8,7 @@ filenames=(AnalysisResults.root)
 alien_path=alien://$1
 outputdir=$2
 echo "[-] Copy $alien_path to $outputdir"
-for subjob in $(alien_ls $alien_path | grep -e "0.*/");
+for subjob in $(alien_ls $alien_path);
 do
   subpath=$outputdir/$subjob
   echo "> Processing "$subpath;
