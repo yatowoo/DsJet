@@ -203,10 +203,10 @@ def NewRatioPads(c, nameUpper, nameLower, gap=0.05):
   padMain.SetBottomMargin(gap*0.4)
   padMain.Draw()
   c.cd()
-  padRatio = ROOT.TPad(nameLower,nameLower, 0, 0.0, 1, 0.28)
+  padRatio = ROOT.TPad(nameLower,nameLower, 0, 0.0, 1, 0.3)
   padRatio.SetTopMargin(gap*0.6)
   padRatio.SetBottomMargin(0.25)
-  padRatio.SetGrid()
+  padRatio.SetGrid(1)
   padRatio.Draw()
   return padMain, padRatio
 
