@@ -441,7 +441,7 @@ DsJetpp:
       mc_proc: # alternative processor output used as the analyzer input
         <<: *mc_out_default
 
-      mass_fit_lim: [1.75, 2.15] # region for the fit of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [1.70, 2.15] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
 
       # simple fitter START
@@ -461,8 +461,9 @@ DsJetpp:
       sigmaarray: [0.011,0.008,0.008,0.011,0.012] # initial sigma
 
       fix_meansec: [true, true, true, true, true]
-      fix_sigmasec: [false, false, false, false, false]
+      fix_sigmasec: [true, true, true, true, true]
       sigmaarraysec: [0.008,0.008,0.008,0.008,0.008]
+      width_ratio_DplusDs: 0.91
       # simple fitter END
 
       signal_sigma: 2.0

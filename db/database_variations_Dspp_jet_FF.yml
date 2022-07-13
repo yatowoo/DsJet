@@ -1,7 +1,7 @@
 categories:
     default:
-        activate: no
-        processor: true
+        activate: yes
+        processor: false
         label: "default"
         correlation: "corr"
         rms: true
@@ -44,7 +44,7 @@ categories:
                 diffs:
                     analysis:
                         jet_FF:
-                            massmin: [1.69, 1.81]
+                            massmin: [1.65, 1.75]
             massmax:
                 activate: [yes, yes]
                 label: 
@@ -126,9 +126,16 @@ categories:
                             sideband_sigma_1_left:  ["#", "#", "#",  5 , "#",  5 , "#",  5 ,  7 , "#"]
                             sideband_sigma_1_right: ["#", "#", "#",  5 ,  5 , "#",  5 , "#", "#",  7 ]
                             sideband_sigma_2_right: [ 8 , "#",  8 , "#", "#", "#",  8 , "#", "#", "#"]
+            sb_right:
+                activate: [yes]
+                label: ["right sb only"]
+                diffs:
+                    analysis:
+                        jet_FF:
+                            sidebandrightonly: [true]
 
             sb_left:
-                activate: [no]
+                activate: [yes]
                 label: ["left sb only"]
                 diffs:
                     analysis:
