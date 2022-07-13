@@ -1,6 +1,6 @@
 categories:
     default:
-        activate: yes
+        activate: no
         processor: true
         label: "default"
         correlation: "corr"
@@ -136,7 +136,7 @@ categories:
                             sidebandleftonly: [true]
 
     feeddown:
-        activate: no
+        activate: yes
         processor: false
         label: "feed-down"
         correlation: "corr"
@@ -160,15 +160,15 @@ categories:
                     analysis:
                         jet_FF:
                             powheg_path_nonprompt:
-                                - /data/POWHEG/trees_powheg_fd_F1_R05.root
-                                - /data/POWHEG/trees_powheg_fd_F05_R1.root
-                                - /data/POWHEG/trees_powheg_fd_F2_R1.root
-                                - /data/POWHEG/trees_powheg_fd_F1_R2.root
-                                - /data/POWHEG/trees_powheg_fd_F2_R2.root
-                                - /data/POWHEG/trees_powheg_fd_F05_R05.root
-                                - /data/POWHEG/trees_powheg_fd_Mhigh.root
-                                - /data/POWHEG/trees_powheg_fd_Mlow.root
-                                - /data/POWHEG/trees_powheg_fd_NoEvtGen.root
+                                - /home/yitao/work/alice-fast-simulation/output/trees_powheg_fd_F1-R05.root
+                                - /home/yitao/work/alice-fast-simulation/output/trees_powheg_fd_F05-R1.root
+                                - /home/yitao/work/alice-fast-simulation/output/trees_powheg_fd_F2-R1.root
+                                - /home/yitao/work/alice-fast-simulation/output/trees_powheg_fd_F1-R2.root
+                                - /home/yitao/work/alice-fast-simulation/output/trees_powheg_fd_F2-R2.root
+                                - /home/yitao/work/alice-fast-simulation/output/trees_powheg_fd_F05-R05.root
+                                - /home/yitao/work/alice-fast-simulation/output/trees_powheg_fd_Mhi.root
+                                - /home/yitao/work/alice-fast-simulation/output/trees_powheg_fd_Mlo.root
+                                - /home/yitao/work/alice-fast-simulation/output/trees_powheg_fd_NoEvtGen.root
     prior:
         activate: yes
         processor: true
@@ -219,7 +219,7 @@ categories:
                         jet_r_shape_2_6:
                             xsection_inel: [54.91, 60.69]
     tracking:
-        activate: no 
+        activate: yes 
         processor: true
         label: "tracking eff."
         correlation: "corr"
@@ -229,36 +229,37 @@ categories:
         variations:
             efficiency:
                 activate: [yes]
-                label: ["eff. down"]
+                label: ["eff. down - 0.96"]
                 diffs:
                   multi:
                     mc:
-                      unmerged_tree_dir: [[/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/TTree/vAN-20210223_ROOT6-1/pp_sim/619_20210423-1225/merged,
-                                          /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/TTree/vAN-20210223_ROOT6-1/pp_sim/619_20210423-1225/merged,
-                                          /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/TTree/vAN-20210223_ROOT6-1/pp_sim/619_20210423-1225/merged]] #list of periods
-                      pkl: [[/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prodD2H_trkeff/619_20210423-1225/pkl,
-                            /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prodD2H_trkeff/619_20210423-1225/pkl,
-                            /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prodD2H_trkeff/619_20210423-1225/pkl]] #list of periods
-                      pkl_skimmed: [[/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prodD2H_trkeff/619_20210423-1225/pklsk,
-                                    /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prodD2H_trkeff/619_20210423-1225/pklsk,
-                                    /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prodD2H_trkeff/619_20210423-1225/pklsk]] #list of periods
-                      pkl_skimmed_merge_for_ml: [[/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prodD2H_trkeff/619_20210423-1225/pklskml,
-                                                 /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prodD2H_trkeff/619_20210423-1225/pklskml,
-                                                 /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prodD2H_trkeff/619_20210423-1225/pklskml]] #list of periods
-                      pkl_skimmed_merge_for_ml_all: [/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_mc_prodD2H_mltot_trkeff]
-                      pkl_evtcounter_all: [/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_mc_prodD2H_evttot_trkeff]
+                      unmerged_tree_dir: [[/mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_TrackEff_TrackEff/TTree,
+                                          /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_TrackEff_TrackEff/TTree,
+                                          /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_TrackEff_TrackEff/TTree]] #list of periods
+                      pkl: [[/mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_TrackEff/Derived/pp_2016_sim_D2H/pkl,
+            /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_TrackEff/Derived/pp_2017_sim_D2H/pkl,
+            /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_TrackEff/Derived/pp_2018_sim_D2H/pkl]] #list of periods
+                      pkl_skimmed: [[/mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_TrackEff/Derived/pp_2016_sim_D2H/pklsk,
+                    /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_TrackEff/Derived/pp_2017_sim_D2H/pklsk,
+                    /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_TrackEff/Derived/pp_2018_sim_D2H/pklsk]] #list of periods
+                      pkl_skimmed_merge_for_ml: [[/mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_TrackEff/Derived/pp_2016_sim_D2H/pklskml,
+                                 /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_TrackEff/Derived/pp_2017_sim_D2H/pklskml,
+                                 /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_TrackEff/Derived/pp_2018_sim_D2H/pklskml]] #list of periods
+                      pkl_skimmed_merge_for_ml_all: [/mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_TrackEff/Derived/pp_mc_prodD2H_mltot]
+                      pkl_evtcounter_all: [/mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_TrackEff/Derived/pp_mc_prodD2H_evttot]
+
 
                   ml:
-                    mlplot: [/data/Derived/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/mlplot] # to be removed
-                    mlout: [/data/Derived/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/mlout] # to be removed
+                    mlplot: [/data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/593_20210223-2051/mlplot] # to be removed
+                    mlout: [/data/Derived/DsJet_pp/vAN-20210223_ROOT6-1/593_20210223-2051/mlout] # to be removed
                   mlapplication:
                     mc:
-                      pkl_skimmed_dec: [[/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prodD2H_trkeff/619_20210423-1225/pklskdec,
-                                        /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prodD2H_trkeff/619_20210423-1225/pklskdec,
-                                        /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prodD2H_trkeff/619_20210423-1225/pklskdec]] #list of periods
-                      pkl_skimmed_decmerged: [[/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prodD2H_trkeff/619_20210423-1225/pklskdecmerged,
-                                              /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prodD2H_trkeff/619_20210423-1225/pklskdecmerged,
-                                              /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prodD2H_trkeff/619_20210423-1225/pklskdecmerged]] #list of periods
+                      pkl_skimmed_dec: [[/mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_TrackEff/Derived/pp_2016_sim_D2H/pklskdec,
+                        /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_TrackEff/Derived/pp_2017_sim_D2H/pklskdec,
+                        /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_TrackEff/Derived/pp_2018_sim_D2H/pklskdec]] #list of periods
+                      pkl_skimmed_decmerged: [[/mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_TrackEff/Derived/pp_2016_sim_D2H/skpkldecmerged_D2HMB,
+                              /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_TrackEff/Derived/pp_2017_sim_D2H/skpkldecmerged_D2HMB,
+                              /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_TrackEff/Derived/pp_2018_sim_D2H/skpkldecmerged_D2HMB]] #list of periods
 
     cutvar:
         activate: yes  # High RAM consumption

@@ -7,11 +7,17 @@ rundir=$HOME/MachineLearningHEP/machine_learning_hep
 
 SCRIPT=`realpath $0`
 SCRIPTPATH=`dirname $SCRIPT`
-database=db/database_ml_parameters_DsJet_test.yml
+
 if [ -f "$2" ];then
   submission=`realpath $2`
 else
   submission=$SCRIPTPATH/db/submission_DsJet.yml
+fi
+
+if [ -f "$3" ];then
+  database=`realpath $3`
+else
+  database=$SCRIPTPATH/db/database_ml_parameters_DsJet_test.yml
 fi
 
 analysis=jet_FF
@@ -27,7 +33,7 @@ fi
 
 # Run analysis
 cd $rundir
-nice python do_entire_analysis.py -r $submission -d $SCRIPTPATH/$database -a $analysis 2>&1 | tee -a $log_name
+nice python do_entire_analysis.py -r $submission -d $database -a $analysis 2>&1 | tee -a $log_name
 
 # Clean dir by year
 exec >> $log_name
