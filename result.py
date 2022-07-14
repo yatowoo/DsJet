@@ -53,7 +53,8 @@ model_db = {
 model_plotting = ['pythia6', 'pythia8', 'pythia8_cr2']
 Z_BINNING = [0.4,0.6,0.7,0.8,0.9,1.0]
 PT_JET_BINNING = [5, 7, 15, 35]
-PT_CAND_MAX = 24
+pt_cand_l = [3, 3, 8]
+pt_cand_u = [7, 15, 24]
 N_JETBINS = 3
 fResult = TFile.Open(args.file)
 fSysematics = TFile.Open(args.sys)
@@ -179,10 +180,9 @@ for iptjet in range(N_JETBINS):
   root_objs.append(TPaveText(0.16,0.65,0.55,0.85,"NDC"))
   pave = root_objs[-1]
   pave.SetFillColor(kWhite)
-  pt_cand_u = min(pt_jet_u, PT_CAND_MAX)
   root_plot.add_text(pave, 'charged jets, anti-#it{k}_{T}, #it{R} = 0.4')
   root_plot.add_text(pave, f'{pt_jet_l} < #it{{p}}_{{T}}^{{jet ch.}} < {pt_jet_u} GeV/#it{{c}}, ' +'|#it{#eta}_{jet}| #leq 0.5')
-  root_plot.add_text(pave, f'3 < #it{{p}}_{{T}}^{{D_{{s}}}} < {pt_cand_u} GeV/#it{{c}}, ' +'|#it{y}_{D_{s}^{+}}| #leq 0.8')
+  root_plot.add_text(pave, f'{pt_cand_l[iptjet]} < #it{{p}}_{{T}}^{{D_{{s}}}} < {pt_cand_u[iptjet]} GeV/#it{{c}}, ' +'|#it{y}_{D_{s}^{+}}| #leq 0.8')
   lgd.Draw('same')
   pave.Draw("same")
   # Ratio
