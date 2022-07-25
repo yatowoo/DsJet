@@ -300,7 +300,7 @@ DsJetpp:
       FF: 0.092 # fragmentation fraction
       sigma_MB: 57.8e-3  # Minimum Bias cross section (pp) 50.87e-3 [b] (5.02?) 57.8e-3 (13?), 1 for Pb-Pb
       Taa: 1 # 23260 [b^-1] in 0-10% Pb-Pb, 3917 [b^-1] in 30-50% Pb-Pb, 1 for pp
-      BR: 2.24e-2 # branching ratio of the decay Ds->phipi * phi->K+K-
+      BR: 2.22e-2 # branching ratio of the decay Ds->phipi * phi->K+K-
       f_prompt: 0.9 # estimated fraction of prompt candidates
       bkg_data_fraction: 0.5 # fraction of real data used in the estimation
       num_steps: 400 # number of steps used in efficiency and signif. estimation
@@ -367,7 +367,7 @@ DsJetpp:
     #probcutoptimal: [0.978,0.985,0.985,0.962,0.988,0.974] #list of nbins
     #probcutoptimal: [0.9791025, 0.985, 0.976675, 0.936485, 0.97296, 0.9616025] #list of nbins #opti_1 after cutvar ±50%
     #probcutoptimal: [0.98296125, 0.985, 0.976675, 0.936485, 0.97296, 0.9616025] #list of nbins #opti_2 after cutvar ±50%
-    probcutoptimal: [0.9, 0.9, 0.9, 0.9, 0.9, 0.9] # default for systematics
+    probcutoptimal: [0.95, 0.95, 0.95, 0.95, 0.95, 0.95] # default for systematics
     #probcutoptimal: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5] #opt for fitting, sb check
     #probcutoptimal: [0, 0, 0, 0, 0, 0]
 
@@ -441,27 +441,27 @@ DsJetpp:
       mc_proc: # alternative processor output used as the analyzer input
         <<: *mc_out_default
 
-      mass_fit_lim: [1.70, 2.15] # region for the fit of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [1.72, 2.15] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
 
       # simple fitter START
       sgnfunc: [1,1,1,1, 1] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2
       bkgfunc: [2,2,2,2, 2] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5
       masspeak: 1.969
-      massmin: [1.70, 1.70, 1.70, 1.70, 1.70]
+      massmin: [1.72, 1.72, 1.72, 1.72, 1.72]
       massmax: [2.15, 2.15, 2.15, 2.15, 2.15, 2.15]
       rebin: [[6,6,6,6, 6],[6,6,6,6, 6],[6,6,6,6, 6]]
+      
       fix_mean: [false, false, false, false, false, false]
-      masspeaksec: 1.869
-
       # If SetArraySigma true: sigma_initial is taken from sigmaarray; false: sigma_initial is taken from MC
       # If SetFixGaussianSigma true: sigma fixed to sigma_initial
       SetFixGaussianSigma: [true, true, true, true, true]
       SetArraySigma: [false, false, false, false, false]
       sigmaarray: [0.011,0.008,0.008,0.011,0.012] # initial sigma
 
-      fix_meansec: [true, true, true, true, true]
-      fix_sigmasec: [true, true, true, true, true]
+      masspeaksec: 1.869
+      #fix_meansec: [true, true, true, true, true]
+      #fix_sigmasec: [true, true, true, true, true]
       sigmaarraysec: [0.008,0.008,0.008,0.008,0.008]
       width_ratio_DplusDs: 0.91
       # simple fitter END
@@ -478,7 +478,7 @@ DsJetpp:
       niterunfolding: 15
       niterunfoldingchosen: 4
 
-      branching_ratio: 2.24e-2
+      branching_ratio: 2.22e-2
       xsection_inel: 57.8
       #parameters needed for comparison with fonll (values to be checked)
       lb_branching_ratio: 0.144

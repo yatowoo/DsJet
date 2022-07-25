@@ -1,7 +1,7 @@
 categories:
     default:
         activate: no
-        processor: false
+        processor: true
         label: "default"
         correlation: "corr"
         rms: true
@@ -72,7 +72,7 @@ categories:
                         jet_FF:
                             fix_mean: [true]
             fix_sigma:
-                activate: [yes, yes]
+                activate: [no, yes]
                 label:
                     - "free sigma"
                     - "fix sigma MC"
@@ -270,7 +270,7 @@ categories:
                               /mnt/temp/OngoingAnalysis_DsJet/MCpp13TeV_DsJet_TrackEff/Derived/pp_2018_sim_D2H/skpkldecmerged_D2HMB]] #list of periods
 
     cutvar:
-        activate: yes  # High RAM consumption
+        activate: no  # High RAM consumption, jobs <= 5
         processor: true
         label: "cuts"
         correlation: "corr"
@@ -279,8 +279,9 @@ categories:
         rms_both_sides: true
         variations:
             cutvar:
-                activate: [no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, yes, yes, yes, yes, yes, no, yes, yes, yes, yes, yes]
-                 #cutvar :  [80, 79, 78, 77, 76, 75, 74, 73, 72, 71, 69, 68, 67, 66, 65, 63, 60, 55, 50, 45, 40, 35, 30, 95 , 94 , 93 , 92,  91 , 90 , 89 , 88 , 87 , 86 , 85 ]
+                #activate: [no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes]
+                activate: [no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no,  no,  no,  no,  no, no,  no,  no,  no,  no,  no,  no, no , no , no , no , yes]
+                #cutvar :  [80, 79, 78, 77, 76, 75, 74, 73, 72, 71, 69, 68, 67, 66, 65, 63, 60, 55, 50, 45, 40, 35, 30, 95 , 94 , 93 , 92,  91 , 90 , 89 , 88 , 87 , 86 , 85,  96,  97,  98,  99, 98.5]
                 label:
                     - "prob cut: 0.80"
                     - "prob cut: 0.79"
@@ -316,6 +317,11 @@ categories:
                     - "prob cut: 0.87"
                     - "prob cut: 0.86"
                     - "prob cut: 0.85"
+                    - "prob cut: 0.96"
+                    - "prob cut: 0.97"
+                    - "prob cut: 0.98"
+                    - "prob cut: 0.99"
+                    - "prob cut: 0.985"
                 diffs:
                     mlapplication:
                         probcutoptimal:
@@ -353,3 +359,8 @@ categories:
                             - [0.87, 0.87, 0.87, 0.87, 0.87, 0.87]
                             - [0.86, 0.86, 0.86, 0.86, 0.86, 0.86]
                             - [0.85, 0.85, 0.85, 0.85, 0.85, 0.85]
+                            - [0.96, 0.96, 0.96, 0.96, 0.96, 0.96]
+                            - [0.97, 0.97, 0.97, 0.97, 0.97, 0.97]
+                            - [0.98, 0.98, 0.98, 0.98, 0.98, 0.98]
+                            - [0.99, 0.99, 0.99, 0.99, 0.99, 0.99]
+                            - [0.985, 0.985, 0.985, 0.985, 0.985, 0.985]

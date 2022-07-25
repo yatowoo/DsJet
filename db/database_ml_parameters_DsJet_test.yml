@@ -300,7 +300,7 @@ DsJetpp:
       FF: 0.092 # fragmentation fraction
       sigma_MB: 57.8e-3  # Minimum Bias cross section (pp) 50.87e-3 [b] (5.02?) 57.8e-3 (13?), 1 for Pb-Pb
       Taa: 1 # 23260 [b^-1] in 0-10% Pb-Pb, 3917 [b^-1] in 30-50% Pb-Pb, 1 for pp
-      BR: 2.24e-2 # branching ratio of the decay Ds->phipi * phi->K+K-
+      BR: 2.22e-2 # branching ratio of the decay Ds->phipi * phi->K+K-
       f_prompt: 0.9 # estimated fraction of prompt candidates
       bkg_data_fraction: 0.5 # fraction of real data used in the estimation
       num_steps: 400 # number of steps used in efficiency and signif. estimation
@@ -475,7 +475,7 @@ DsJetpp:
       niterunfolding: 15
       niterunfoldingchosen: 4
 
-      branching_ratio: 2.24e-2
+      branching_ratio: 2.22e-2
       xsection_inel: 57.8
       #parameters needed for comparison with fonll (values to be checked)
       lb_branching_ratio: 0.144
