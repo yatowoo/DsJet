@@ -102,6 +102,8 @@ def process_download_single(dl_args : dict):
   """ for MP pool
   """
   job_id = dl_args.get('job_id', 0)
+  job_n = dl_args.get('job_n', 0)
+  print(f'{job_id}/{job_n} - ',end='')
   flag_debug = dl_args.get('debug', False)
   # Pipe
   if dl_args.get('stdout') is None:
@@ -225,7 +227,7 @@ class GridDownloaderManager:
     for file_id, file_single in enumerate(filelist):
       file_alien = file_single.split()[0]
       file_local = file_single.split()[1]
-      job_arguments.append({'source':file_alien, 'target':file_local,'args':'-f -retry 3', 'job_id':file_id, 'stdout': logfile, 'stderr':errfile, 'debug':self.flag_debug})
+      job_arguments.append({'source':file_alien, 'target':file_local,'args':'-f -retry 3', 'job_id':file_id, 'job_n':len(filelist), 'stdout': logfile, 'stderr':errfile, 'debug':self.flag_debug})
     # Multiprocessing
     print(f'>>> Downloading...\n>>> Log : {logfile}\n>>> Err : {errfile}')
     if self.mp_jobs < 1:
