@@ -92,7 +92,10 @@ def download_alien(source : str, target : str, args='-f', debug=False, **subproc
     target = f'file:{target}'
   # mkdir?
   cmd = ['alien_cp', args, source, target]
-  print_cmd(cmd)
+  if subproc_args.get('stdout'):
+    subproc_args['stdout'].write(' '.join(cmd) + '\n')
+  else:
+    print_cmd(cmd)
   if debug:
     cmd = ['echo'] + cmd
   subprocess.run(cmd, **subproc_args)
@@ -103,13 +106,15 @@ def process_download_single(dl_args : dict):
   """
   job_id = dl_args.get('job_id', 0)
   job_n = dl_args.get('job_n', 0)
-  print(f'{job_id}/{job_n} - ',end='')
+  job_label = '/'.join([dl_args["source"].split('/')[i] for i in [4, 5, -2]])
   flag_debug = dl_args.get('debug', False)
   # Pipe
   if dl_args.get('stdout') is None:
     logfile = subprocess.STDOUT
+    sys.stdout.write(f'{job_id}/{job_n} - {job_label}\n')
   else:
     logfile = open(dl_args.get('stdout'), 'a')
+    logfile.write(f'{job_id}/{job_n} - {job_label}\n')
   if dl_args.get('stderr') is None:
     errfile = subprocess.STDOUT
   else:
@@ -117,6 +122,8 @@ def process_download_single(dl_args : dict):
   download_alien(dl_args["source"], dl_args["target"], dl_args["args"], debug=flag_debug, stdout=logfile, stderr=errfile)
   #cmd = ['echo', f'{job_id} alien_cp {dl_args["args"]} alien://{dl_args["source"]} file:{dl_args["target"]}']
   #proc = subprocess.run(cmd, stdout=logfile, stderr=errfile)
+  if not check_local_file(dl_args["target"]) and not flag_debug:
+    logfile.write(f'[X] Fail to download {job_label} - {dl_args["target"]}\n')
 
 class GridDownloaderManager:
   """
