@@ -249,7 +249,7 @@ class GridDownloaderManager:
 if __name__ == '__main__':
   parser = argparse.ArgumentParser('AliEn grid downloader for LEGO train')
   parser.add_argument('id',type=str, help='ID of LEGO train, <ID>_DATE-TIME e.g. 706_20220720-1829')
-  parser.add_argument('-p','--local',dest='path_local', default='/data/Tree')
+  parser.add_argument('-p','--local',dest='path_local', default='.')
   parser.add_argument('--train', default='PWGHF/HF_TreeCreator',type=str, help='Train name in alitrain')
   parser.add_argument('--files', default='AnalysisResults.root')
   parser.add_argument('-i', '--overwrite', default=False, help='Ask prompt if overwrite', action='store_true')
