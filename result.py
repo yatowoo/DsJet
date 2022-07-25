@@ -59,8 +59,8 @@ N_JETBINS = 3
 fResult = TFile.Open(args.file)
 fSysematics = TFile.Open(args.sys)
 fModel = TFile.Open(args.model)
-c = TCanvas('c1','draw',2400,800)
-c.Divide(N_JETBINS,1)
+c = TCanvas('c1','draw',1200,1400)
+#c.Divide(N_JETBINS)
 
 def add_text(pave : TPaveText, s : str, color=None, size=0.04, align=11):
   text = pave.AddText(s)
@@ -151,9 +151,9 @@ for iptjet in range(N_JETBINS):
     hSyserr.SetPointY(ibin, hResult.GetBinContent(ibinResult))
   #hStaterr = draw_systematics(hResult, hSyserr)
   # canvas
-  root_objs.append(root_plot.NewRatioPads(c.cd(iptjet+1), f'padz_ptjet_{pt_jet_l:.0f}_{pt_jet_u:.0f}', f'padratio_ptjet_{pt_jet_l:.0f}_{pt_jet_u:.0f}', gap=0.0))
+  root_objs.append(root_plot.NewRatioPads(c.cd(), f'padz_ptjet_{pt_jet_l:.0f}_{pt_jet_u:.0f}', f'padratio_ptjet_{pt_jet_l:.0f}_{pt_jet_u:.0f}', gap=0.0))
   pMain, pRatio = root_objs[-1]
-  c.cd(iptjet+1)
+  c.cd()
   pMain.SetBottomMargin(0.0)
   pRatio.SetGrid(True)
   pRatio.SetTopMargin(0.0)
@@ -163,14 +163,16 @@ for iptjet in range(N_JETBINS):
   hSyserr.GetXaxis().SetRangeUser(Z_BINNING[0],Z_BINNING[-1])
   hSyserr.GetYaxis().SetRangeUser(0.1, 2. * hResult.GetMaximum())
   hResult.Draw('same')
+  hSyserr.GetYaxis().SetTitleOffset(0.8)
   # Main
     # Legend
-  dsjetTxt = newObj(TPaveText(0.58,0.88,0.95,0.92,"NDC"))
+  dsjetTxt = newObj(TPaveText(0.63,0.88,0.95,0.92,"NDC"))
   dsjetTxt.SetFillColor(kWhite)
   root_plot.add_text(dsjetTxt, 'D_{s}^{+}-tagged jets')
   dsjetTxt.Draw('same')
-  lgd = newObj(TLegend(0.58,0.68,0.95,0.88))
-  lgd.AddEntry(hSyserr,'data')
+  lgd = newObj(TLegend(0.63,0.63,0.95,0.88))
+  lgd.SetTextSize(0.033)
+  lgd.AddEntry(hSyserr,'data, pp #sqrt{#it{s}} = 13 TeV')
   for model in model_plotting:
     model_vars = model_db[model]
     hModel = draw_model(model, pt_jet_l, pt_jet_u)
@@ -210,7 +212,7 @@ for iptjet in range(N_JETBINS):
       hRatio.GetYaxis().SetRangeUser(ymin, ymax)
       hRatio.SetTitleSize(0.15,"xy")
       hRatio.GetXaxis().SetTitleOffset(0.8)
-      hRatio.GetYaxis().SetTitleOffset(0.5)
+      hRatio.GetYaxis().SetTitleOffset(0.45)
       hRatio.GetXaxis().SetLabelSize(0.13)
       hRatio.GetYaxis().SetLabelSize(0.13)
       hRatio.Draw('E0')
@@ -218,6 +220,8 @@ for iptjet in range(N_JETBINS):
       hRatio.Draw('same')
   hRatioPrimary.GetYaxis().SetRangeUser(ymin, ymax)
   hResult.GetXaxis().SetLabelSize(0.0)
+  c.cd()
+  ROOT.gPad.SaveAs(f'DsJetFF_result_pt_jet_{pt_jet_l:.0f}_{pt_jet_u:.0f}.pdf')
 
-c.SaveAs(args.output)
+#c.SaveAs(args.output)
 cmd = input('<exit>')
