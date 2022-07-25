@@ -131,6 +131,9 @@ class GridDownloaderManager:
     self.flag_debug = gdm_args.get('debug',False)
     self.flag_overwrite = gdm_args.get('overwrite',False)
     self.mp_jobs = gdm_args.get('mp_jobs', -1)
+    self.child_list = gdm_args.get('child_list', None)
+    if self.child_list is not None:
+      self.child_list = [ f'child_{i}' for i in self.child_list]
   def read_env(self, path_envfile=None) -> dict:
     """
     """
@@ -237,7 +240,10 @@ class GridDownloaderManager:
   def start(self):
     self.get_env()
     self.generate_path()
-    for child_id,cfg in self.child_conf.items():
+    # Select children
+    if self.child_list is None:
+      self.child_list = self.child_conf.keys() # all
+    for child_id in self.child_list:
       self.process_child(child_id)
 
 if __name__ == '__main__':
@@ -249,11 +255,13 @@ if __name__ == '__main__':
   parser.add_argument('-i', '--overwrite', default=False, help='Ask prompt if overwrite', action='store_true')
   parser.add_argument('-v', '--verbose', default=False, help='Print more outputs', action='store_true')
   parser.add_argument('-j', '--jobs', default=-1, type=int, help='N jobs for multiprocessing')
+  parser.add_argument('-c', '--children', nargs='+', help='Specify children list to download')
   # Save dir.: <path_local>[/<AliPhysics_tag>/<data_or_mc_production>/<train_name>/unmerged/child_<ID>]
   # Job dir.: [RunNumber]/[JobID]
   args, unknown =  parser.parse_known_args()
   if unknown:
     print(f'[+] Unknown arguments : {unknown}')
-  adm = GridDownloaderManager(args.train, args.id, args.path_local, args.files.split(','), overwrite=args.overwrite, debug=args.verbose, mp_jobs=args.jobs) # Alien Download Manager
+  adm = GridDownloaderManager(args.train, args.id, args.path_local, args.files.split(','), overwrite=args.overwrite, debug=args.verbose, mp_jobs=args.jobs, child_list=args.children) # Alien Download Manager
   # Debug
+  #print(args)
   adm.start()
