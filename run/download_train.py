@@ -160,11 +160,10 @@ def listener_mp_log(q, logfile):
   """Receive messages from mp.Pool, write to log file
   """
   n_done, n_ok, n_fail = 0, 0, 0
-  sys.stdout.write(f'[-] Listener MQ - started\n')
+  print(f'[-] Listener MQ - started\n')
   with open(logfile, 'w') as f:
     while True:
       m = q.get()
-      sys.stdout.write(str(m)+'\n') # DEBUG
       if m.lower() == 'kill':
         f.write('[-] End - MP job\n')
         break
@@ -173,9 +172,9 @@ def listener_mp_log(q, logfile):
       elif m.lower().find('fail') > -1:
         n_fail += 1
       n_done += 1
-      f.wirte(str(m) + '\n')
+      f.write(str(m) + '\n')
       f.flush()
-  sys.stdout.write(f'[-] Listener MQ - {n_done}/{n_ok}/{n_fail} (Done/OK/FAIL)\n')
+  print(f'[-] Listener MQ - {n_done}/{n_ok}/{n_fail} (Done/OK/FAIL)\n')
 
 class GridDownloaderManager:
   """
@@ -303,7 +302,7 @@ class GridDownloaderManager:
     for file_id, file_single in enumerate(filelist):
       file_alien = file_single.split()[0]
       file_local = file_single.split()[1]
-      job_arguments.append({'source':file_alien, 'target':file_local,'args':'-f -retry 3', 'job_id':file_id, 'job_n':nfiles_alien, 'debug':self.flag_debug, 'stdout':logfile, 'stderr':errfile})
+      job_arguments.append({'source':file_alien, 'target':file_local,'args':'-f -retry 3', 'job_id':file_id, 'job_n':nfiles_alien, 'debug':self.flag_debug, 'log_mq':log_mq})
     f_filelist.close()
     # Start multithreading
     print(f'>>> Downloading...\n>>> Log : {logfile}\n>>> Err : {errfile}')
