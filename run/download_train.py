@@ -46,6 +46,10 @@ def query_yes_no(question, default="yes"):
 def print_cmd(cmd : list):
   print(' '.join(cmd))
 
+def repr_ratio(n_numerator : int, n_denominator : int):
+  ratio = 1.0 * n_numerator / n_denominator
+  return f'{n_numerator}/{n_denominator} ({ratio*100.:.1f}%)'
+
 def check_alien_file(path_raw):
   """
   """
@@ -72,7 +76,15 @@ def find_alien(path_dir, pattern='', args='', **subproc_args):
   print_cmd(cmd)
   proc = subprocess.run(cmd, stdout=subprocess.PIPE, **subproc_args)
   ret = proc.stdout.decode('utf-8')
-  return ret.split('\n')
+  return ret.split()
+
+def find_local(path_dir, pattern_name='*.root',typefile='f',**find_args):
+  """Find files with name pattern
+  """
+  cmd = ['find',path_dir, '-name',pattern_name]
+  print_cmd(cmd)
+  proc = subprocess.run(cmd, stdout=subprocess.PIPE)
+  return proc.stdout.decode('utf-8').split()
 
 def ls_alien(path_dir, pattern=''):
   """List files under Alien directory
@@ -80,7 +92,7 @@ def ls_alien(path_dir, pattern=''):
   cmd = ['alien_ls', path_alien(path_dir)]
   proc = subprocess.run(cmd, stdout=subprocess.PIPE)
   ret = proc.stdout.decode('utf-8')
-  job_list = [job_dir for job_dir in ret.split('\n') if job_dir.find(pattern) > -1]
+  job_list = [job_dir for job_dir in ret.split() if job_dir.find(pattern) > -1]
   return job_list
 
 def download_alien(source : str, target : str, args='-f', debug=False, **subproc_args):
@@ -109,6 +121,7 @@ def process_download_single(dl_args : dict):
   job_label = '/'.join([dl_args["source"].split('/')[i] for i in [4, 5, -2]])
   flag_debug = dl_args.get('debug', False)
   # Pipe
+    # TODO: send message to Queue
   if dl_args.get('stdout') is None:
     logfile = subprocess.STDOUT
     sys.stdout.write(f'{job_id}/{job_n} - {job_label}\n')
@@ -124,6 +137,12 @@ def process_download_single(dl_args : dict):
   #proc = subprocess.run(cmd, stdout=logfile, stderr=errfile)
   if not check_local_file(dl_args["target"]) and not flag_debug:
     logfile.write(f'[X] Fail to download {job_label} - {dl_args["target"]}\n')
+  else:
+    logfile.write(f'[-] Done - {job_label}')
+  if getattr(logfile,'close'):
+    logfile.close()
+  if getattr(errfile, 'close'):
+    errfile.close()
 
 class GridDownloaderManager:
   """
@@ -220,15 +239,26 @@ class GridDownloaderManager:
             local_file_path = cfg['path_local'] + f'/{run}/{subjob}'
             os.system('mkdir -p ' + local_file_path)
             fout.write(f'{fname} {local_file_path}/{file_name}\n')
+      self.child_conf[child_id]['filelist_n'] = n_files
       print(f' > N files found = {n_files} ({repr(self.file_list)})')
       print(f' > Example : {fname} {local_file_path}')
+  def validate_child(self, child_id) -> int:
+    """
+    """
+    cfg = self.child_conf[child_id]
+    files_local = find_local(cfg['path_local'],pattern_name='*.root')
+    nfiles_local = len(files_local)
+    return nfiles_local
   def process_child(self, child_id) -> bool:
     """
     """
     cfg = self.child_conf[child_id]
-    filelist = open(cfg['filelist'],'r').readlines()
-    print(f'[-] Processing {child_id} - {len(filelist)} files')
-    print(f'>>> Local path - {cfg["path_local"]}')
+    f_filelist = open(cfg['filelist'],'r')
+    filelist = f_filelist.readlines()
+    nfiles_alien = len(filelist)
+    nfiles_local = self.validate_child(child_id)
+    print(f'[-] Processing {child_id} - {nfiles_alien} files')
+    print(f'>>> Local - {repr_ratio(nfiles_local, nfiles_alien)} files found - {cfg["path_local"]}')
     # Arguments for each job
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     logfile = f'{cfg["path_local"]}/download_train_stdout_{child_id}_{timestamp}.log'
@@ -237,13 +267,26 @@ class GridDownloaderManager:
     for file_id, file_single in enumerate(filelist):
       file_alien = file_single.split()[0]
       file_local = file_single.split()[1]
-      job_arguments.append({'source':file_alien, 'target':file_local,'args':'-f -retry 3', 'job_id':file_id, 'job_n':len(filelist), 'stdout': logfile, 'stderr':errfile, 'debug':self.flag_debug})
+      job_arguments.append({'source':file_alien, 'target':file_local,'args':'-f -retry 3', 'job_id':file_id, 'job_n':nfiles_alien, 'stdout': logfile, 'stderr':errfile, 'debug':self.flag_debug})
+    f_filelist.close()
     # Multiprocessing
     print(f'>>> Downloading...\n>>> Log : {logfile}\n>>> Err : {errfile}')
     if self.mp_jobs < 1:
       self.mp_jobs = os.cpu_count()
     with mp.Pool(processes=self.mp_jobs) as mpPool:
       mpPool.map(process_download_single, job_arguments)
+    # Validation
+      # TODO: integrity by size / cksum / md5
+    files_local = find_local(cfg['path_local'],pattern_name='*.root')
+    nfiles_local = len(files_local)
+    files_fail = [] # grep / readlines by open
+    with open(logfile,'r') as f_log:
+      for l in f_log.readlines():
+        if l.upper().find('FAIL') > -1:
+          files_fail.append(l)
+    nfiles_fail = len(files_fail)
+    print(f'>>> Validation : OK - {repr_ratio(nfiles_local, nfiles_alien)}, FAIL - {nfiles_fail}, Done - {repr_ratio(nfiles_local+nfiles_fail, nfiles_alien)}')
+    return True
   def start(self):
     self.get_env()
     self.generate_path()
