@@ -156,25 +156,33 @@ def process_download_single(dl_args : dict):
     logfile.write(ret)
   return status_ok
 
-def listener_mp_log(q, logfile):
+def listener_mp_log(q, logfile, n_job = 100, n_step=1):
   """Receive messages from mp.Pool, write to log file
   """
   n_done, n_ok, n_fail = 0, 0, 0
-  print(f'[-] Listener MQ - started\n')
+  flag_progress = False
+  print(f'>>> Listener MQ - started')
   with open(logfile, 'w') as f:
     while True:
       m = q.get()
       if m.lower() == 'kill':
-        f.write('[-] End - MP job\n')
+        f.write('[-] Listener killed - MP job\n')
         break
-      elif m.lower().find('ok') > -1:
+      elif m.lower().find('[-] ok') > -1:
         n_ok += 1
+        n_done += 1
+        flag_progress = True
       elif m.lower().find('fail') > -1:
         n_fail += 1
-      n_done += 1
+        n_done += 1
+        flag_progress = True
       f.write(str(m) + '\n')
       f.flush()
-  print(f'[-] Listener MQ - {n_done}/{n_ok}/{n_fail} (Done/OK/FAIL)\n')
+        # Progress report
+      if flag_progress and n_done % n_step == 0:
+        print(f'>>> Progress : {n_done}/{n_job} - OK = {n_ok}, FAIL = {n_fail}')
+        flag_progress = False
+  print(f'[-] Listener MQ - {n_done}/{n_ok}/{n_fail} (Done/OK/FAIL)')
 
 class GridDownloaderManager:
   """
@@ -306,10 +314,11 @@ class GridDownloaderManager:
     f_filelist.close()
     # Start multithreading
     print(f'>>> Downloading...\n>>> Log : {logfile}\n>>> Err : {errfile}')
+    n_step_report = 20
     if self.mp_jobs < 1:
       self.mp_jobs = os.cpu_count()
     with mp.Pool(processes=self.mp_jobs) as mpPool:
-      listener = mpPool.apply_async(listener_mp_log, (log_mq, logfile,))
+      listener = mpPool.apply_async(listener_mp_log, (log_mq, logfile, nfiles_alien, n_step_report,))
       jobs = mpPool.map(process_download_single, job_arguments)
       log_mq.put('kill')
     # Validation
