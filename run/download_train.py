@@ -4,8 +4,10 @@
 # Refer: https://github.com/ginnocen/MachineLearningHEP/tree/master/cplusutilities
 # Env: AliPhysics or any modules with JAliEn commands alien_cp/ls
 # Preparation: alien-token-init [user]
-# Parameters: train_id, top_save_dir, train_name=PWGHF/HF_TreeCreator
-
+# Parameters and basic usage: (see help)
+#
+# Example: ./download_trian.py 705_20220720-1829 -p /mnt/temp/TTree/D0DsLckINT7HighMultCalo_withJets -j 20
+#
 # AliEn path:
 # - MC: /alice/sim/2020/LHC20f4c/264347/AOD235/PWGHF/HF_TreeCreator/706_20220720-1829_child_1/AOD/001/AnalysisResults.root
 # - Data: /alice/data/2018/LHC18e/000286937/pass1/AOD264/PWGHF/HF_TreeCreator/705_20220720-1829_child_2/AOD/001/AnalysisResults.root
@@ -190,7 +192,21 @@ def listener_mp_log(q, logfile, n_job = 100, n_step=1, n_seconds=10):
   print(f'[-] Listener MQ - {n_done}/{n_ok}/{n_fail} (Done/OK/FAIL)')
 
 class GridDownloaderManager:
-  """
+  """Download outputs files from AliEn grid (by LEGO train)
+  
+  Parameters:
+  - train_id (required, e.g. 708_20220723-0034)
+  - train_name (str, Default: PWGHF/HF_TreeCreator)
+  - path_local (str, Default: . )
+  - file_list (list, Default: ['AnalysisResults.root'])
+  
+  Options: (**gdm_args)
+  - child_list: [int], selected child id (Default: <all>)
+  - debug: print verbose info (echo alien_cp command)
+  - overwrite: bool, generate new env.sh and filelist (Default: false)
+  - mp_jobs: int, number of multiple processes (Default: n_cpu)
+  - mp_report_step: int, monitor report progress per N jobs (Default: 20) 
+  - mp_report_dt: int, monitor report progress per N seconds (Default: 30)
   """
   def __init__(self, train_name, train_id, path_local, file_list, **gdm_args) -> None:
     self.train_name = train_name
@@ -350,15 +366,17 @@ class GridDownloaderManager:
       self.process_child(child_id)
 
 if __name__ == '__main__':
-  parser = argparse.ArgumentParser('AliEn grid downloader for LEGO train')
-  parser.add_argument('id',type=str, help='ID of LEGO train, <ID>_DATE-TIME e.g. 706_20220720-1829')
-  parser.add_argument('-p','--local',dest='path_local', default='.')
+  parser = argparse.ArgumentParser(
+    description='AliEn grid downloader for LEGO train', epilog='Train configuration: /alice/cern.ch/user/a/alitrain/<train_name>/<train_id>[_child_N]/env.sh --- Save path: <PATH_LOCAL>/<ALIPHYSICS_TAG>/pp_[data|sim]/<TRAIN_ID>/unmerged/child_<n>/<run_number>/<subjob>/AnalysisResults.root',
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+  parser.add_argument('train_id',type=str, help='ID of LEGO train, <ID>_DATE-TIME e.g. 706_20220720-1829')
+  parser.add_argument('-p','--local',dest='path_local', default='.', help='Target path in local disk')
   parser.add_argument('--train', default='PWGHF/HF_TreeCreator',type=str, help='Train name in alitrain')
-  parser.add_argument('--files', default='AnalysisResults.root')
+  parser.add_argument('--files', default='AnalysisResults.root', help='Specify output filename(s) to download, split by comma <,>')
   parser.add_argument('-i', '--overwrite', default=False, help='Ask prompt if overwrite', action='store_true')
   parser.add_argument('-v', '--verbose', default=False, help='Print more outputs', action='store_true')
-  parser.add_argument('-j', '--jobs', default=-1, type=int, help='N jobs for multiprocessing')
-  parser.add_argument('-c', '--children', nargs='+', help='Specify children list to download')
+  parser.add_argument('-j', '--jobs', default=1, type=int, help='N jobs for multiprocessing')
+  parser.add_argument('-c', '--children', nargs='+', help='Specify children list to download, None is ALL.')
   parser.add_argument('--step', type=int, default=20, help='Specify progress report per N jobs')
   parser.add_argument('--dt', type=int, default=30, help='Specify progress report per N seconds')
   # Save dir.: <path_local>[/<AliPhysics_tag>/<data_or_mc_production>/<train_name>/unmerged/child_<ID>]
@@ -366,7 +384,7 @@ if __name__ == '__main__':
   args, unknown =  parser.parse_known_args()
   if unknown:
     print(f'[+] Unknown arguments : {unknown}')
-  adm = GridDownloaderManager(args.train, args.id, args.path_local, args.files.split(','), overwrite=args.overwrite, debug=args.verbose, mp_jobs=args.jobs, child_list=args.children, mp_report_step=args.step, mp_report_dt=args.dt) # Alien Download Manager
+  adm = GridDownloaderManager(args.train, args.train_id, args.path_local, args.files.split(','), overwrite=args.overwrite, debug=args.verbose, mp_jobs=args.jobs, child_list=args.children, mp_report_step=args.step, mp_report_dt=args.dt) # Alien Download Manager
   # Debug
   #print(args)
   adm.start()
