@@ -104,13 +104,22 @@ def download_alien(source : str, target : str, args='-f', debug=False, **subproc
     target = f'file:{target}'
   # mkdir?
   cmd = ['alien_cp', args, source, target]
-  if subproc_args.get('stdout'):
-    subproc_args['stdout'].write(' '.join(cmd) + '\n')
-  else:
+  # Pipe
+  ret = ' '.join(cmd) + '\n'
+  stdout = subproc_args.get('stdout', None)
+  stderr = subproc_args.get('stderr', None)
+  if not stdout:
     print_cmd(cmd)
+  elif stdout != subprocess.PIPE:
+    stdout.write(ret)
   if debug:
     cmd = ['echo'] + cmd
-  subprocess.run(cmd, **subproc_args)
+  proc = subprocess.run(cmd, **subproc_args)
+  if stdout == subprocess.PIPE:
+    ret = ret + proc.stdout.decode('utf-8')
+  if stderr == subprocess.PIPE:
+    ret = ret + proc.stderr.decode('utf-8')
+  return ret
   # exception
 
 def process_download_single(dl_args : dict):
@@ -122,27 +131,51 @@ def process_download_single(dl_args : dict):
   flag_debug = dl_args.get('debug', False)
   # Pipe
     # TODO: send message to Queue
-  if dl_args.get('stdout') is None:
-    logfile = subprocess.STDOUT
-    sys.stdout.write(f'{job_id}/{job_n} - {job_label}\n')
+  log_mq = dl_args.get('log_mq', None)
+  logfile = dl_args.get('stdout', None)
+  msg = f'{job_id}/{job_n} - {job_label}'
+  if log_mq:
+    log_mq.put(msg)
+  elif logfile is None:
+    logfile = sys.stdout
+    logfile.write(msg + '\n')
   else:
-    logfile = open(dl_args.get('stdout'), 'a')
-    logfile.write(f'{job_id}/{job_n} - {job_label}\n')
-  if dl_args.get('stderr') is None:
-    errfile = subprocess.STDOUT
-  else:
-    errfile = open(dl_args.get('stderr'), 'a')
-  download_alien(dl_args["source"], dl_args["target"], dl_args["args"], debug=flag_debug, stdout=logfile, stderr=errfile)
-  #cmd = ['echo', f'{job_id} alien_cp {dl_args["args"]} alien://{dl_args["source"]} file:{dl_args["target"]}']
-  #proc = subprocess.run(cmd, stdout=logfile, stderr=errfile)
+    logfile = open(logfile, 'a')
+    logfile.write(msg + '\n')
+  ret = download_alien(dl_args["source"], dl_args["target"], dl_args["args"], debug=flag_debug, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  status_ok = None
   if not check_local_file(dl_args["target"]) and not flag_debug:
-    logfile.write(f'[X] Fail to download {job_label} - {dl_args["target"]}\n')
+    ret = ret + f'[X] Fail to download {job_label} - {dl_args["target"]}\n'
+    status_ok = False
   else:
-    logfile.write(f'[-] Done - {job_label}')
-  if getattr(logfile,'close'):
-    logfile.close()
-  if getattr(errfile, 'close'):
-    errfile.close()
+    ret = ret + f'[-] OK - {job_label}\n'
+    status_ok = True
+  if log_mq:
+    log_mq.put(ret)
+  else:
+    logfile.write(ret)
+  return status_ok
+
+def listener_mp_log(q, logfile):
+  """Receive messages from mp.Pool, write to log file
+  """
+  n_done, n_ok, n_fail = 0, 0, 0
+  sys.stdout.write(f'[-] Listener MQ - started\n')
+  with open(logfile, 'w') as f:
+    while True:
+      m = q.get()
+      sys.stdout.write(str(m)+'\n') # DEBUG
+      if m.lower() == 'kill':
+        f.write('[-] End - MP job\n')
+        break
+      elif m.lower().find('ok') > -1:
+        n_ok += 1
+      elif m.lower().find('fail') > -1:
+        n_fail += 1
+      n_done += 1
+      f.wirte(str(m) + '\n')
+      f.flush()
+  sys.stdout.write(f'[-] Listener MQ - {n_done}/{n_ok}/{n_fail} (Done/OK/FAIL)\n')
 
 class GridDownloaderManager:
   """
@@ -259,6 +292,9 @@ class GridDownloaderManager:
     nfiles_local = self.validate_child(child_id)
     print(f'[-] Processing {child_id} - {nfiles_alien} files')
     print(f'>>> Local - {repr_ratio(nfiles_local, nfiles_alien)} files found - {cfg["path_local"]}')
+    # Multiprocessing
+    mgr = mp.Manager()
+    log_mq = mgr.Queue()
     # Arguments for each job
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     logfile = f'{cfg["path_local"]}/download_train_stdout_{child_id}_{timestamp}.log'
@@ -267,14 +303,16 @@ class GridDownloaderManager:
     for file_id, file_single in enumerate(filelist):
       file_alien = file_single.split()[0]
       file_local = file_single.split()[1]
-      job_arguments.append({'source':file_alien, 'target':file_local,'args':'-f -retry 3', 'job_id':file_id, 'job_n':nfiles_alien, 'stdout': logfile, 'stderr':errfile, 'debug':self.flag_debug})
+      job_arguments.append({'source':file_alien, 'target':file_local,'args':'-f -retry 3', 'job_id':file_id, 'job_n':nfiles_alien, 'debug':self.flag_debug, 'stdout':logfile, 'stderr':errfile})
     f_filelist.close()
-    # Multiprocessing
+    # Start multithreading
     print(f'>>> Downloading...\n>>> Log : {logfile}\n>>> Err : {errfile}')
     if self.mp_jobs < 1:
       self.mp_jobs = os.cpu_count()
     with mp.Pool(processes=self.mp_jobs) as mpPool:
-      mpPool.map(process_download_single, job_arguments)
+      listener = mpPool.apply_async(listener_mp_log, (log_mq, logfile,))
+      jobs = mpPool.map(process_download_single, job_arguments)
+      log_mq.put('kill')
     # Validation
       # TODO: integrity by size / cksum / md5
     files_local = find_local(cfg['path_local'],pattern_name='*.root')
