@@ -163,8 +163,8 @@ def listener_mp_log(q, logfile, n_job = 100, n_step=1, n_seconds=10):
   """
   n_done, n_ok, n_fail = 0, 0, 0
   flag_progress = False
-  print(f'>>> Listener MQ - started\n>>> to report per {n_step} jobs or{n_seconds} seconds')
-  time_start = int(time.process_time())
+  print(f'>>> Listener MQ - started\n>>> to report per {n_step} jobs or {n_seconds} seconds')
+  time_start = int(time.time())
   time_report = time_start
   with open(logfile, 'w') as f:
     while True:
@@ -184,7 +184,7 @@ def listener_mp_log(q, logfile, n_job = 100, n_step=1, n_seconds=10):
       f.flush()
       # Progress report
       flag_progress &= (n_done % n_step == 0)
-      dt = int(time.process_time()) - time_start
+      dt = int(time.time()) - time_start
       if flag_progress or (dt - time_report > n_seconds):
         time_report = dt
         print(f'>>> Progress : {n_done}/{n_job} - OK = {repr_ratio(n_ok,n_job)}, FAIL = {n_fail} - Time elapsed : {dt}s')
