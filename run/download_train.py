@@ -16,6 +16,7 @@
 
 import os, sys
 import datetime
+import time
 import subprocess
 import multiprocessing as mp
 import argparse
@@ -130,7 +131,6 @@ def process_download_single(dl_args : dict):
   job_label = '/'.join([dl_args["source"].split('/')[i] for i in [4, 5, -2]])
   flag_debug = dl_args.get('debug', False)
   # Pipe
-    # TODO: send message to Queue
   log_mq = dl_args.get('log_mq', None)
   logfile = dl_args.get('stdout', None)
   msg = f'{job_id}/{job_n} - {job_label}'
@@ -156,12 +156,14 @@ def process_download_single(dl_args : dict):
     logfile.write(ret)
   return status_ok
 
-def listener_mp_log(q, logfile, n_job = 100, n_step=1):
+def listener_mp_log(q, logfile, n_job = 100, n_step=1, n_seconds=10):
   """Receive messages from mp.Pool, write to log file
   """
   n_done, n_ok, n_fail = 0, 0, 0
   flag_progress = False
-  print(f'>>> Listener MQ - started')
+  print(f'>>> Listener MQ - started\n>>> to report per {n_step} jobs or{n_seconds} seconds')
+  time_start = int(time.process_time())
+  time_report = time_start
   with open(logfile, 'w') as f:
     while True:
       m = q.get()
@@ -178,9 +180,12 @@ def listener_mp_log(q, logfile, n_job = 100, n_step=1):
         flag_progress = True
       f.write(str(m) + '\n')
       f.flush()
-        # Progress report
-      if flag_progress and n_done % n_step == 0:
-        print(f'>>> Progress : {n_done}/{n_job} - OK = {n_ok}, FAIL = {n_fail}')
+      # Progress report
+      flag_progress &= (n_done % n_step == 0)
+      dt = int(time.process_time()) - time_start
+      if flag_progress or (dt - time_report > n_seconds):
+        time_report = dt
+        print(f'>>> Progress : {n_done}/{n_job} - OK = {repr_ratio(n_ok,n_job)}, FAIL = {n_fail} - Time elapsed : {dt}s')
         flag_progress = False
   print(f'[-] Listener MQ - {n_done}/{n_ok}/{n_fail} (Done/OK/FAIL)')
 
@@ -197,6 +202,8 @@ class GridDownloaderManager:
     self.flag_debug = gdm_args.get('debug',False)
     self.flag_overwrite = gdm_args.get('overwrite',False)
     self.mp_jobs = gdm_args.get('mp_jobs', -1)
+    self.mp_report_step = gdm_args.get('mp_report_step', 20)
+    self.mp_report_dt = gdm_args.get('mp_report_dt', 30) # per second
     self.child_list = gdm_args.get('child_list', None)
     if self.child_list is not None:
       self.child_list = [ f'child_{i}' for i in self.child_list]
@@ -314,13 +321,13 @@ class GridDownloaderManager:
     f_filelist.close()
     # Start multithreading
     print(f'>>> Downloading...\n>>> Log : {logfile}\n>>> Err : {errfile}')
-    n_step_report = 20
     if self.mp_jobs < 1:
       self.mp_jobs = os.cpu_count()
     with mp.Pool(processes=self.mp_jobs) as mpPool:
-      listener = mpPool.apply_async(listener_mp_log, (log_mq, logfile, nfiles_alien, n_step_report,))
+      listener = mpPool.apply_async(listener_mp_log, (log_mq, logfile, nfiles_alien, self.mp_report_step, self.mp_report_dt,))
       jobs = mpPool.map(process_download_single, job_arguments)
       log_mq.put('kill')
+      listener.get() # clear MQ
     # Validation
       # TODO: integrity by size / cksum / md5
     files_local = find_local(cfg['path_local'],pattern_name='*.root')
@@ -352,12 +359,14 @@ if __name__ == '__main__':
   parser.add_argument('-v', '--verbose', default=False, help='Print more outputs', action='store_true')
   parser.add_argument('-j', '--jobs', default=-1, type=int, help='N jobs for multiprocessing')
   parser.add_argument('-c', '--children', nargs='+', help='Specify children list to download')
+  parser.add_argument('--step', type=int, default=20, help='Specify progress report per N jobs')
+  parser.add_argument('--dt', type=int, default=30, help='Specify progress report per N seconds')
   # Save dir.: <path_local>[/<AliPhysics_tag>/<data_or_mc_production>/<train_name>/unmerged/child_<ID>]
   # Job dir.: [RunNumber]/[JobID]
   args, unknown =  parser.parse_known_args()
   if unknown:
     print(f'[+] Unknown arguments : {unknown}')
-  adm = GridDownloaderManager(args.train, args.id, args.path_local, args.files.split(','), overwrite=args.overwrite, debug=args.verbose, mp_jobs=args.jobs, child_list=args.children) # Alien Download Manager
+  adm = GridDownloaderManager(args.train, args.id, args.path_local, args.files.split(','), overwrite=args.overwrite, debug=args.verbose, mp_jobs=args.jobs, child_list=args.children, mp_report_step=args.step, mp_report_dt=args.dt) # Alien Download Manager
   # Debug
   #print(args)
   adm.start()
