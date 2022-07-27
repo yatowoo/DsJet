@@ -434,7 +434,7 @@ class GridDownloaderManager:
     # Multiprocessing
     mgr = mp.Manager()
     log_mq = mgr.Queue()
-    mpPool = mp.Pool(processes=self.mp_jobs)
+    mpPool = mp.Pool(processes=self.mp_jobs+1) # Extra 1 job for listener
     # Log
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     log_prefix = 'download_train'
@@ -444,7 +444,8 @@ class GridDownloaderManager:
     listener = mpPool.apply_async(listener_mp_log, (log_mq, logfile, nfiles_alien, self.mp_report_step, self.mp_report_dt,))
     # Start multithreading
       # Validation
-    print(f'>>> Validating...\n>>> Log : {os.path.realpath(logfile)}')
+    print(f'>>> Log : {os.path.realpath(logfile)}')
+    print(f'>>> Preparing...')
     job_arguments = []
     file_size_new = 0
     for file_id, file_single in enumerate(filelist):
@@ -461,20 +462,30 @@ class GridDownloaderManager:
     jobs = mpPool.map(process_download_single, job_arguments)
     log_mq.put('kill')
     listener.get() # clear MQ
+    # Validation
+      # TODO: integrity by size / cksum / md5
+    print(f'>>> Validating...')
+    files_fail = []
+    nfiles_local = 0
+    file_size_local = 0
+    file_size_missing = 0
+    file_size_alien = 0
+    n_files_ok = 0
+    for entry in filelist:
+      file_size_alien += entry['size']
+      if self.validate_file(entry, log_mq):
+        file_size_local += entry['size']
+        n_files_ok += 1
+        continue
+      file_size_missing += entry['size']
+      files_fail.append(entry)
+    nfiles_fail = len(files_fail)
+    print(f'>>> Summary : {repr_size(file_size_new - file_size_missing)} downloaded in this run')
+    print(f'>>> - Total {repr_ratio(n_files_ok, nfiles_alien)}, size: {file_size_local/(1024**3):.3f} / {repr_size(file_size_alien)}')
+    print(f'>>> - Missing -  {nfiles_fail} files ({repr_size(file_size_missing)})')
     # End - multiprocessing
     mpPool.close()
     mpPool.join()
-    # Validation
-      # TODO: integrity by size / cksum / md5
-    files_local = find_local(cfg['path_local'],pattern_name='*.root').split()
-    nfiles_local = len(files_local)
-    files_fail = [] # grep / readlines by open
-    with open(logfile,'r') as f_log:
-      for l in f_log.readlines():
-        if l.upper().find('FAIL') > -1:
-          files_fail.append(l)
-    nfiles_fail = len(files_fail)
-    print(f'>>> Validation : OK - {repr_ratio(nfiles_local, nfiles_alien)}, FAIL - {nfiles_fail}, Done - {repr_ratio(nfiles_local+nfiles_fail, nfiles_alien)}')
     return True
   def start(self):
     self.get_env()
