@@ -59,10 +59,6 @@ def repr_ratio(n_numerator : int, n_denominator : int):
 def repr_size(n_bytes : int):
   return f'{n_bytes/(1024**3):.3f} GB'
 
-def check_alien_file(path_raw):
-  """
-  """
-
 def check_local_file(path_raw, overwrite=False):
   if not os.path.exists(path_raw):
     return False
@@ -152,15 +148,15 @@ def process_download_single(dl_args : dict):
   ret = download_alien(dl_args["source"], dl_args["target"], dl_args["args"], debug=flag_debug, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   status_ok = None
   if not check_local_file(dl_args["target"]) and not flag_debug:
-    ret = ret + f'[X] Fail to download {job_label} - {dl_args["target"]}\n'
+    ret = ret + f'[X] Fail to download {job_label} - {dl_args["target"]}'
     status_ok = False
   else:
-    ret = ret + f'[-] OK - {job_label}\n'
+    ret = ret + f'[-] OK - {job_label}'
     status_ok = True
   if log_mq:
     log_mq.put(ret)
   else:
-    logfile.write(ret)
+    logfile.write(ret + '\n')
   return status_ok
 
 def listener_mp_log(q, logfile, n_job = 100, n_step=1, n_seconds=10):
@@ -292,7 +288,16 @@ class GridDownloaderManager:
     download_alien(self.env_alien, self.env_local)
     return self.read_env()
   def generate_path_xml(self):
-    """
+    """cmd: alien_find <alien_dir> <pattern> -x -
+    Return to PIPE/stdout, resolve XML of file collection/list
+    Example:
+    <alien>
+      <collection name="/alice/cern.ch/user/y/yitao/705.xml">
+        <event name="1">
+          <file name=...></file>
+        </event>
+      </collection>
+    </alien>
     """
     n_files_all = 0
     file_size_all = 0
@@ -301,8 +306,6 @@ class GridDownloaderManager:
       # Filelist Path
       os.system('mkdir -p ' + cfg['path_local'])
       child_filelist_suffix = f'{self.train_subname}-{self.train_id}-{child_id}.xml'
-      child_filelist_alien = f'TMP/{child_filelist_suffix}'
-      os.system('alien_mkdir TMP/') # ? CWD
       child_filelist = f'{cfg["path_local"]}/{child_filelist_suffix}'
       self.child_conf[child_id]['filelist'] = child_filelist
       if check_local_file(child_filelist, self.flag_overwrite):
