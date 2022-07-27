@@ -164,9 +164,10 @@ def listener_mp_log(q, logfile, n_job = 100, n_step=1, n_seconds=10):
         print(f'>>> Progress : {n_done}/{n_job} - OK = {repr_ratio(n_ok,n_job)}, FAIL = {n_fail} - Time elapsed : {dt}s')
         flag_progress = False
   print(f'[-] Listener MQ - {n_done}/{n_ok}/{n_fail} (Done/OK/FAIL)')
+  return n_job, n_done, n_ok, n_fail
 
 class GridDownloaderManager:
-  """Download outputs files from AliEn grid (by LEGO train)
+  """Download output files from AliEn grid (by LEGO train)
   
   Parameters:
   - train_id (required, e.g. 708_20220723-0034)
@@ -181,6 +182,15 @@ class GridDownloaderManager:
   - mp_jobs: int, number of multiple processes (Default: n_cpu)
   - mp_report_step: int, monitor report progress per N jobs (Default: 20) 
   - mp_report_dt: int, monitor report progress per N seconds (Default: 30)
+
+  Data members: (Configuration)
+  - train_config: RAW variables stored in train/env.sh
+  - child_conf: self.read_env(), generated from (ALIEN_JDL_child_[N]_)
+    - collision: pp, ... (LPMINTERACTIONTYPE)
+    - production: RAW, MC, ... (LPMPRODUCTIONTYPE)
+    - output_dir: /alice/- (OUTPUTDIR)
+    - period: [Data] LHC18k, ... (LPMPRODUCTIONTAG)
+    - reco: [Data] 1,2,... (LPMRAWPASS) [Data]
   """
   def __init__(self, train_name, train_id, path_local, file_list, **gdm_args) -> None:
     self.train_name = train_name # PWGHF/HF_TreeCreator
@@ -369,7 +379,8 @@ class GridDownloaderManager:
         return False
     return True
   def validate_child(self, child_id) -> int:
-    """
+    """Validate local file
+    Return: stats, filelist
     """
     cfg = self.child_conf[child_id]
     files_local = find_local(cfg['path_local'],pattern_name='*.root').split()
@@ -405,6 +416,7 @@ class GridDownloaderManager:
     Return: stats {jobs, local files, ...}
       job_n, job_ok, job_fail, transfer: delta file size
       validation: file_n/size alien, local, missing
+      file entries: missing (default), all, validated
     """
     proc_stats = {}
     cfg = self.child_conf[child_id]
