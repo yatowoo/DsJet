@@ -227,7 +227,9 @@ class GridDownloaderManager:
     self.child_list = gdm_args.get('child_list', None)
     if self.child_list is not None:
       self.child_list = [ f'child_{i}' for i in self.child_list]
-    self.enable_xml = gdm_args.get('enable_xml', False)
+    # Filelist - Default: XML
+      # Disable => TXT with [path_alien path_local] by lines.
+    self.enable_xml = gdm_args.get('enable_xml', True)
   def read_env(self, path_envfile=None) -> dict:
     """
     """
@@ -457,13 +459,13 @@ if __name__ == '__main__':
   parser.add_argument('-c', '--children', nargs='+', help='Specify children list to download, None is ALL.')
   parser.add_argument('--step', type=int, default=20, help='Specify progress report per N jobs')
   parser.add_argument('--dt', type=int, default=30, help='Specify progress report per N seconds')
-  parser.add_argument('--xml', default=False, action='store_true', help='Generate filelist in XML format (required by intergrity check)')
+  parser.add_argument('--no-xml', dest='disable_xml', default=False, action='store_true', help='Generate filelist in TXT format instead of XML')
   # Save dir.: <path_local>[/<AliPhysics_tag>/<data_or_mc_production>/<train_name>/unmerged/child_<ID>]
   # Job dir.: [RunNumber]/[JobID]
   args, unknown =  parser.parse_known_args()
   if unknown:
     print(f'[+] Unknown arguments : {unknown}')
-  adm = GridDownloaderManager(args.train, args.train_id, args.path_local, args.files.split(','), overwrite=args.overwrite, debug=args.verbose, mp_jobs=args.jobs, child_list=args.children, mp_report_step=args.step, mp_report_dt=args.dt, enable_xml=args.xml) # Alien Download Manager
+  adm = GridDownloaderManager(args.train, args.train_id, args.path_local, args.files.split(','), overwrite=args.overwrite, debug=args.verbose, mp_jobs=args.jobs, child_list=args.children, mp_report_step=args.step, mp_report_dt=args.dt, enable_xml=(not args.disable_xml)) # Alien Download Manager
   # Debug
   #print(args)
   adm.start()
