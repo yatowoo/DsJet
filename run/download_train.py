@@ -123,12 +123,12 @@ def download_alien(source : str, target : str, args='-f', debug=False, **subproc
     proc = subprocess.run(cmd, **subproc_args)
   except subprocess.TimeoutExpired:
     ret += f'[X] Timeout - more than {subproc_args.get("timeout")}'
+    return ret
   if stdout == subprocess.PIPE:
     ret = ret + proc.stdout.decode('utf-8')
   if stderr == subprocess.PIPE:
     ret = ret + proc.stderr.decode('utf-8')
   return ret
-  # exception
 
 def listener_mp_log(q, logfile, n_job = 100, n_step=1, n_seconds=10):
   """Receive messages from mp.Pool, write to log file
@@ -137,7 +137,8 @@ def listener_mp_log(q, logfile, n_job = 100, n_step=1, n_seconds=10):
   flag_progress = False
   if n_job < 77:
     n_step = min(n_step, math.ceil(n_job/7.))
-  print(f'>>> Listener MQ - started (report per {n_step} jobs or {n_seconds} seconds)')
+  sys.stdout.write(f'>>> Listener MQ - started (report per {n_step} jobs or {n_seconds} seconds)\n')
+  sys.stdout.flush()
   time_start = int(time.time())
   time_report = time_start
   with open(logfile, 'a') as f:
@@ -161,7 +162,8 @@ def listener_mp_log(q, logfile, n_job = 100, n_step=1, n_seconds=10):
       dt = int(time.time()) - time_start
       if flag_progress or (dt - time_report > n_seconds):
         time_report = dt
-        print(f'>>> Progress : {n_done}/{n_job} - OK = {repr_ratio(n_ok,n_job)}, FAIL = {n_fail} - Time elapsed : {dt}s')
+        sys.stdout.write(f'>>> Progress : {n_done}/{n_job} - OK = {repr_ratio(n_ok,n_job)}, FAIL = {n_fail} - Time elapsed : {dt}s\n')
+        sys.stdout.flush()
         flag_progress = False
   print(f'[-] Listener MQ - {n_done}/{n_ok}/{n_fail} (Done/OK/FAIL)')
   return n_job, n_done, n_ok, n_fail
