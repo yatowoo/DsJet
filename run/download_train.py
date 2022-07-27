@@ -29,6 +29,23 @@ from copy import deepcopy
 import defusedxml.ElementTree as xml
 import hashlib
 
+def dict_accumulate(dict_a : dict, dict_b : dict):
+  if not dict_b:
+    return dict_a
+  for k, v in dict_a.items():
+    vb = dict_b.get(k)
+    if not vb or (type(vb) is not type(v)):
+      continue
+    if type(v) is dict:
+      dict_a[k] = dict_accumulate(dict_a[k], dict_b.get(k))
+    elif type(v) is list:
+      dict_a[k] = dict_a[k] + dict_b[k]
+    elif type(v) is int or type(v) is float:
+      dict_a[k] += dict_b[k]
+    else:
+      pass # unknown type
+  return dict_a
+
 def query_yes_no(question, default="yes"):
   valid = {"yes": True, "y": True, "ye": True, "no": False, "n": False}
   if default is None:
@@ -551,8 +568,28 @@ class GridDownloaderManager:
     # Select children
     if self.child_list is None:
       self.child_list = self.child_conf.keys() # all
+    proc_stats = {
+      'job_stats':{'all':0, 'ok':0, 'fail':0, 'transfer':0},
+      'file_stats':{}}
+    proc_stats['file_stats'] = {
+      'count':{'alien':0, 'local':0, 'fail':0},
+      'size':{'alien':0, 'local':0, 'fail':0},
+      'filelist':{'alien':[], 'local':[], 'fail':[]},
+    }
+    time_start = int(time.time())
     for child_id in self.child_list:
-      self.process_child(child_id)
+      proc_stats_child = self.process_child(child_id)
+      dict_accumulate(proc_stats, proc_stats_child)
+    time_end = int(time.time())
+    # Stats
+    print(f'------Grid Download Manager------')
+    n_jobs = proc_stats["job_stats"]["all"]
+    print(f'>>> Job stats : {n_jobs} jobs started.')
+    if n_jobs > 0:
+      print(f'>>> Success : {repr_ratio(proc_stats["job_stats"]["ok"], proc_stats["job_stats"]["all"])}, FAIL : {repr_ratio(proc_stats["job_stats"]["fail"], proc_stats["job_stats"]["all"])}')
+      print(f'>>> Data transfer : {repr_size(proc_stats["job_stats"]["transfer"])}, time elpased : {time_end-time_start} seconds')
+    self.print_validation(proc_stats['file_stats'])
+
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(
