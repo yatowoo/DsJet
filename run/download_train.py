@@ -396,9 +396,13 @@ class GridDownloaderManager:
         file_entry['jobid'] = int(file_entry['jobid'])
         filelist.append(deepcopy(file_entry))
     return filelist
-  def process_child(self, child_id) -> bool:
+  def process_child(self, child_id) -> dict:
+    """Process downloading and validation on each child
+    Return: stats {jobs, local files, ...}
+      job_n, job_ok, job_fail, transfer: delta file size
+      validation: file_n/size alien, local, missing
     """
-    """
+    proc_stats = {}
     cfg = self.child_conf[child_id]
     filelist =self.read_filelist(child_id)
     nfiles_alien = len(filelist)
@@ -433,6 +437,13 @@ class GridDownloaderManager:
       file_size_new += file_entry['size']
       filelist_new.append(file_entry)
     n_jobs = len(filelist_new)
+    if n_jobs == 0:
+      print(f'[-] Validation OK. Good {child_id}, all is well.')
+      log_mq.put('kill')
+      listener.get(timeout=10)
+      mpPool.close()
+      mpPool.join()
+      return proc_stats
     for file_id, file_entry in enumerate(filelist_new):
       job_arguments.append({'source':file_entry['path_alien'], 'target':file_entry['path_local'],'args':'-f -retry 3', 'job_id':file_id, 'job_n':n_jobs, 'debug':self.flag_debug, 'log_mq':log_mq, 'xml_entry': deepcopy(file_entry)})
     print(f'>>> Missing files : {repr_ratio(len(job_arguments), nfiles_alien)}')
