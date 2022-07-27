@@ -393,13 +393,15 @@ class GridDownloaderManager:
     log_mq = mgr.Queue()
     # Arguments for each job
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    logfile = f'{cfg["path_local"]}/download_train_stdout_{child_id}_{timestamp}.log'
-    errfile = f'{cfg["path_local"]}/download_train_stderr_{child_id}_{timestamp}.log'
+    log_prefix = 'download_train'
+    if self.flag_debug:
+      log_prefix = 'download_train_debug'
+    logfile = f'{cfg["path_local"]}/{log_prefix}_{child_id}_{timestamp}.log'
     job_arguments = []
     for file_id, file_single in enumerate(filelist):
       job_arguments.append({'source':file_single['path_alien'], 'target':file_single['path_local'],'args':'-f -retry 3', 'job_id':file_id, 'job_n':nfiles_alien, 'debug':self.flag_debug, 'log_mq':log_mq})
     # Start multithreading
-    print(f'>>> Downloading...\n>>> Log : {logfile}\n>>> Err : {errfile}')
+    print(f'>>> Downloading...\n>>> Log : {os.path.realpath(logfile)}')
     if self.mp_jobs < 1:
       self.mp_jobs = os.cpu_count()
     with mp.Pool(processes=self.mp_jobs) as mpPool:
