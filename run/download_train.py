@@ -16,6 +16,7 @@
 # - Data: D0DsLckINT7HighMultCalo_withJets/vAN-20220720_ROOT6-1/pp_data/705_20220720-1829/unmerged/child_12/000293368/001/AnalysisResults.root
 # Search pattern: PWGHF/HF_TreeCreator/705_20220720-1829_child_2/AOD
 
+from math import inf
 import os, sys
 import datetime
 import time
@@ -25,6 +26,7 @@ import argparse
 from pprint import pprint
 from copy import deepcopy
 import defusedxml.ElementTree as xml
+import hashlib
 
 def query_yes_no(question, default="yes"):
   valid = {"yes": True, "y": True, "ye": True, "no": False, "n": False}
@@ -222,7 +224,11 @@ class GridDownloaderManager:
     self.flag_debug = gdm_args.get('debug',False)
     self.flag_overwrite = gdm_args.get('overwrite',False)
     self.mp_jobs = gdm_args.get('mp_jobs', -1)
+    if self.mp_jobs < 1:
+      self.mp_jobs = os.cpu_count() - 2
     self.mp_report_step = gdm_args.get('mp_report_step', 20)
+    if self.flag_debug:
+      self.mp_report_step = 1000
     self.mp_report_dt = gdm_args.get('mp_report_dt', 30) # per second
     self.child_list = gdm_args.get('child_list', None)
     if self.child_list is not None:
@@ -230,6 +236,7 @@ class GridDownloaderManager:
     # Filelist - Default: XML
       # Disable => TXT with [path_alien path_local] by lines.
     self.enable_xml = gdm_args.get('enable_xml', True)
+    self.enable_md5 = gdm_args.get('enable_md5', False)
   def read_env(self, path_envfile=None) -> dict:
     """
     """
@@ -365,6 +372,25 @@ class GridDownloaderManager:
       self.child_conf[child_id]['filelist_n'] = n_files
       print(f' > N files found = {n_files} ({repr(self.file_list)})')
       print(f' > Example : {fname} {local_file_path}')
+  def validate_file(self, entry, log_mq=None) -> bool:
+    """Validation file integrity with size and (optional) md5
+    """
+    if not self.enable_xml:
+      return True
+    if not os.path.exists(entry['path_local']):
+      return False
+    file_size_local = os.path.getsize(entry['path_local'])
+    if file_size_local < entry['size']:
+      if log_mq:
+        log_mq.put(f'>>> - incomplete file, wrong size (local-{repr_size(file_size_local)}, alien-{repr_size(entry["size"])}) - {entry["path_local"]}') # option to MQ
+      return False
+    if self.enable_md5:
+      md5_local = hashlib.md5(open(entry['path_local'],'rb').read()).hexdigest()
+      if md5_local != entry['md5']:
+        if log_mq:
+          log_mq.put(f'>>> - incomplete file, wrong MD5 (local-{md5_local}, alien-{entry["md5"]}') # option to MQ
+        return False
+    return True
   def validate_child(self, child_id) -> int:
     """
     """
@@ -389,7 +415,12 @@ class GridDownloaderManager:
     et = xml.parse(open(filelist_name,'r'))
     for coll in et.findall('collection'):
       for ev in coll.findall('event'):
-        filelist.append(deepcopy(ev[0].attrib))
+        file_entry = ev[0].attrib
+        # Formatting - string -> int
+        file_entry['size'] = int(file_entry['size'])
+        file_entry['entryId'] = int(file_entry['entryId'])
+        file_entry['jobid'] = int(file_entry['jobid'])
+        filelist.append(deepcopy(file_entry))
     return filelist
   def process_child(self, child_id) -> bool:
     """
@@ -403,24 +434,36 @@ class GridDownloaderManager:
     # Multiprocessing
     mgr = mp.Manager()
     log_mq = mgr.Queue()
-    # Arguments for each job
+    mpPool = mp.Pool(processes=self.mp_jobs)
+    # Log
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     log_prefix = 'download_train'
     if self.flag_debug:
       log_prefix = 'download_train_debug'
     logfile = f'{cfg["path_local"]}/{log_prefix}_{child_id}_{timestamp}.log'
-    job_arguments = []
-    for file_id, file_single in enumerate(filelist):
-      job_arguments.append({'source':file_single['path_alien'], 'target':file_single['path_local'],'args':'-f -retry 3', 'job_id':file_id, 'job_n':nfiles_alien, 'debug':self.flag_debug, 'log_mq':log_mq})
+    listener = mpPool.apply_async(listener_mp_log, (log_mq, logfile, nfiles_alien, self.mp_report_step, self.mp_report_dt,))
     # Start multithreading
-    print(f'>>> Downloading...\n>>> Log : {os.path.realpath(logfile)}')
-    if self.mp_jobs < 1:
-      self.mp_jobs = os.cpu_count()
-    with mp.Pool(processes=self.mp_jobs) as mpPool:
-      listener = mpPool.apply_async(listener_mp_log, (log_mq, logfile, nfiles_alien, self.mp_report_step, self.mp_report_dt,))
-      jobs = mpPool.map(process_download_single, job_arguments)
-      log_mq.put('kill')
-      listener.get() # clear MQ
+      # Validation
+    print(f'>>> Validating...\n>>> Log : {os.path.realpath(logfile)}')
+    job_arguments = []
+    file_size_new = 0
+    for file_id, file_single in enumerate(filelist):
+      if self.validate_file(file_single, log_mq):
+        continue
+      elif self.flag_debug:
+        log_mq.put(f'[+] NEW job created - {file_single["path_local"]}')
+      if self.enable_xml:
+        file_size_new += file_single['size']
+      job_arguments.append({'source':file_single['path_alien'], 'target':file_single['path_local'],'args':'-f -retry 3', 'job_id':file_id, 'job_n':nfiles_alien, 'debug':self.flag_debug, 'log_mq':log_mq})
+    print(f'>>> Missing files : {repr_ratio(len(job_arguments), nfiles_alien)}')
+    # Donwload
+    print(f'>>> Downloading... {len(job_arguments)} jobs ({repr_size(file_size_new)})\n>>> Log : {os.path.realpath(logfile)}')
+    jobs = mpPool.map(process_download_single, job_arguments)
+    log_mq.put('kill')
+    listener.get() # clear MQ
+    # End - multiprocessing
+    mpPool.close()
+    mpPool.join()
     # Validation
       # TODO: integrity by size / cksum / md5
     files_local = find_local(cfg['path_local'],pattern_name='*.root').split()
@@ -459,13 +502,14 @@ if __name__ == '__main__':
   parser.add_argument('-c', '--children', nargs='+', help='Specify children list to download, None is ALL.')
   parser.add_argument('--step', type=int, default=20, help='Specify progress report per N jobs')
   parser.add_argument('--dt', type=int, default=30, help='Specify progress report per N seconds')
+  parser.add_argument('--md5', default=False, action='store_true', help='Enable md5 validation (!!!ATTENTION!!! RAM usage x jobs)')
   parser.add_argument('--no-xml', dest='disable_xml', default=False, action='store_true', help='Generate filelist in TXT format instead of XML')
   # Save dir.: <path_local>[/<AliPhysics_tag>/<data_or_mc_production>/<train_name>/unmerged/child_<ID>]
   # Job dir.: [RunNumber]/[JobID]
   args, unknown =  parser.parse_known_args()
   if unknown:
     print(f'[+] Unknown arguments : {unknown}')
-  adm = GridDownloaderManager(args.train, args.train_id, args.path_local, args.files.split(','), overwrite=args.overwrite, debug=args.verbose, mp_jobs=args.jobs, child_list=args.children, mp_report_step=args.step, mp_report_dt=args.dt, enable_xml=(not args.disable_xml)) # Alien Download Manager
+  adm = GridDownloaderManager(args.train, args.train_id, args.path_local, args.files.split(','), overwrite=args.overwrite, debug=args.verbose, mp_jobs=args.jobs, child_list=args.children, mp_report_step=args.step, mp_report_dt=args.dt, enable_xml=(not args.disable_xml), md5=args.md5) # Alien Download Manager
   # Debug
   #print(args)
   adm.start()
