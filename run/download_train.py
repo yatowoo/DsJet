@@ -119,7 +119,10 @@ def download_alien(source : str, target : str, args='-f', debug=False, **subproc
     stdout.write(ret)
   if debug:
     cmd = ['echo'] + cmd
-  proc = subprocess.run(cmd, **subproc_args)
+  try:
+    proc = subprocess.run(cmd, **subproc_args)
+  except subprocess.TimeoutExpired:
+    ret += f'[X] Timeout - more than {subproc_args.get("timeout")}'
   if stdout == subprocess.PIPE:
     ret = ret + proc.stdout.decode('utf-8')
   if stderr == subprocess.PIPE:
@@ -189,6 +192,7 @@ class GridDownloaderManager:
     self.train_config = {}
     self.flag_debug = gdm_args.get('debug',False)
     self.flag_overwrite = gdm_args.get('overwrite',False)
+    self.timeout = gdm_args.get('timeout', 1024) # 17 min. (1 MB/s for 1 GB)
     self.mp_jobs = gdm_args.get('mp_jobs', -1)
     if self.mp_jobs < 1:
       self.mp_jobs = os.cpu_count() - 2
@@ -499,8 +503,14 @@ class GridDownloaderManager:
     else:
       logfile = open(logfile, 'a')
       logfile.write(msg + '\n')
+    # Timeout
+    maxSecondsCopy = self.timeout
+    alien_file_size = dl_args['xml_entry']['size']
+    if alien_file_size > 0:
+      # assume 1 MB/s + 30s for connection
+      maxSecondsCopy = int(alien_file_size / (1024 * 1024)) + 30
     # Copy alien source to local target
-    ret = download_alien(dl_args["source"], dl_args["target"], dl_args["args"], debug=flag_debug, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    ret = download_alien(dl_args["source"], dl_args["target"], dl_args["args"], debug=flag_debug, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=maxSecondsCopy)
     # Validation
     status_ok = None
     if not self.validate_file(dl_args['xml_entry'], log_mq):
@@ -542,6 +552,7 @@ if __name__ == '__main__':
   parser.add_argument('-c', '--children', nargs='+', help='Specify children list to download, None is ALL.')
   parser.add_argument('--step', type=int, default=20, help='Specify progress report per N jobs')
   parser.add_argument('--dt', type=int, default=30, help='Specify progress report per N seconds')
+  parser.add_argument('--timeout', type=int, default=600, help='Specify timeout for subprocess')
   parser.add_argument('--md5', default=False, action='store_true', help='Enable md5 validation (!!!ATTENTION!!! RAM usage x jobs)')
   parser.add_argument('--no-xml', dest='disable_xml', default=False, action='store_true', help='Generate filelist in TXT format instead of XML')
   # Save dir.: <path_local>[/<AliPhysics_tag>/<data_or_mc_production>/<train_name>/unmerged/child_<ID>]
@@ -549,7 +560,14 @@ if __name__ == '__main__':
   args, unknown =  parser.parse_known_args()
   if unknown:
     print(f'[+] Unknown arguments : {unknown}')
-  adm = GridDownloaderManager(args.train, args.train_id, args.path_local, args.files.split(','), overwrite=args.overwrite, debug=args.verbose, mp_jobs=args.jobs, child_list=args.children, mp_report_step=args.step, mp_report_dt=args.dt, enable_xml=(not args.disable_xml), md5=args.md5) # Alien Download Manager
+  adm = GridDownloaderManager(
+    args.train, args.train_id, args.path_local, args.files.split(','), 
+    overwrite=args.overwrite, debug=args.verbose,
+    child_list=args.children,
+    mp_jobs=args.jobs, mp_report_step=args.step, mp_report_dt=args.dt,
+    enable_xml=(not args.disable_xml), md5=args.md5,
+    timeout=args.timeout,
+  ) # Alien Download Manager
   # Debug
   #print(args)
   adm.start()
