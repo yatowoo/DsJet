@@ -375,10 +375,10 @@ class GridDownloaderManager:
   def validate_file(self, entry, log_mq=None) -> bool:
     """Validation file integrity with size and (optional) md5
     """
-    if not self.enable_xml:
-      return True
     if not os.path.exists(entry['path_local']):
       return False
+    if not self.enable_xml:
+      return True
     file_size_local = os.path.getsize(entry['path_local'])
     if file_size_local < entry['size']:
       if log_mq:
@@ -408,6 +408,7 @@ class GridDownloaderManager:
       for entry in f_filelist.readlines():
         if not entry: continue
         filelist.append({})
+        filelist[-1]['path_alien']['size'] = 0
         filelist[-1]['path_alien'], filelist[-1]['path_local'] = entry.split()
       f_filelist.close()
       return filelist
@@ -448,14 +449,18 @@ class GridDownloaderManager:
     print(f'>>> Preparing...')
     job_arguments = []
     file_size_new = 0
-    for file_id, file_single in enumerate(filelist):
-      if self.validate_file(file_single, log_mq):
+    filelist_new = []
+    # TODO: func validate_child() return dict:stats 
+    # code duplicate before and after downloading, then print_stats()?.
+    for file_entry in filelist:
+      if self.validate_file(file_entry, log_mq):
         continue
       elif self.flag_debug:
-        log_mq.put(f'[+] NEW job created - {file_single["path_local"]}')
-      if self.enable_xml:
-        file_size_new += file_single['size']
-      job_arguments.append({'source':file_single['path_alien'], 'target':file_single['path_local'],'args':'-f -retry 3', 'job_id':file_id, 'job_n':nfiles_alien, 'debug':self.flag_debug, 'log_mq':log_mq})
+        log_mq.put(f'[+] NEW job created - {file_entry["path_local"]}')
+      file_size_new += file_entry['size']
+      filelist_new.append(file_entry)
+    for file_id, file_entry in enumerate(filelist_new):
+      job_arguments.append({'source':file_entry['path_alien'], 'target':file_entry['path_local'],'args':'-f -retry 3', 'job_id':file_id, 'job_n':len(filelist_new), 'debug':self.flag_debug, 'log_mq':log_mq})
     print(f'>>> Missing files : {repr_ratio(len(job_arguments), nfiles_alien)}')
     # Donwload
     print(f'>>> Downloading... {len(job_arguments)} jobs ({repr_size(file_size_new)})\n>>> Log : {os.path.realpath(logfile)}')
@@ -463,7 +468,6 @@ class GridDownloaderManager:
     log_mq.put('kill')
     listener.get() # clear MQ
     # Validation
-      # TODO: integrity by size / cksum / md5
     print(f'>>> Validating...')
     files_fail = []
     nfiles_local = 0
