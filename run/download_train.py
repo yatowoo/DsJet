@@ -126,39 +126,6 @@ def download_alien(source : str, target : str, args='-f', debug=False, **subproc
   return ret
   # exception
 
-def process_download_single(dl_args : dict):
-  """ for MP pool
-  """
-  job_id = dl_args.get('job_id', 0)
-  job_n = dl_args.get('job_n', 0)
-  job_label = '/'.join([dl_args["source"].split('/')[i] for i in [4, 5, -2]])
-  flag_debug = dl_args.get('debug', False)
-  # Pipe
-  log_mq = dl_args.get('log_mq', None)
-  logfile = dl_args.get('stdout', None)
-  msg = f'{job_id}/{job_n} - {job_label}'
-  if log_mq:
-    log_mq.put(msg)
-  elif logfile is None:
-    logfile = sys.stdout
-    logfile.write(msg + '\n')
-  else:
-    logfile = open(logfile, 'a')
-    logfile.write(msg + '\n')
-  ret = download_alien(dl_args["source"], dl_args["target"], dl_args["args"], debug=flag_debug, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  status_ok = None
-  if not check_local_file(dl_args["target"]) and not flag_debug:
-    ret = ret + f'[X] Fail to download {job_label} - {dl_args["target"]}'
-    status_ok = False
-  else:
-    ret = ret + f'[-] OK - {job_label}'
-    status_ok = True
-  if log_mq:
-    log_mq.put(ret)
-  else:
-    logfile.write(ret + '\n')
-  return status_ok
-
 def listener_mp_log(q, logfile, n_job = 100, n_step=1, n_seconds=10):
   """Receive messages from mp.Pool, write to log file
   """
@@ -173,11 +140,11 @@ def listener_mp_log(q, logfile, n_job = 100, n_step=1, n_seconds=10):
       if m.lower() == 'kill':
         f.write('[-] Listener killed - MP job\n')
         break
-      elif m.lower().find('[-] ok') > -1:
+      elif m.lower() == 'success':
         n_ok += 1
         n_done += 1
         flag_progress = True
-      elif m.lower().find('fail') > -1:
+      elif m.lower() == 'fail':
         n_fail += 1
         n_done += 1
         flag_progress = True
@@ -463,11 +430,11 @@ class GridDownloaderManager:
       file_size_new += file_entry['size']
       filelist_new.append(file_entry)
     for file_id, file_entry in enumerate(filelist_new):
-      job_arguments.append({'source':file_entry['path_alien'], 'target':file_entry['path_local'],'args':'-f -retry 3', 'job_id':file_id, 'job_n':len(filelist_new), 'debug':self.flag_debug, 'log_mq':log_mq})
+      job_arguments.append({'source':file_entry['path_alien'], 'target':file_entry['path_local'],'args':'-f -retry 3', 'job_id':file_id, 'job_n':len(filelist_new), 'debug':self.flag_debug, 'log_mq':log_mq, 'xml_entry': deepcopy(file_entry)})
     print(f'>>> Missing files : {repr_ratio(len(job_arguments), nfiles_alien)}')
     # Donwload
     print(f'>>> Downloading... {len(job_arguments)} jobs ({repr_size(file_size_new)})\n>>> Log : {os.path.realpath(logfile)}')
-    jobs = mpPool.map(process_download_single, job_arguments)
+    jobs = mpPool.map(self.process_download_single, job_arguments)
     log_mq.put('kill')
     listener.get() # clear MQ
     # Validation
@@ -494,6 +461,42 @@ class GridDownloaderManager:
     mpPool.close()
     mpPool.join()
     return True
+  def process_download_single(self, dl_args : dict):
+    """ Downloading subprocess for MP pool
+    """
+    job_id = dl_args.get('job_id', 0)
+    job_n = dl_args.get('job_n', 0)
+    job_label = '/'.join([dl_args["source"].split('/')[i] for i in [4, 5, -2]])
+    flag_debug = dl_args.get('debug', False)
+    # Pipe
+    log_mq = dl_args.get('log_mq', None)
+    logfile = dl_args.get('stdout', None)
+    msg = f'{job_id}/{job_n} - {job_label}'
+    if log_mq:
+      log_mq.put(msg)
+    elif logfile is None:
+      logfile = sys.stdout
+      logfile.write(msg + '\n')
+    else:
+      logfile = open(logfile, 'a')
+      logfile.write(msg + '\n')
+    # Copy alien source to local target
+    ret = download_alien(dl_args["source"], dl_args["target"], dl_args["args"], debug=flag_debug, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    # Validation
+    status_ok = None
+    if not self.validate_file(dl_args['xml_entry'], log_mq):
+      ret = ret + f'[X] FAIL - {job_label} - {dl_args["target"]}'
+      log_mq.put('fail')
+      status_ok = False
+    else:
+      ret = ret + f'[-] OK - {job_label}'
+      log_mq.put('success')
+      status_ok = True
+    if log_mq:
+      log_mq.put(ret)
+    else:
+      logfile.write(ret + '\n')
+    return status_ok
   def start(self):
     self.get_env()
     if self.enable_xml:
