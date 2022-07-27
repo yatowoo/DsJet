@@ -54,6 +54,9 @@ def repr_ratio(n_numerator : int, n_denominator : int):
   ratio = 1.0 * n_numerator / n_denominator
   return f'{n_numerator}/{n_denominator} ({ratio*100.:.1f}%)'
 
+def repr_size(n_bytes : int):
+  return f'{n_bytes/(1024**3):.3f} GB'
+
 def check_alien_file(path_raw):
   """
   """
@@ -282,6 +285,8 @@ class GridDownloaderManager:
   def generate_path_xml(self):
     """
     """
+    n_files_all = 0
+    file_size_all = 0
     for child_id,cfg in self.child_conf.items():
       print(f'[+] Generating file list for {child_id} : ')
       # Filelist Path
@@ -296,7 +301,7 @@ class GridDownloaderManager:
         continue
       # Generate
       xml_filelist = None
-      file_size_total = 0
+      file_size_child = 0
       n_files = 0
       for file_name in self.file_list:
         xml_node = xml.fromstring(find_alien(cfg['path_alien'],
@@ -308,23 +313,28 @@ class GridDownloaderManager:
         for entry in result:
           entry = entry.find('file').attrib # entry[0]
           filename_alien = entry['lfn']
-          file_size_total += int(entry['size']) # Bytes
+          file_size_child += int(entry['size']) # Bytes
           fname_args = filename_alien.split('/')
           entry['path_alien'] = filename_alien
           entry['run'] = fname_args[5]
           entry['subjob'] = fname_args[-2]
-          entry['path_local'] = os.path.realpath(cfg['path_local'] + f'/{entry["run"]}/{entry["subjob"]}/{file_name}')
-          os.system('mkdir -p ' + entry['path_local'])
+          path_local_dir = cfg['path_local'] + f'/{entry["run"]}/{entry["subjob"]}/'
+          entry['path_local'] = os.path.realpath(path_local_dir + file_name)
+          os.system('mkdir -p ' + path_local_dir)
         # Append
         if xml_filelist:
           xml_filelist.append(deepcopy(result))
         else:
           xml_filelist = deepcopy(xml_node)
       # Save
-      print(f' > N files found = {n_files} ({repr(self.file_list)}) - Total size : {file_size_total/(1024**3):.3f} GB')
+      n_files_all += n_files
+      file_size_all += file_size_child
+      print(f' > N files found = {n_files} ({repr(self.file_list)}) - Total size : {repr_size(file_size_child)}')
       print(f' > Example : {entry["path_alien"]} {entry["path_local"]}')
       with open(child_filelist, 'w') as f:
         f.write(xml.tostring(xml_filelist).decode('utf-8'))
+    # End of child
+    print(f'[-] File list generated {self.train_name}-{self.train_id} - {n_files_all} files ({repr_size(file_size_all)})')
   def generate_path_txt(self) ->  None:
     for child_id,cfg in self.child_conf.items():
       print(f'[+] Generating file list for {child_id} : ')
