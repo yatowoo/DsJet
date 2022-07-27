@@ -17,6 +17,7 @@
 # Search pattern: PWGHF/HF_TreeCreator/705_20220720-1829_child_2/AOD
 
 from math import inf
+import math
 import os, sys
 import datetime
 import time
@@ -131,10 +132,12 @@ def listener_mp_log(q, logfile, n_job = 100, n_step=1, n_seconds=10):
   """
   n_done, n_ok, n_fail = 0, 0, 0
   flag_progress = False
-  print(f'>>> Listener MQ - started\n>>> to report per {n_step} jobs or {n_seconds} seconds')
+  if n_job < 77:
+    n_step = min(n_step, math.ceil(n_job/7.))
+  print(f'>>> Listener MQ - started (report per {n_step} jobs or {n_seconds} seconds)')
   time_start = int(time.time())
   time_report = time_start
-  with open(logfile, 'w') as f:
+  with open(logfile, 'a') as f:
     while True:
       m = q.get()
       if m.lower() == 'kill':
@@ -429,14 +432,19 @@ class GridDownloaderManager:
         log_mq.put(f'[+] NEW job created - {file_entry["path_local"]}')
       file_size_new += file_entry['size']
       filelist_new.append(file_entry)
+    n_jobs = len(filelist_new)
     for file_id, file_entry in enumerate(filelist_new):
-      job_arguments.append({'source':file_entry['path_alien'], 'target':file_entry['path_local'],'args':'-f -retry 3', 'job_id':file_id, 'job_n':len(filelist_new), 'debug':self.flag_debug, 'log_mq':log_mq, 'xml_entry': deepcopy(file_entry)})
+      job_arguments.append({'source':file_entry['path_alien'], 'target':file_entry['path_local'],'args':'-f -retry 3', 'job_id':file_id, 'job_n':n_jobs, 'debug':self.flag_debug, 'log_mq':log_mq, 'xml_entry': deepcopy(file_entry)})
     print(f'>>> Missing files : {repr_ratio(len(job_arguments), nfiles_alien)}')
     # Donwload
     print(f'>>> Downloading... {len(job_arguments)} jobs ({repr_size(file_size_new)})\n>>> Log : {os.path.realpath(logfile)}')
+    log_mq.put('kill')
+    listener.get(timeout=10) # clear MQ
+    # restart listener with updated n_jobs
+    listener = mpPool.apply_async(listener_mp_log, (log_mq, logfile, n_jobs, self.mp_report_step, self.mp_report_dt,))
     jobs = mpPool.map(self.process_download_single, job_arguments)
     log_mq.put('kill')
-    listener.get() # clear MQ
+    listener.get(timeout=10) # clear MQ
     # Validation
     print(f'>>> Validating...')
     files_fail = []
