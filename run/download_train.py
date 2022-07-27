@@ -361,6 +361,13 @@ class GridDownloaderManager:
       self.child_conf[child_id]['filelist_n'] = n_files
       print(f' > N files found = {n_files} ({repr(self.file_list)})')
       print(f' > Example : {fname} {local_file_path}')
+  def print_validation(self, valid_stats) -> None:
+    """
+    """
+    print(f'>>> File stats - {repr_ratio(valid_stats["count"]["local"], valid_stats["count"]["alien"])}, size: {valid_stats["size"]["local"]/(1024**3):.3f} / {repr_size(valid_stats["size"]["alien"])}')
+    nfiles_missing = valid_stats["count"]["fail"]
+    if nfiles_missing > 0:
+      print(f'>>> - Missing -  {nfiles_missing} files ({repr_size(valid_stats["size"]["fail"])})')
   def validate_file(self, entry, log_mq=None) -> bool:
     """Validation file integrity with size and (optional) md5
     """
@@ -380,18 +387,35 @@ class GridDownloaderManager:
           log_mq.put(f'>>> - incomplete file, wrong MD5 (local-{md5_local}, alien-{entry["md5"]}') # option to MQ
         return False
     return True
-  def validate_child(self, child_id) -> int:
+  def validate_child(self, child_id, log_mq=None) -> int:
     """Validate local file
     Return: stats, filelist
     """
+    ret = {
+      'count':{'alien':0, 'local':0, 'fail':0},
+      'size':{'alien':0, 'local':0, 'fail':0},
+      'filelist':{'alien':[], 'local':[], 'fail':[]},
+    }
     cfg = self.child_conf[child_id]
-    files_local = find_local(cfg['path_local'],pattern_name='*.root').split()
-    nfiles_local = len(files_local)
-    return nfiles_local
-  def read_filelist(self, child_id):
+    ret['filelist']['alien'] =self.read_filelist(cfg['filelist'])
+    ret['count']['alien'] = len(ret['filelist']['alien'])
+    for file_entry in ret['filelist']['alien']:
+      ret['size']['alien'] += file_entry['size']
+      if self.validate_file(file_entry, log_mq):
+        ret['filelist']['local'].append(file_entry)
+        ret['size']['local'] += file_entry['size']
+        continue
+      elif self.flag_debug:
+        log_mq.put(f'[+] NEW job created - {file_entry["path_local"]}')
+      ret['filelist']['fail'].append(file_entry)
+      ret['size']['fail'] += file_entry['size']
+    ret['count']['local'] = len(ret['filelist']['local'])
+    ret['count']['fail'] = len(ret['filelist']['fail'])
+    # Issue: memory/reference management for filelist(s)
+    return ret
+  def read_filelist(self, filelist_name):
     """
     """
-    filelist_name = self.child_conf[child_id]['filelist']
     filelist = []
     f_filelist = open(filelist_name,'r')
     if not self.enable_xml:
@@ -420,13 +444,11 @@ class GridDownloaderManager:
       validation: file_n/size alien, local, missing
       file entries: missing (default), all, validated
     """
-    proc_stats = {}
+    proc_stats = {
+      'job_stats':{'all':0, 'ok':0, 'fail':0, 'transfer':0},
+      'file_stats':{}}
     cfg = self.child_conf[child_id]
-    filelist =self.read_filelist(child_id)
-    nfiles_alien = len(filelist)
-    nfiles_local = self.validate_child(child_id)
-    print(f'[-] Processing {child_id} - {nfiles_alien} files')
-    print(f'>>> Local - {repr_ratio(nfiles_local, nfiles_alien)} files found - {cfg["path_local"]}')
+    print(f'[-] Processing {child_id}')
     # Multiprocessing
     mgr = mp.Manager()
     log_mq = mgr.Queue()
@@ -437,67 +459,47 @@ class GridDownloaderManager:
     if self.flag_debug:
       log_prefix = 'download_train_debug'
     logfile = f'{cfg["path_local"]}/{log_prefix}_{child_id}_{timestamp}.log'
-    listener = mpPool.apply_async(listener_mp_log, (log_mq, logfile, nfiles_alien, self.mp_report_step, self.mp_report_dt,))
-    # Start multithreading
-      # Validation
+    listener = mpPool.apply_async(listener_mp_log, (log_mq, logfile, 10000, self.mp_report_step, self.mp_report_dt,))
     print(f'>>> Log : {os.path.realpath(logfile)}')
+    # Start multithreading
+    # Validation (pre)
     print(f'>>> Preparing...')
-    job_arguments = []
-    file_size_new = 0
-    filelist_new = []
-    # TODO: func validate_child() return dict:stats 
-    # code duplicate before and after downloading, then print_stats()?.
-    for file_entry in filelist:
-      if self.validate_file(file_entry, log_mq):
-        continue
-      elif self.flag_debug:
-        log_mq.put(f'[+] NEW job created - {file_entry["path_local"]}')
-      file_size_new += file_entry['size']
-      filelist_new.append(file_entry)
-    n_jobs = len(filelist_new)
+    valid_stats_pre = self.validate_child(child_id, log_mq)
+    nfiles_alien = valid_stats_pre['count']['alien']
+    n_jobs = valid_stats_pre['count']['fail']
+    self.print_validation(valid_stats_pre)
     if n_jobs == 0:
       print(f'[-] Validation OK. Good {child_id}, all is well.')
       log_mq.put('kill')
       listener.get(timeout=10)
       mpPool.close()
       mpPool.join()
+      proc_stats['file_stats'] = valid_stats_pre
       return proc_stats
-    for file_id, file_entry in enumerate(filelist_new):
+    job_arguments = []
+    for file_id, file_entry in enumerate(valid_stats_pre['filelist']['fail']):
       job_arguments.append({'source':file_entry['path_alien'], 'target':file_entry['path_local'],'args':'-f -retry 3', 'job_id':file_id, 'job_n':n_jobs, 'debug':self.flag_debug, 'log_mq':log_mq, 'xml_entry': deepcopy(file_entry)})
-    print(f'>>> Missing files : {repr_ratio(len(job_arguments), nfiles_alien)}')
     # Donwload
-    print(f'>>> Downloading... {len(job_arguments)} jobs ({repr_size(file_size_new)})\n>>> Log : {os.path.realpath(logfile)}')
+    print(f'>>> Downloading... {len(job_arguments)} jobs ({repr_size(valid_stats_pre["size"]["fail"])})\n>>> Log : {os.path.realpath(logfile)}')
     log_mq.put('kill')
     listener.get(timeout=10) # clear MQ
     # restart listener with updated n_jobs
     listener = mpPool.apply_async(listener_mp_log, (log_mq, logfile, n_jobs, self.mp_report_step, self.mp_report_dt,))
     jobs = mpPool.map(self.process_download_single, job_arguments)
     log_mq.put('kill')
-    listener.get(timeout=10) # clear MQ
-    # Validation
+    proc_stats['job_stats']['all'],_,proc_stats['job_stats']['ok'],proc_stats['job_stats']['fail'] = listener.get(timeout=10) # clear MQ
+    # Validation (post)
     print(f'>>> Validating...')
-    files_fail = []
-    nfiles_local = 0
-    file_size_local = 0
-    file_size_missing = 0
-    file_size_alien = 0
-    n_files_ok = 0
-    for entry in filelist:
-      file_size_alien += entry['size']
-      if self.validate_file(entry, log_mq):
-        file_size_local += entry['size']
-        n_files_ok += 1
-        continue
-      file_size_missing += entry['size']
-      files_fail.append(entry)
-    nfiles_fail = len(files_fail)
-    print(f'>>> Summary : {repr_size(file_size_new - file_size_missing)} downloaded in this run')
-    print(f'>>> - Total {repr_ratio(n_files_ok, nfiles_alien)}, size: {file_size_local/(1024**3):.3f} / {repr_size(file_size_alien)}')
-    print(f'>>> - Missing -  {nfiles_fail} files ({repr_size(file_size_missing)})')
+    valid_stats_post = self.validate_child(child_id, log_mq)
+    proc_stats['job_stats']['transfer'] = valid_stats_post['size']['local'] - valid_stats_pre['size']['local']
+    print(f'>>> Process summary : {repr_size(proc_stats["job_stats"]["transfer"])} downloaded in this run')
+    self.print_validation(valid_stats_post)
     # End - multiprocessing
     mpPool.close()
     mpPool.join()
-    return True
+    del valid_stats_pre
+    proc_stats['file_stats'] = valid_stats_post
+    return proc_stats
   def process_download_single(self, dl_args : dict):
     """ Downloading subprocess for MP pool
     """
