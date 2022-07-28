@@ -298,8 +298,8 @@ DsJetpp:
       mc: [0.3,0.3,0.3,0.3,0.3,0.3] #list of nbins
     #probcutoptimal: [0.978,0.985,0.985,0.962,0.988,0.974] #list of nbins
     #probcutoptimal: [0.9791025, 0.985, 0.976675, 0.936485, 0.97296, 0.9616025] #list of nbins #opti_1 after cutvar ±50%
-    #probcutoptimal: [0.98296125, 0.985, 0.976675, 0.936485, 0.97296, 0.9616025] #list of nbins #opti_2 after cutvar ±50%
-    probcutoptimal: [0.95, 0.95, 0.95, 0.95, 0.95, 0.95] # default for systematics
+    probcutoptimal: [0.98296125, 0.985, 0.976675, 0.936485, 0.97296, 0.9616025] #list of nbins #opti_2 after cutvar ±50%
+    #probcutoptimal: [0.95, 0.95, 0.95, 0.95, 0.95, 0.95] # default for systematics
     #probcutoptimal: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5] #opt for fitting, sb check
     #probcutoptimal: [0, 0, 0, 0, 0, 0]
 
@@ -384,7 +384,7 @@ DsJetpp:
       massmax: [2.15, 2.15, 2.15, 2.15, 2.15, 2.15]
       rebin: [[6,6,6,6, 6],[6,6,6,6, 6],[6,6,6,6, 6]]
       
-      fix_mean: [false, false, false, false, false, false]
+      fix_mean: [true, true, true, true, true]
       # If SetArraySigma true: sigma_initial is taken from sigmaarray; false: sigma_initial is taken from MC
       # If SetFixGaussianSigma true: sigma fixed to sigma_initial
       SetFixGaussianSigma: [true, true, true, true, true]
@@ -392,8 +392,8 @@ DsJetpp:
       sigmaarray: [0.011,0.008,0.008,0.011,0.012] # initial sigma
 
       masspeaksec: 1.869
-      #fix_meansec: [true, true, true, true, true]
-      #fix_sigmasec: [true, true, true, true, true]
+      fix_meansec: [true, true, true, true, true]
+      fix_sigmasec: [true, true, true, true, true]
       sigmaarraysec: [0.008,0.008,0.008,0.008,0.008]
       width_ratio_DplusDs: 0.91
       # simple fitter END

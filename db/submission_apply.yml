@@ -46,18 +46,18 @@ ml_study:
 mlapplication:
   data:
     doapply: true
-    domergeapply: true
+    domergeapply: false
     docontinueafterstop: true 
   mc:
     doapply: true
-    domergeapply: true
+    domergeapply: false
     docontinueafterstop: true
 
 analysis:
   type: YYYY
   # Do each period separately including merged (true)
   # Do only merged (false)
-  doperperiod: true
+  doperperiod: false
   data:
     histomass: false
     dojetsystematics: false
