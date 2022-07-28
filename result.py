@@ -5,11 +5,12 @@
 import argparse
 
 parser = argparse.ArgumentParser(description='FF results')
-parser.add_argument('-f','--file', default='/mnt/d/DsJet/systematics/merged_full0705/pp_data/unfolding_results.root', help='Unfolded data results')
+parser.add_argument('-f','--file', default='/mnt/d/DsJet/systematics/merged_full0714/pp_data/unfolding_results.root', help='Unfolded data results')
 parser.add_argument('-m','--model', default='charm_fastsimu_Ds.root', help='Model outputs')
 parser.add_argument('--sys', default='/mnt/d/DsJet/systematics/merged_full0705/pp_data/systematics_results.root', help='Systematic uncertainties')
 parser.add_argument('-i','--iter',type=int, default=4, help='N iterations for unfolding')
 parser.add_argument('-o','--output',default='result_powheg-pythia6.png', help='Output file')
+parser.add_argument('--extra',default=None, help='unfolding_results.root, Extra variation for comparison')
 
 args = parser.parse_args()
 
@@ -51,12 +52,17 @@ model_db = {
 }
 
 model_plotting = ['pythia6', 'pythia8', 'pythia8_cr2']
+
 Z_BINNING = [0.4,0.6,0.7,0.8,0.9,1.0]
 PT_JET_BINNING = [5, 7, 15, 35]
 pt_cand_l = [3, 3, 8]
 pt_cand_u = [7, 15, 24]
 N_JETBINS = 3
 fResult = TFile.Open(args.file)
+fExtra = None
+if args.extra:
+  model_plotting = ['pythia8']
+  fExtra = TFile.Open(args.extra)
 fSysematics = TFile.Open(args.sys)
 fModel = TFile.Open(args.model)
 c = TCanvas('c1','draw',1200,1400)
@@ -124,7 +130,8 @@ def draw_model(model_name : dict, pt_jet_l=5, pt_jet_u=7):
 for iptjet in range(N_JETBINS):
   pt_jet_l = PT_JET_BINNING[iptjet]
   pt_jet_u = PT_JET_BINNING[iptjet+1]
-  hResult = fResult.Get(f'unfolded_z_{args.iter}_pt_jet_{pt_jet_l:.2f}_{pt_jet_u:.2f}')
+  hname_result = f'unfolded_z_{args.iter}_pt_jet_{pt_jet_l:.2f}_{pt_jet_u:.2f}'
+  hResult = fResult.Get(hname_result)
   hResult.UseCurrentStyle()
   hResult.SetMarkerStyle(20)
   hResult.SetMarkerSize(0)
@@ -185,6 +192,15 @@ for iptjet in range(N_JETBINS):
   root_plot.add_text(pave, 'charged jets, anti-#it{k}_{T}, #it{R} = 0.4')
   root_plot.add_text(pave, f'{pt_jet_l} < #it{{p}}_{{T}}^{{jet ch.}} < {pt_jet_u} GeV/#it{{c}}, ' +'|#it{#eta}_{jet}| #leq 0.5')
   root_plot.add_text(pave, f'{pt_cand_l[iptjet]} < #it{{p}}_{{T}}^{{D_{{s}}}} < {pt_cand_u[iptjet]} GeV/#it{{c}}, ' +'|#it{y}_{D_{s}^{+}}| #leq 0.8')
+    # variation
+  if args.extra:
+    hExtra = fExtra.Get(hname_result)
+    hExtra.SetLineColor(root_plot.kRed)
+    hExtra.SetMarkerColor(root_plot.kRed)
+    hExtra.SetLineWidth(2)
+    hExtra.SetMarkerStyle(root_plot.kBlockHollow)
+    lgd.AddEntry(hExtra, f'Train705_2018')
+    hExtra.Draw('same')
   lgd.Draw('same')
   pave.Draw("same")
   # Ratio
@@ -218,7 +234,8 @@ for iptjet in range(N_JETBINS):
       hRatio.Draw('E0')
     else:
       hRatio.Draw('same')
-  hRatioPrimary.GetYaxis().SetRangeUser(ymin, ymax)
+  if hRatioPrimary:
+    hRatioPrimary.GetYaxis().SetRangeUser(ymin, ymax)
   hResult.GetXaxis().SetLabelSize(0.0)
   c.cd()
   ROOT.gPad.SaveAs(f'DsJetFF_result_pt_jet_{pt_jet_l:.0f}_{pt_jet_u:.0f}.pdf')
