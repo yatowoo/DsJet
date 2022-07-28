@@ -394,8 +394,11 @@ class GridDownloaderManager:
       return True
     file_size_local = os.path.getsize(entry['path_local'])
     if file_size_local < entry['size']:
+      cmd = f'rm -f -v {entry["path_local"]}'
+      os.system(cmd) # DEBUG
       if log_mq:
         log_mq.put(f'>>> - incomplete file, wrong size (local-{repr_size(file_size_local)}, alien-{repr_size(entry["size"])}) - {entry["path_local"]}') # option to MQ
+        log_mq.put(cmd)
       return False
     if self.enable_md5:
       md5_local = hashlib.md5(open(entry['path_local'],'rb').read()).hexdigest()
