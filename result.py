@@ -11,6 +11,7 @@ parser.add_argument('--sys', default='/mnt/d/DsJet/systematics/merged_full0705/p
 parser.add_argument('-i','--iter',type=int, default=4, help='N iterations for unfolding')
 parser.add_argument('-o','--output',default='result_powheg-pythia6.png', help='Output file')
 parser.add_argument('--extra',default=None, help='unfolding_results.root, Extra variation for comparison')
+parser.add_argument('--dzero',default=False, action='store_true', help='Compare with D0 results from ALICE')
 
 args = parser.parse_args()
 
@@ -51,6 +52,34 @@ model_db = {
   },
 }
 
+# D0-tagged jets result (from Lc-jet paper)
+FF_db = {
+  'D0':{
+    'x':  [  0.5,  0.65,  0.75,  0.85,  0.95],
+    'y':  [1.381, 1.833, 1.914, 1.676, 1.833],
+    'exl':[  0.1,  0.05,  0.05,  0.05,  0.05],
+    'exh':[  0.1,  0.05,  0.05,  0.05,  0.05],
+    'eyl':[0.238, 0.143, 0.133, 0.095, 0.119],
+    'eyh':[0.190, 0.101, 0.119, 0.058, 0.119],
+  }
+}
+FF_db['D0']['result'] = ROOT.TGraphAsymmErrors(5,
+  array('d', FF_db['D0']['x']),
+  array('d', FF_db['D0']['y']),
+  array('d', FF_db['D0']['exl']),
+  array('d', FF_db['D0']['exh']),
+  array('d', FF_db['D0']['eyl']),
+  array('d', FF_db['D0']['eyh']))
+FF_db['D0']['result'].SetLineWidth(0)
+FF_db['D0']['result'].SetMarkerColor(root_plot.kGreen+3)
+FF_db['D0']['result'].SetFillColor(root_plot.kGreen-8)
+FF_db['D0']['result'].SetMarkerStyle(root_plot.kBlock)
+FF_db['D0']['result'].SetMarkerSize(1.5)
+FF_db['D0']['result'].SetFillStyle(3001)
+FF_db['D0']['result'].SetDrawOption('2P')
+
+# args.extra = '/mnt/d/DsJet/Ongoing/ana-705test/DsJet-test/pp_data/unfolding_results.root'
+
 model_plotting = ['pythia6', 'pythia8', 'pythia8_cr2']
 
 Z_BINNING = [0.4,0.6,0.7,0.8,0.9,1.0]
@@ -60,7 +89,7 @@ pt_cand_u = [7, 15, 24]
 N_JETBINS = 3
 fResult = TFile.Open(args.file)
 fExtra = None
-if args.extra:
+if args.extra or args.dzero:
   model_plotting = ['pythia8']
   fExtra = TFile.Open(args.extra)
 fSysematics = TFile.Open(args.sys)
@@ -146,8 +175,8 @@ for iptjet in range(N_JETBINS):
   hSyserr.GetYaxis().SetTitleOffset(1.0)
   hSyserr.GetYaxis().SetTitleSize(0.07)
   hSyserr.GetYaxis().SetLabelSize(0.06)
-  hSyserr.SetMarkerStyle(24)
-  hSyserr.SetMarkerSize(1.)
+  hSyserr.SetMarkerStyle(root_plot.kRound)
+  hSyserr.SetMarkerSize(1.5)
   hSyserr.SetLineWidth(0)
   hSyserr.SetFillColor(kGray+1)
   hSyserr.SetFillStyle(3001)
@@ -201,6 +230,9 @@ for iptjet in range(N_JETBINS):
     hExtra.SetMarkerStyle(root_plot.kBlockHollow)
     lgd.AddEntry(hExtra, f'Train705_2018')
     hExtra.Draw('same')
+  if args.dzero: # D0 comp.
+    FF_db['D0']['result'].Draw('same 2P')
+    lgd.AddEntry(FF_db['D0']['result'],'D^{0}-tagged jets')
   lgd.Draw('same')
   pave.Draw("same")
   # Ratio
