@@ -9,7 +9,7 @@ parser.add_argument('-f','--file', default='/mnt/d/DsJet/systematics/merged_full
 parser.add_argument('-m','--model', default='charm_fastsimu_Ds.root', help='Model outputs')
 parser.add_argument('--sys', default='/mnt/d/DsJet/systematics/merged_full0705/pp_data/systematics_results.root', help='Systematic uncertainties')
 parser.add_argument('-i','--iter',type=int, default=4, help='N iterations for unfolding')
-parser.add_argument('-o','--output',default='result_powheg-pythia6.png', help='Output file')
+parser.add_argument('-o','--output',default='DsJet-results.root', help='Output file')
 parser.add_argument('--extra',default=None, help='unfolding_results.root, Extra variation for comparison')
 parser.add_argument('--dzero',default=False, action='store_true', help='Compare with D0 results from ALICE')
 
@@ -25,6 +25,8 @@ from array import array
 import root_plot
 
 root_plot.ALICEStyle()
+
+# Output from feeddown.py (alice-fast-simulation)
 model_db = {
   "pythia6":{
     "label": "POWHEG + PYTHIA 6",
@@ -70,6 +72,7 @@ FF_db['D0']['result'] = ROOT.TGraphAsymmErrors(5,
   array('d', FF_db['D0']['exh']),
   array('d', FF_db['D0']['eyl']),
   array('d', FF_db['D0']['eyh']))
+FF_db['D0']['result'].SetName('FF_D0_ALICEpp13TeV_pt_jet_7_15')
 FF_db['D0']['result'].SetLineWidth(0)
 FF_db['D0']['result'].SetMarkerColor(root_plot.kGreen+3)
 FF_db['D0']['result'].SetFillColor(root_plot.kGreen-8)
@@ -81,6 +84,8 @@ FF_db['D0']['result'].SetDrawOption('2P')
 # args.extra = '/mnt/d/DsJet/Ongoing/ana-705test/DsJet-test/pp_data/unfolding_results.root'
 
 model_plotting = ['pythia6', 'pythia8', 'pythia8_cr2']
+if args.extra or args.dzero:
+  model_plotting = ['pythia8']
 
 Z_BINNING = [0.4,0.6,0.7,0.8,0.9,1.0]
 PT_JET_BINNING = [5, 7, 15, 35]
@@ -89,13 +94,13 @@ pt_cand_u = [7, 15, 24]
 N_JETBINS = 3
 fResult = TFile.Open(args.file)
 fExtra = None
-if args.extra or args.dzero:
-  model_plotting = ['pythia8']
+
+if args.extra:
   fExtra = TFile.Open(args.extra)
 fSysematics = TFile.Open(args.sys)
 fModel = TFile.Open(args.model)
 c = TCanvas('c1','draw',1200,1400)
-#c.Divide(N_JETBINS)
+#c.Divide(N_JETBINS) # Issue - figure distorted when subcanvas.SaveAs
 
 def add_text(pave : TPaveText, s : str, color=None, size=0.04, align=11):
   text = pave.AddText(s)
@@ -113,25 +118,6 @@ def newObj(obj):
   root_objs.append(obj)
   return root_objs[-1]
 
-# Result TH1 = centre-value + statistical error
-# syserr TGraphAsymmErrors = centre-value
-# Draw for legend
-#   - TGraphAsymmErrors fill with systematic (no line)
-#   - TH1 with statistical error (no marker)
-def draw_systematics(result, syserr):
-  hStatsErr = newObj(result.Clone(f'{result.GetName()}_statserr'))
-  hStatsErr.SetMarkerSize(0)
-  syserr.SetLineWidth(0)
-  syserr.SetFillStyle(3001)
-  syserrX = syserr.GetX()
-  for ibin in range(syserr.GetN()):
-    ibinResult = result.FindBin(syserrX[ibin])
-    result.SetBinError(ibinResult, syserr.GetErrorY(ibin))
-  return hStatsErr
-
-def draw_model_ratio(model_vars:dict):
-  """
-  """
 def draw_model(model_name : dict, pt_jet_l=5, pt_jet_u=7):
   """
   """
@@ -154,12 +140,20 @@ def draw_model(model_name : dict, pt_jet_l=5, pt_jet_u=7):
   hModel.SetLineColor(model_vars["color"])
   hModel.SetMarkerColor(model_vars['color'])
   hModel.SetDrawOption('E0')
+  fModel.Close()
   return hModel
+
+
+# Output
+fOutput = TFile.Open(args.output, 'RECREATE')
 
 for iptjet in range(N_JETBINS):
   pt_jet_l = PT_JET_BINNING[iptjet]
   pt_jet_u = PT_JET_BINNING[iptjet+1]
+  name_suffix = f'pt_jet_{pt_jet_l:.0f}_{pt_jet_u:.0f}'
   hname_result = f'unfolded_z_{args.iter}_pt_jet_{pt_jet_l:.2f}_{pt_jet_u:.2f}'
+  # Results + sys. unc. - TGraphAsymmErrors (no line, fill rect.)
+  # + stats. unc. - TH1 or TGraphErrors  (no marker, no legend)
   hResult = fResult.Get(hname_result)
   hResult.UseCurrentStyle()
   hResult.SetMarkerStyle(20)
@@ -167,9 +161,10 @@ for iptjet in range(N_JETBINS):
   hResult.SetLineWidth(2)
   hResult.SetLineColor(kBlack)
   hResult.SetMarkerColor(kBlack)
-  hResult.SetXTitle('z_{#parallel}^{ch}')
-  hResult.SetYTitle("1/#it{N}_{jets} d#it{N}/d#it{z_{#parallel}^{ch}} (self normalised)")
+  hResult.SetXTitle('#it{z}_{#parallel}^{ch}')
+  hResult.SetYTitle("1/#it{N}_{jets} d#it{N}/d#it{z}_{#parallel}^{ch} (self normalised)")
   hSyserr = fSysematics.Get(f'tgsys_pt_jet_{pt_jet_l:.2f}_{pt_jet_u:.2f}')
+  hSyserr.SetName(f'FF_Ds_sysunc_pt_jet_{pt_jet_l:.2f}_{pt_jet_u:.2f}')
   hSyserr.UseCurrentStyle()
   hSyserr.GetYaxis().SetTitle('1/#it{N}_{jet} d#it{N}/d#it{z}_{#parallel}^{ch}')
   hSyserr.GetYaxis().SetTitleOffset(1.0)
@@ -185,7 +180,6 @@ for iptjet in range(N_JETBINS):
   for ibin in range(hSyserr.GetN()):
     ibinResult = hResult.FindBin(syserrX[ibin])
     hSyserr.SetPointY(ibin, hResult.GetBinContent(ibinResult))
-  #hStaterr = draw_systematics(hResult, hSyserr)
   # canvas
   root_objs.append(root_plot.NewRatioPads(c.cd(), f'padz_ptjet_{pt_jet_l:.0f}_{pt_jet_u:.0f}', f'padratio_ptjet_{pt_jet_l:.0f}_{pt_jet_u:.0f}', gap=0.0))
   pMain, pRatio = root_objs[-1]
@@ -200,6 +194,9 @@ for iptjet in range(N_JETBINS):
   hSyserr.GetYaxis().SetRangeUser(0.1, 2. * hResult.GetMaximum())
   hResult.Draw('same')
   hSyserr.GetYaxis().SetTitleOffset(0.8)
+  # Output
+  fOutput.WriteObject(hSyserr, f'FF_Ds_sysunc_{name_suffix}')
+  fOutput.WriteObject(hResult, f'FF_Ds_statsunc_{name_suffix}')
   # Main
     # Legend
   dsjetTxt = newObj(TPaveText(0.63,0.88,0.95,0.92,"NDC"))
@@ -214,6 +211,7 @@ for iptjet in range(N_JETBINS):
     hModel = draw_model(model, pt_jet_l, pt_jet_u)
     hModel.Draw('same')
     lgd.AddEntry(hModel, model_vars['label'])
+    fOutput.WriteObject(hModel, f'FF_Ds_{model}_{name_suffix}')
   # Description
   root_objs.append(TPaveText(0.16,0.65,0.55,0.85,"NDC"))
   pave = root_objs[-1]
@@ -230,9 +228,11 @@ for iptjet in range(N_JETBINS):
     hExtra.SetMarkerStyle(root_plot.kBlockHollow)
     lgd.AddEntry(hExtra, f'Train705_2018')
     hExtra.Draw('same')
+    fOutput.WriteObject(hExtra, f'FF_Ds_extra_{name_suffix}')
   if args.dzero: # D0 comp.
     FF_db['D0']['result'].Draw('same 2P')
     lgd.AddEntry(FF_db['D0']['result'],'D^{0}-tagged jets')
+    fOutput.WriteObject(FF_db['D0']['result'], f'FF_D0_ALICEpp13TeV_{name_suffix}')
   lgd.Draw('same')
   pave.Draw("same")
   # Ratio
@@ -241,7 +241,7 @@ for iptjet in range(N_JETBINS):
   for model in model_plotting:
     model_vars = model_db[model]
     hModel = model_db[model]['hist_z']
-    hRatio = newObj(hModel.Clone(f'hratio_ptjet_{pt_jet_l:.0f}_{pt_jet_u:.0f}'))
+    hRatio = newObj(hModel.Clone(f'{model}_hratio_ptjet_{pt_jet_l:.0f}_{pt_jet_u:.0f}'))
     hRatio.Divide(hResult)
     hRatio.SetLineStyle(model_vars['line'])
     hRatio.SetLineColor(model_vars["color"])
@@ -266,11 +266,20 @@ for iptjet in range(N_JETBINS):
       hRatio.Draw('E0')
     else:
       hRatio.Draw('same')
+    fOutput.WriteObject(hRatio, f'FFratio_Ds_{model}_{name_suffix}')
   if hRatioPrimary:
     hRatioPrimary.GetYaxis().SetRangeUser(ymin, ymax)
   hResult.GetXaxis().SetLabelSize(0.0)
   c.cd()
   ROOT.gPad.SaveAs(f'DsJetFF_result_pt_jet_{pt_jet_l:.0f}_{pt_jet_u:.0f}.pdf')
+  fOutput.WriteObject(c, f'canvas_pt_jet_{pt_jet_l:.0f}_{pt_jet_u:.0f}')
 
 #c.SaveAs(args.output)
 cmd = input('<exit>')
+
+# End
+fOutput.Close()
+fResult.Close()
+fSysematics.Close()
+if args.extra:
+  fExtra.Close()
