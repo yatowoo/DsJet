@@ -4,19 +4,22 @@
 # Refer: https://github.com/ginnocen/MachineLearningHEP/tree/master/cplusutilities
 # Env: AliPhysics or any modules with JAliEn commands alien_cp/ls
 # Preparation: alien-token-init [user]
-# Parameters and basic usage: (see help)
+# Parameters options and usage: (see help)
 #
-# Example: ./download_trian.py 705_20220720-1829 -p /mnt/temp/TTree/D0DsLckINT7HighMultCalo_withJets -j 20
+# Example:
+# - Download train 705_20220720-1829
+# ./download_trian.py 705_20220720-1829 -p /mnt/temp/TTree/D0DsLckINT7HighMultCalo_withJets -j 20
+# - Generate filelist or validate local files (without alien_cp)
+# ./download_trian.py 705_20220720-1829 -v
 #
 # AliEn path:
 # - MC: /alice/sim/2020/LHC20f4c/264347/AOD235/PWGHF/HF_TreeCreator/706_20220720-1829_child_1/AOD/001/AnalysisResults.root
 # - Data: /alice/data/2018/LHC18e/000286937/pass1/AOD264/PWGHF/HF_TreeCreator/705_20220720-1829_child_2/AOD/001/AnalysisResults.root
 # Local path:
-# - MC: D0DsLckINT7HighMultCalo_withJets/vAN-20220720_ROOT6-1/pp_sim/705_20220720-1829/unmerged/child_12/000293368/001/AnalysisResults.root
+# - MC: D0DsLckINT7HighMultCalo_withJets/vAN-20220720_ROOT6-1/pp_sim/706_20220720-1829/unmerged/child_1/264347/001/AnalysisResults.root
 # - Data: D0DsLckINT7HighMultCalo_withJets/vAN-20220720_ROOT6-1/pp_data/705_20220720-1829/unmerged/child_12/000293368/001/AnalysisResults.root
-# Search pattern: PWGHF/HF_TreeCreator/705_20220720-1829_child_2/AOD
+# Search pattern: PWGHF/HF_TreeCreator/705_20220720-1829_child_12/AOD
 
-from math import inf
 import math
 import os, sys
 import datetime
@@ -24,11 +27,11 @@ import time
 import subprocess
 import multiprocessing as mp
 import argparse
-from pprint import pprint
 from copy import deepcopy
 import defusedxml.ElementTree as xml
 import hashlib
 
+# Operator+ __add__() for dict
 def dict_accumulate(dict_a : dict, dict_b : dict):
   if not dict_b:
     return dict_a
@@ -70,12 +73,41 @@ def query_yes_no(question, default="yes"):
 def print_cmd(cmd : list):
   print(' '.join(cmd))
 
-def repr_ratio(n_numerator : int, n_denominator : int):
+# Ratio string
+def repr_ratio(n_numerator, n_denominator):
+  repr_frac = ''
+  if type(n_numerator) is int:
+    repr_frac = f'{n_numerator}/{n_denominator}'
+  elif type(n_numerator) is float:
+    repr_frac = f'{n_numerator:.2f}/{n_denominator:.2f}'
+  else:
+    try:
+      repr_frac = f'{n_numerator:.2f}/{n_denominator:.2f}'
+    except:
+      return '<NAN-TypeError>'
   ratio = 1.0 * n_numerator / n_denominator
-  return f'{n_numerator}/{n_denominator} ({ratio*100.:.1f}%)'
+  return f'{repr_frac} ({ratio*100.:.1f}%)'
 
-def repr_size(n_bytes : int):
-  return f'{n_bytes/(1024**3):.3f} GB'
+# Human readable size
+# Ref: https://programming.guide/worlds-most-copied-so-snippet.html
+def repr_size(n_bytes: int, flag_SI: bool = False) -> str:
+  unit = 1000 if flag_SI else 1024
+  # limits ?
+  absBytes = abs(n_bytes)
+  if absBytes < unit:
+    return f'{n_bytes} B'
+  expLevel = int( math.log(absBytes) / math.log(unit))
+  # Threshold for unit bump
+  th = math.ceil(math.pow(unit, expLevel) * (unit - 0.05))
+  if expLevel < 6 and absBytes >= th - (51 if (th & 0xFFF) == 0xD00 else 0):
+    expLevel += 1
+  preUnit = ('kMGTPE' if flag_SI else 'KMGTPE')[expLevel-1] + ('' if flag_SI else 'i')
+  # Floating-point arithmetic
+  if expLevel > 4:
+    n_bytes /= unit
+    expLevel -= 1
+  val = n_bytes * 1.0 / math.pow(unit, expLevel)
+  return f'{val:.1f} {preUnit}B'
 
 def check_local_file(path_raw, overwrite=False):
   if not os.path.exists(path_raw):
@@ -120,12 +152,8 @@ def ls_alien(path_dir, pattern=''):
 def download_alien(source : str, target : str, args='-f', debug=False, **subproc_args):
   """Copy file to local from alien
   """
-  if not source.startswith('alien://'):
-    source = f'alien://{source}'
-  if not target.startswith('file:'):
-    target = f'file:{target}'
-  # mkdir?
-  cmd = ['alien_cp', args, source, target]
+  # alien_cp [option] <source> <target>
+  cmd = ['alien_cp', args, path_alien(source), path_local(target)]
   # Pipe
   ret = ' '.join(cmd) + '\n'
   stdout = subproc_args.get('stdout', None)
@@ -141,6 +169,7 @@ def download_alien(source : str, target : str, args='-f', debug=False, **subproc
   except subprocess.TimeoutExpired:
     ret += f'[X] Timeout - more than {subproc_args.get("timeout")}'
     return ret
+  # Log
   if stdout == subprocess.PIPE:
     ret = ret + proc.stdout.decode('utf-8')
   if stderr == subprocess.PIPE:
@@ -186,7 +215,7 @@ def listener_mp_log(q, logfile, n_job = 100, n_step=1, n_seconds=10):
   return n_job, n_done, n_ok, n_fail
 
 class GridDownloaderManager:
-  """Download output files from AliEn grid (by LEGO train)
+  """Download output files of LEGO train from AliEn grid
   
   Parameters:
   - train_id (required, e.g. 708_20220723-0034)
@@ -237,7 +266,9 @@ class GridDownloaderManager:
     self.enable_xml = gdm_args.get('enable_xml', True)
     self.enable_md5 = gdm_args.get('enable_md5', False)
   def read_env(self, path_envfile=None) -> dict:
-    """
+    """Read train configuration from env.sh file (local)
+    Train variables: self.train_config
+    Child info. resolved: self.child_conf['child_[N]']
     """
     if not path_envfile:
       path_envfile = self.env_local
@@ -351,6 +382,9 @@ class GridDownloaderManager:
     # End of child
     print(f'[-] File list generated {self.train_name}-{self.train_id} - {n_files_all} files ({repr_size(file_size_all)})')
   def generate_path_txt(self) ->  None:
+    """Generate file list with simple TXT format
+      ^[alien_path] [local_path]$
+    """
     for child_id,cfg in self.child_conf.items():
       print(f'[+] Generating file list for {child_id} : ')
       #mkdir
@@ -379,9 +413,10 @@ class GridDownloaderManager:
       print(f' > N files found = {n_files} ({repr(self.file_list)})')
       print(f' > Example : {fname} {local_file_path}')
   def print_validation(self, valid_stats) -> None:
+    """Print local file stats to sys.stdout
+      Input: result of self.validate_child()
     """
-    """
-    print(f'>>> File stats - {repr_ratio(valid_stats["count"]["local"], valid_stats["count"]["alien"])}, size: {valid_stats["size"]["local"]/(1024**3):.3f} / {repr_size(valid_stats["size"]["alien"])}')
+    print(f'>>> File stats - {repr_ratio(valid_stats["count"]["local"], valid_stats["count"]["alien"])}, size: {repr_size(valid_stats["size"]["local"])} / {repr_size(valid_stats["size"]["alien"])}')
     nfiles_missing = valid_stats["count"]["fail"]
     if nfiles_missing > 0:
       print(f'>>> - Missing -  {nfiles_missing} files ({repr_size(valid_stats["size"]["fail"])})')
@@ -394,8 +429,8 @@ class GridDownloaderManager:
       return True
     file_size_local = os.path.getsize(entry['path_local'])
     if file_size_local < entry['size']:
-      cmd = f'rm -f -v {entry["path_local"]}'
-      os.system(cmd) # DEBUG
+      cmd = f'rm -r -v {entry["path_local"]}'
+      os.system(cmd) # DEBUG: option, path check and protection, ...
       if log_mq:
         log_mq.put(f'>>> - incomplete file, wrong size (local-{repr_size(file_size_local)}, alien-{repr_size(entry["size"])}) - {entry["path_local"]}') # option to MQ
         log_mq.put(cmd)
@@ -434,7 +469,9 @@ class GridDownloaderManager:
     # Issue: memory/reference management for filelist(s)
     return ret
   def read_filelist(self, filelist_name):
-    """
+    """Filelist stored in local file (TXT or XML)
+      Basic entry info. - path_alien, path_local, size (alien)
+      Return [{file_entry}]
     """
     filelist = []
     f_filelist = open(filelist_name,'r')
@@ -520,12 +557,14 @@ class GridDownloaderManager:
     del valid_stats_pre
     proc_stats['file_stats'] = valid_stats_post
     return proc_stats
+  def job_label(self, alien_source):
+    return '/'.join([alien_source.split('/')[i] for i in [4, 5, -2]])
   def process_download_single(self, dl_args : dict):
     """ Downloading subprocess for MP pool
     """
     job_id = dl_args.get('job_id', 0)
     job_n = dl_args.get('job_n', 0)
-    job_label = '/'.join([dl_args["source"].split('/')[i] for i in [4, 5, -2]])
+    job_label = self.job_label(dl_args['source'])
     flag_debug = dl_args.get('debug', False)
     # Pipe
     log_mq = dl_args.get('log_mq', None)
@@ -587,11 +626,18 @@ class GridDownloaderManager:
     # Stats
     print(f'------Grid Download Manager------')
     n_jobs = proc_stats["job_stats"]["all"]
+    print(f'>>> LEGO train : {self.train_name}/{self.train_id}')
     print(f'>>> Job stats : {n_jobs} jobs started.')
     if n_jobs > 0:
       print(f'>>> Success : {repr_ratio(proc_stats["job_stats"]["ok"], proc_stats["job_stats"]["all"])}, FAIL : {repr_ratio(proc_stats["job_stats"]["fail"], proc_stats["job_stats"]["all"])}')
-      print(f'>>> Data transfer : {repr_size(proc_stats["job_stats"]["transfer"])}, time elpased : {time_end-time_start} seconds')
+      print(f'>>> Data transfer : {repr_size(proc_stats["job_stats"]["transfer"])}, time elapsed : {time_end-time_start} seconds')
     self.print_validation(proc_stats['file_stats'])
+    # Print missing files with job label
+    n_missingfile = proc_stats['file_stats']['count']['fail']
+    if n_missingfile > 0 and self.flag_debug:
+      for file_entry in proc_stats['file_stats']['filelist']['fail']:
+        alien_source = file_entry['path_alien']
+        print(f'[+] {self.job_label(alien_source)} - {alien_source}')
 
 
 if __name__ == '__main__':
