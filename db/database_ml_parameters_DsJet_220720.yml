@@ -1,0 +1,456 @@
+#############################################################################
+##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
+##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
+## This program is free software: you can redistribute it and/or modify it ##
+##  under the terms of the GNU General Public License as published by the  ##
+## Free Software Foundation, either version 3 of the License, or (at your  ##
+## option) any later version. This program is distributed in the hope that ##
+##  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  ##
+##     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    ##
+##           See the GNU General Public License for more details.          ##
+##    You should have received a copy of the GNU General Public License    ##
+##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
+#############################################################################
+
+DsJetpp:
+
+  apply_with_pkl_layout: false
+  overwrite_mlprob_mc: false
+
+  prob_scan:
+    activate: false
+    prob_sel: [0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95]
+
+  maskmissingvalues:
+    activate: true
+    tomask:
+      nsigTOF_Pr_0: -999.
+
+  nprongs: 3
+  prongformultsub: [1, 0, 0]
+  doml: true
+  doml_asprefilter: null #null = 1 training, true = 2 training-prefilter step, false = 2 training-analysis step
+  mass: 1.968
+  sel_reco_unp: "pt_cand>0"
+  sel_reco_singletrac_unp : null
+  sel_gen_unp: "pt_cand>0 and abs(z_vtx_gen)<10"
+  sel_cen_unp: null
+  sel_good_evt_unp: "is_ev_rej == 0"
+  sel_reco_skim: [null, null, null, null, null, null]
+  sel_gen_skim: [null, null, null, null, null, null]
+  sel_skim_binmin: [1,2,4,6,8,12] #list of nbins
+  sel_skim_binmax: [2,4,6,8,12,24] #list of nbins
+  var_binning: pt_cand
+  dofullevtmerge: false
+  bitmap_sel:
+    var_name: cand_type
+    var_isstd: isstd
+    var_ismcsignal: ismcsignal
+    var_ismcprompt: ismcprompt
+    var_ismcfd: ismcfd
+    var_ismcbkg: ismcbkg
+    var_ismcrefl: ismcrefl
+    isstd : [[0],[]]
+    ismcsignal: [[1],[5]]
+    ismcprompt: [[1,3],[5]]
+    ismcfd: [[1,4],[5]]
+    ismcbkg: [[2],[]]
+    ismcrefl: [[5],[]]
+
+  variables:
+    var_all: [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, sig_vert, delta_mass_KK,
+              cos_PiKPhi_3, max_norm_d0d0exp,
+              #dca, cos_PiDs,
+              #nsigTPC_Pi_0, nsigTPC_K_0, nsigTOF_Pi_0, nsigTOF_K_0,
+              #nsigTPC_Pi_1, nsigTPC_K_1, nsigTOF_Pi_1, nsigTOF_K_1,
+              #nsigTPC_Pi_2, nsigTPC_K_2, nsigTOF_Pi_2, nsigTOF_K_2,
+              nsigComb_Pi_0, nsigComb_K_0, nsigComb_Pi_1, nsigComb_K_1, nsigComb_Pi_2, nsigComb_K_2,
+              pt_prong0, pt_prong1, pt_prong2,
+              p_prong0, p_prong1, p_prong2,
+              imp_par_prong0, imp_par_prong1, imp_par_prong2,
+              spdhits_prong0, spdhits_prong1, spdhits_prong2,
+              inv_mass, pt_cand, cand_type, y_cand, phi_cand, eta_cand,
+              ev_id, ev_id_ext, run_number,
+              #jet
+              pt_jet, eta_jet, phi_jet, delta_eta_jet, delta_phi_jet, delta_r_jet,
+              pt_gen_jet, eta_gen_jet, phi_gen_jet, delta_eta_gen_jet, delta_phi_gen_jet, delta_r_gen_jet, pt_gen_cand]
+    var_evt:
+      data: [z_vtx_reco,
+             n_tracklets, n_tracklets_corr, n_tracklets_corr_shm, 
+             perc_v0m,
+             V0Amult, v0m, v0m_eq, v0m_corr, v0m_eq_corr,
+             centrality, n_vtx_contributors, n_tracks,
+             run_number, ev_id, ev_id_ext,
+             is_ev_rej, is_ev_rej_INT7,
+             #is_ev_rej_INT7, is_ev_rej_HighMultSPD, is_ev_rej_HighMultV0,
+             #is_ev_sel_int7, is_ev_sel_shm, is_ev_sel_vhm,
+             #trigger_hasclass_INT7, trigger_hasclass_HighMultSPD, trigger_hasclass_HighMultV0,
+             trigger_hasbit_INT7, trigger_hasbit_HighMultSPD, trigger_hasbit_HighMultV0]
+      mc: [z_vtx_gen, z_vtx_reco,
+           n_tracklets, n_tracklets_corr, n_tracklets_corr_shm, 
+           perc_v0m,
+           V0Amult, v0m, v0m_eq, v0m_corr, v0m_eq_corr,
+           mult_gen, mult_gen_v0a, mult_gen_v0c,
+           centrality, n_vtx_contributors, n_tracks,
+           run_number, ev_id, ev_id_ext,
+           is_ev_rej, is_ev_rej_INT7,
+           #is_ev_rej_INT7, is_ev_rej_HighMultSPD, is_ev_rej_HighMultV0,
+           #is_ev_sel_int7, is_ev_sel_shm, is_ev_sel_vhm, 
+           #trigger_hasclass_INT7, trigger_hasclass_HighMultSPD, trigger_hasclass_HighMultV0, 
+           trigger_hasbit_INT7, trigger_hasbit_HighMultSPD, trigger_hasbit_HighMultV0]
+    var_gen: [y_cand, pt_cand, eta_cand, phi_cand, cand_type, dau_in_acc, run_number, ev_id, ev_id_ext,
+    # For jet
+    pt_jet, eta_jet, phi_jet, delta_eta_jet, delta_phi_jet, delta_r_jet]
+    var_evt_match: [run_number, ev_id, ev_id_ext]
+    #Same as NP Ds analysis (and re-analysis 5.02 TeV)
+    var_training: [[d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, sig_vert, delta_mass_KK, cos_PiKPhi_3, max_norm_d0d0exp, nsigComb_Pi_0, nsigComb_K_0, nsigComb_Pi_1, nsigComb_K_1, nsigComb_Pi_2, nsigComb_K_2],
+    [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, sig_vert, delta_mass_KK, cos_PiKPhi_3, max_norm_d0d0exp, nsigComb_Pi_0, nsigComb_K_0, nsigComb_Pi_1, nsigComb_K_1, nsigComb_Pi_2, nsigComb_K_2],
+    [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, sig_vert, delta_mass_KK, cos_PiKPhi_3, max_norm_d0d0exp, nsigComb_Pi_0, nsigComb_K_0, nsigComb_Pi_1, nsigComb_K_1, nsigComb_Pi_2, nsigComb_K_2],
+    [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, sig_vert, delta_mass_KK, cos_PiKPhi_3, max_norm_d0d0exp, nsigComb_Pi_0, nsigComb_K_0, nsigComb_Pi_1, nsigComb_K_1, nsigComb_Pi_2, nsigComb_K_2],
+    [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, sig_vert, delta_mass_KK, cos_PiKPhi_3, max_norm_d0d0exp, nsigComb_Pi_0, nsigComb_K_0, nsigComb_Pi_1, nsigComb_K_1, nsigComb_Pi_2, nsigComb_K_2],
+    [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, sig_vert, delta_mass_KK, cos_PiKPhi_3, max_norm_d0d0exp, nsigComb_Pi_0, nsigComb_K_0, nsigComb_Pi_1, nsigComb_K_1, nsigComb_Pi_2, nsigComb_K_2]]
+    var_boundaries: [cos_PiKPhi_3, pt_cand]
+    var_correlation:
+      - [cos_PiKPhi_3]
+      - [pt_cand]
+    var_signal: signal
+    var_inv_mass: inv_mass
+
+  files_names:
+    namefile_unmerged_tree: AnalysisResults.root
+    namefile_reco: AnalysisResultsReco.pkl.lz4
+    namefile_evt: AnalysisResultsEvt.pkl.lz4
+    namefile_evtvalroot: AnalysisResultsROOTEvtVal.root
+    namefile_evtorig: AnalysisResultsEvtOrig.pkl.lz4
+    namefile_gen: AnalysisResultsGen.pkl.lz4
+    namefile_reco_applieddata: AnalysisResultsRecoAppliedData.pkl.lz4
+    namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.pkl.lz4
+    namefile_mcweights: mcweights.root
+    treeoriginreco: "PWGHF_TreeCreator/tree_Ds"
+    treeorigingen: "PWGHF_TreeCreator/tree_Ds_gen"
+    treeoriginevt: "PWGHF_TreeCreator/tree_event_char"
+    treeoutput: "Dstree"
+    histofilename: "masshisto.root"
+    efffilename: "effhisto.root"
+    respfilename: "resphisto.root"
+    crossfilename: "cross_section_tot.root"
+
+  multi:
+    #default values that can be changed here: seedmerge=12, maxfiles=-1, chunksizeunp=100, chunksizeskim=100
+    max_ncand_merge: 5000000 # if < 0, use default merging. Otherwise process_mergeforml_max (with merge_method_max2)
+    data:
+      #lowered for day time
+      nprocessesparallel: 50
+      chunksizeunp: [100, 100, 100] #list of periods
+      maxfiles: [-1,-1,-1] #list of periods
+      chunksizeskim: [100, 100, 100] #list of periods
+      seedmerge: [12,12,12] #list of periods
+      fracmerge: [[0.01, 0.0075, 0.05, 0.05, 0.4, 0.4], 
+                  [0.01, 0.0075, 0.05, 0.05, 0.4, 0.4], 
+                  [0.01, 0.0075, 0.05, 0.05, 0.4, 0.4]] #list of pT bin in list of periods. Only used in default merging, with process_mergeforml (with merge_method)
+                                                         #if max_ncand_merge > 0, this will only be used for significance calculation
+      max_frac_merge: [0.05, 0.25, 0.4, 0.4, 0.4, 0.4] #list of pT bins
+      period: [LHC16pp,LHC17pp,LHC18pp] #list of periods
+      select_children: [
+        [child_16-1, child_16-2, child_16-3, child_16-4, child_16-5, child_16-6, child_16-7, child_16-8, child_16-9], # Train 709_20220805-1300 (1..7=16deghijop), 710_20220805-1301 (8=16k, 9=16l)
+        [child_17-1, child_17-2, child_17-3, child_17-4, child_17-5, child_17-6, child_17-7, child_17-8, child_17-9], # Train 711_20220805-1301
+        [child_1, child_2, child_3, child_4, child_5, child_6, child_7, child_8, child_9, child_10, child_11, child_12, child_13, child_14]] 
+        # select children explicitly
+      unmerged_tree_dir: [/mnt/temp/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20220720_ROOT6-1/pp_data/705_20220720-1829/merged,
+                          /mnt/temp/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20220720_ROOT6-1/pp_data/705_20220720-1829
+/merged,
+                          /mnt/temp/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20220720_ROOT6-1/pp_data/705_20220720-1829/merged] #list of periods
+      pkl: [/mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/705_20220720-1829/pp_2016_data/pkl,
+            /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/705_20220720-1829/pp_2017_data/pkl,
+            /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/705_20220720-1829/pp_2018_data/pkl] #list of periods
+      pkl_skimmed: [/mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/705_20220720-1829/pp_2016_data/pklsk,
+                    /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/705_20220720-1829/pp_2017_data/pklsk,
+                    /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/705_20220720-1829/pp_2018_data/pklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [/mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/705_20220720-1829/pp_2016_data/pklskml,
+                                 /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/705_20220720-1829/pp_2017_data/pklskml,
+                                 /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/705_20220720-1829/pp_2018_data/pklskml] #list of periods
+      pkl_skimmed_merge_for_ml_all: /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/705_20220720-1829/pp_data_mltot
+      pkl_evtcounter_all: /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/705_20220720-1829/pp_data_evttot
+      mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_16, 
+                    ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_17, 
+                    ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_18]
+  
+    mc: # 706 default, trk eff. 3% - 707, 4% - 708
+      nprocessesparallel: 50
+      maxfiles: [-1,-1,-1] #list of periods
+      chunksizeunp: [100, 100, 100] #list of periods
+      chunksizeskim: [100, 100, 100] #list of periods
+      seedmerge: [12,12,12] #list of periods
+      fracmerge : [[1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+                   [1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+                   [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]] #list of pT bin in list of periods.
+      max_frac_merge: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0] #list of pT bins
+      period: [LHC16pp_D2H, LHC17pp_D2H, LHC18pp_D2H] #list of periods
+      select_children: [["child_1"], ["child_2"], ["child_3"]] # select children explicitly
+      unmerged_tree_dir: [/mnt/temp/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20220720_ROOT6-1/pp_sim/706_20220720-1829/merged/,
+                          /mnt/temp/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20220720_ROOT6-1/pp_sim/706_20220720-1829/merged/,
+                          /mnt/temp/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20220720_ROOT6-1/pp_sim/706_20220720-1829/merged/] #list of periods
+      pkl: [/mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/706_20220720-1829/pp_2016_sim_D2H/pkl,
+            /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/706_20220720-1829/pp_2017_sim_D2H/pkl,
+            /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/706_20220720-1829/pp_2018_sim_D2H/pkl] #list of periods
+      pkl_skimmed: [/mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/706_20220720-1829/pp_2016_sim_D2H/pklsk,
+                    /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/706_20220720-1829/pp_2017_sim_D2H/pklsk,
+                    /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/706_20220720-1829/pp_2018_sim_D2H/pklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [/mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/706_20220720-1829/pp_2016_sim_D2H/pklskml,
+                                 /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/706_20220720-1829/pp_2017_sim_D2H/pklskml,
+                                 /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/706_20220720-1829/pp_2018_sim_D2H/pklskml] #list of periods
+      pkl_skimmed_merge_for_ml_all: /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/706_20220720-1829/pp_mc_prodD2H_mltot
+      pkl_evtcounter_all: /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/706_20220720-1829/pp_mc_prodD2H_evttot
+      mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_16,
+                    ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_17,
+                    ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_18]
+
+  ml:
+    evtsel: is_ev_rej==0
+    triggersel:
+      data: "trigger_hasbit_INT7==1"
+      mc: null
+    nbkg: 100000
+    nsig: 100000
+    fracbkgoversig: 2
+    sampletagforsignal: 1
+    sampletagforbkg: 0
+    #sampletagforbkgfd: 2
+    sel_sigml: ismcprompt == 1
+    sel_bkgml: inv_mass<1.832 or inv_mass>2.012
+    #sel_bkgmlfd: ismcfd == 1
+    #multiclass_labels: [Bkg, SigPr, SigFD]
+    nkfolds: 5
+    rnd_shuffle: 12
+    rnd_splt: 12
+    test_frac: 0.2
+    binmin: [1,2,4,6,8,12] #list of nbins
+    binmax: [2,4,6,8,12,24] #list of nbins
+    #mltype: MultiClassification
+    mltype: BinaryClassification
+    ncorescrossval: 10
+    #Combination of mlplot_AOD235_multi_P8 for  <8 and mlplot_AOD235_noINT7_multi_P8 for >8
+    #mlplot: /data/Derived/DsppvsMult/vAN-20210223_ROOT6-1/593_20210223-2051/mlplot_AOD235_multi_P8_comb # to be removed
+    #mlout: /data/Derived/DsppvsMult/vAN-20210223_ROOT6-1/593_20210223-2051/mlout_AOD235_multi_P8_comb # to be removed
+    #Combination of trigger_hasbit_INT7==1 for <8 and no selection for >8
+    #mlplot: /data/Derived/DsppvsMult/vAN-20210223_ROOT6-1/593_20210223-2051/mlplot_AOD235_binary_P8_comb # to be removed
+    #mlout: /data/Derived/DsppvsMult/vAN-20210223_ROOT6-1/593_20210223-2051/mlout_AOD235_binary_P8_comb # to be removed
+    mlplot: /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/705_20220720-1829/mlplot # to be removed
+    mlout: /mnt/temp/OngoingAnalysis_DsJet/xgboost/Run2_Ds_pp13TeV_Luuk # for BDT model (xgboost)
+    opt:
+      isFONLLfromROOT: true
+      #TODO: UPDATE
+      filename_fonll: 'data/fonll/DmesonLcPredictions_13TeV_y05_FFee_BRpythia8_SepContr_PDG2020.root' # file with FONLL predictions
+      fonll_particle: 'hDsPhipitoKkpi'
+      fonll_pred: 'max' # edge of the FONLL prediction
+      FF: 0.092 # fragmentation fraction
+      sigma_MB: 57.8e-3  # Minimum Bias cross section (pp) 50.87e-3 [b] (5.02?) 57.8e-3 (13?), 1 for Pb-Pb
+      Taa: 1 # 23260 [b^-1] in 0-10% Pb-Pb, 3917 [b^-1] in 30-50% Pb-Pb, 1 for pp
+      BR: 2.22e-2 # branching ratio of the decay Ds->phipi * phi->K+K-
+      f_prompt: 0.9 # estimated fraction of prompt candidates
+      bkg_data_fraction: 0.5 # fraction of real data used in the estimation
+      num_steps: 400 # number of steps used in efficiency and signif. estimation
+      #num_steps: 111 # number of steps used in efficiency and signif. estimation
+      bkg_function: pol2 # fit function for bkg (among TH1 predefined fit functions, e.g. expo, pol1, pol2, ...)
+      save_fit: True # save bkg fits with the various cuts on ML output
+      raahp: [1,1,1,1,1,1] #list of nbins
+      presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
+      mass_fit_lim: [1.69, 2.21] # region for the fit of the invariant mass distribution [GeV/c^2]
+      bin_width: 0.001 # bin width of the invariant mass histogram
+
+  mlapplication:
+    data:
+      pkl_skimmed_dec: [/mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/705_20220720-1829/pp_2016_data/pklskdec,
+                        /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/705_20220720-1829/pp_2017_data/pklskdec,
+                        /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/705_20220720-1829/pp_2018_data/pklskdec] #list of periods
+      pkl_skimmed_decmerged: [/mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/705_20220720-1829/pp_2016_data/skpkldecmerged,
+                              /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/705_20220720-1829/pp_2017_data/skpkldecmerged,
+                              /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/705_20220720-1829/pp_2018_data/skpkldecmerged] #list of periods
+
+    mc:
+      pkl_skimmed_dec: [/mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/706_20220720-1829/pp_2016_sim_D2H/pklskdec,
+                        /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/706_20220720-1829/pp_2017_sim_D2H/pklskdec,
+                        /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/706_20220720-1829/pp_2018_sim_D2H/pklskdec] #list of periods
+      pkl_skimmed_decmerged: [/mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/706_20220720-1829/pp_2016_sim_D2H/skpkldecmerged_D2HMB,
+                              /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/706_20220720-1829/pp_2017_sim_D2H/skpkldecmerged_D2HMB,
+                              /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/706_20220720-1829/pp_2018_sim_D2H/skpkldecmerged_D2HMB] #list of periods
+
+    modelname: xgboost
+    modelsperptbin: [Model_pT_1_2.sav,
+                     Model_pT_2_4.sav,
+                     Model_pT_4_6.sav,
+                     Model_pT_6_8.sav,
+                     Model_pT_8_12.sav,
+                     Model_pT_12_24.sav]
+    modelsperptbin_hipe4ml: [ModelHandler_pT_1_2.pkl,
+                             ModelHandler_pT_2_4.pkl,
+                             ModelHandler_pT_4_6.pkl,
+                             ModelHandler_pT_6_8.pkl,
+                             ModelHandler_pT_8_12.pkl,
+                             ModelHandler_pT_12_24.pkl]
+    #ml_prefilter_probcut: [[0.2, 0.0], [0.2, 0.0], [0.2, 0.0], [0.4, 0.0], [0.4, 0.0], [0.6, 0.0]]
+    #probcutpresel:
+    #  data: [[0.2, 0.0], [0.2, 0.0], [0.2, 0.0], [0.4, 0.0], [0.4, 0.0], [0.6, 0.0]] #list of nbins
+    #  mc: [[0.2, 0.0], [0.2, 0.0], [0.2, 0.0], [0.4, 0.0], [0.4, 0.0], [0.6, 0.0]] #list of nbins
+    #probcutoptimal: [[0.010, 0.14], [0.010, 0.105], [0.010, 0.095], [0.031, 0.23], [0.014, 0.19], [0.022, 0.18]]
+    ml_prefilter_probcut: [0.3,0.3,0.3,0.3,0.3,0.3] #list of nbins
+    probcutpresel:
+      data: [0.3,0.3,0.3,0.3,0.3,0.3] #list of nbins
+      mc: [0.3,0.3,0.3,0.3,0.3,0.3] #list of nbins
+    #probcutoptimal: [0.978,0.985,0.985,0.962,0.988,0.974] #list of nbins
+    #probcutoptimal: [0.9791025, 0.985, 0.976675, 0.936485, 0.97296, 0.9616025] #list of nbins #opti_1 after cutvar ±50%
+    probcutoptimal: [0.98296125, 0.985, 0.976675, 0.936485, 0.97296, 0.9616025] #list of nbins #opti_2 after cutvar ±50%
+    #probcutoptimal: [0.95, 0.95, 0.95, 0.95, 0.95, 0.95] # default for systematics
+    #probcutoptimal: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5] #opt for fitting, sb check
+    #probcutoptimal: [0, 0, 0, 0, 0, 0]
+
+  analysis:
+    #TODO: To update
+    indexhptspectrum: 3 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
+    fd_method: 2 #knone=0, kfc=1, kNb=2
+    cctype: 1 #kpp7
+    sigmav0: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
+    inputfonllpred: data/fonll/DmesonLcPredictions_13TeV_y05_FFee_BRpythia8_SepContr_PDG2020.root
+    dir_general_plots: /data/DerivedResultsJets/DsJet_pp/DsJet-test/analysis_plots
+
+
+
+    ####
+    #  HFjets Analysis
+    ####
+    jet_FF: &jet_default
+      info_level: debug
+      proc_type: Dhadrons_jet
+      doeff_resp: true
+      unmatched_gen: true
+
+      useperiod: [1,1,1] #list of periods (only 2018 - Train 705)
+      usejetptbinned_deff: false
+
+      latexnamehadron: "D_{s}^{#plus}"
+      latexnamedecay: "K^{+}K^{-} #pi^{#plus}"
+
+      var_binning2: pt_jet
+      var_binning2_gen: pt_gen_jet
+      latexbin2var: "#it{p}_{T}^{jet ch}"
+      sel_binmin2_reco: [5.0,7.0,15.0] #list of nbins
+      sel_binmax2_reco:     [7.0,15.0,35.0] #list of nbins
+      sel_binmin2_gen:  [5.0,7.0,15.0] #list of nbins
+      sel_binmax2_gen:      [7.0,15.0,35.0] #list of nbins
+      var_binningshape: z
+      var_binningshape_gen: z_gen
+      var_shape_latex: "#it{z}_{#parallel}^{ch}"
+      sel_binminshape_reco: [0.4,0.6,0.7,0.8,0.9]
+      sel_binmaxshape_reco:     [0.6,0.7,0.8,0.9,1.0]
+      sel_binminshape_gen:  [0.4,0.6,0.7,0.8,0.9]
+      sel_binmaxshape_gen:      [0.6,0.7,0.8,0.9,1.0]
+      sel_closure_frac: 0.4
+      triggerbit: INT7
+      sel_an_binmin:    [3,4,6,8,12] #list of pt nbins
+      sel_an_binmax:      [4,6,8,12,24] #list of pt nbins
+      binning_matching:   [1,2,3,4, 5] #index matching with probcut
+      jetsel_gen: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
+      jetsel_sim: "abs(y_cand) < 0.5 and abs(eta_jet) < 0.5" # jet selection in simulations
+      jetsel_reco: "abs(y_cand) < 0.5 and abs(z_vtx_reco) < 10 and abs(eta_jet) < 0.5"
+      jetsel_gen_matched_reco: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_gen_jet) < 0.5"
+      evtsel: is_ev_rej==0
+      triggersel:
+        data: "trigger_hasbit_INT7==1"
+        mc: null
+      data: &data_out_default
+        runselection: [null, null, null]
+        results: [/mnt/temp/OngoingAnalysis_DsJet/DsJet-test/pp_2016_data,
+                  /mnt/temp/OngoingAnalysis_DsJet/DsJet-test/pp_2017_data,
+                  /mnt/temp/OngoingAnalysis_DsJet/DsJet-test/pp_2018_data]
+        resultsallp: /mnt/temp/OngoingAnalysis_DsJet/DsJet-test/pp_data
+      mc: &mc_out_default
+        runselection: [null, null, null]
+        results: [/mnt/temp/OngoingAnalysis_DsJet/DsJet-test/pp_2016_mc_prodD2H,
+                  /mnt/temp/OngoingAnalysis_DsJet/DsJet-test/pp_2017_mc_prodD2H,
+                  /mnt/temp/OngoingAnalysis_DsJet/DsJet-test/pp_2018_mc_prodD2H]
+        resultsallp: /mnt/temp/OngoingAnalysis_DsJet/DsJet-test/pp_mc_prodD2H
+      data_proc: # alternative processor output used as the analyzer input
+        <<: *data_out_default
+      mc_proc: # alternative processor output used as the analyzer input
+        <<: *mc_out_default
+
+      mass_fit_lim: [1.72, 2.15] # region for the fit of the invariant mass distribution [GeV/c^2]
+      bin_width: 0.001 # bin width of the invariant mass histogram
+
+      # simple fitter START
+      sgnfunc: [1,1,1,1, 1] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2
+      bkgfunc: [2,2,2,2, 2] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5
+      masspeak: 1.969
+      massmin: [1.72, 1.72, 1.72, 1.72, 1.72]
+      massmax: [2.15, 2.15, 2.15, 2.15, 2.15, 2.15]
+      rebin: [[6,6,6,6, 6],[6,6,6,6, 6],[6,6,6,6, 6]]
+      
+      fix_mean: [true, true, true, true, true]
+      # If SetArraySigma true: sigma_initial is taken from sigmaarray; false: sigma_initial is taken from MC
+      # If SetFixGaussianSigma true: sigma fixed to sigma_initial
+      SetFixGaussianSigma: [true, true, true, true, true]
+      SetArraySigma: [false, false, false, false, false]
+      sigmaarray: [0.011,0.008,0.008,0.011,0.012] # initial sigma
+
+      masspeaksec: 1.869
+      fix_meansec: [true, true, true, true, true]
+      fix_sigmasec: [true, true, true, true, true]
+      sigmaarraysec: [0.008,0.008,0.008,0.008,0.008]
+      width_ratio_DplusDs: 0.91
+      # simple fitter END
+
+      signal_sigma: 2.0
+      sigma_scale: 0.9545
+      sideband_sigma_1_left: 5
+      sideband_sigma_2_left: 10
+      sideband_sigma_1_right: 5
+      sideband_sigma_2_right: 10
+      sidebandrightonly: false
+      sidebandleftonly: false
+
+      niterunfolding: 15
+      niterunfoldingchosen: 4
+
+      branching_ratio: 2.22e-2
+      xsection_inel: 57.8
+      #parameters needed for comparison with fonll (values to be checked)
+      lb_branching_ratio: 0.144
+      convert_const: 1.e-9 # convert picobarn to milibarn for fonll crossection
+      antipart_count: 2 # count doble entries for particle and antiparticle
+
+      doprior: false
+
+      powheg_path_nonprompt: /home/yitao/work/alice-fast-simulation/output/trees_powheg+pythia6+evtgen_beauty.root
+
+      powheg_path_prompt: /home/yitao/work/alice-fast-simulation/output/trees_powheg+pythia6_charm.root
+      
+      powheg_prompt_variations_path: /data/POWHEG/trees_powheg_pr_
+      #powheg_prompt_variations: ["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow"]
+      powheg_prompt_variations: []
+      pythia8_prompt_variations_path: /data/PYTHIA8/trees_pythia8_pr_
+      #pythia8_prompt_variations: ["default","colour0soft"]
+      pythia8_prompt_variations: []
+      #pythia8_prompt_variations_legend:  ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
+      pythia8_prompt_variations_legend: []
+
+      variations_db: /home/yitao/DsJet/db/database_variations_Dspp_jet_FF.yml
+
+  systematics:
+    probvariation:
+      useperiod: [0,0,1] #period from where to define prob cuts
+      ncutvar: 20 #number of looser and tighter variations
+      maxperccutvar: 0.50 #max diff in efficiency for loosest/tightest var
+      #For multiclassificcatio, use low - high value convention, not looser-tighter
+      cutvarminrange: [0.8, 0.8, 0.8, 0.8, 0.8, 0.8]
+      cutvarmaxrange: [0.999, 0.999, 0.999, 0.999, 0.999, 0.999]
+      fixedmean: False #Fix mean cutvar histo to central fit
+      fixedsigma: False #Fix sigma cutvar histo to central fit
+    mcptshape:
+      #Outdated, should be added again in package
+      #FONLL / generated LHC19h4c1
+      weights: [1.000000]
+      #From SetPtWeightsFromFONLL13overLHC17c3a12 in AliPhysics
+      #weights: [1.429770]
+      weights_min_pt: 0
+      weights_max_pt: 40
+      weights_bins: 400
