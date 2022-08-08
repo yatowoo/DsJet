@@ -157,8 +157,7 @@ DsJetpp:
         [child_1, child_2, child_3, child_4, child_5, child_6, child_7, child_8, child_9, child_10, child_11, child_12, child_13, child_14]] 
         # select children explicitly
       unmerged_tree_dir: [/mnt/temp/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20220720_ROOT6-1/pp_data/705_20220720-1829/merged,
-                          /mnt/temp/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20220720_ROOT6-1/pp_data/705_20220720-1829
-/merged,
+                          /mnt/temp/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20220720_ROOT6-1/pp_data/705_20220720-1829/merged,
                           /mnt/temp/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20220720_ROOT6-1/pp_data/705_20220720-1829/merged] #list of periods
       pkl: [/mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/705_20220720-1829/pp_2016_data/pkl,
             /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/705_20220720-1829/pp_2017_data/pkl,
