@@ -46,11 +46,11 @@ ml_study:
 mlapplication:
   data:
     doapply: true
-    domergeapply: false
+    domergeapply: true
     docontinueafterstop: true 
   mc:
     doapply: true
-    domergeapply: false
+    domergeapply: true
     docontinueafterstop: true
 
 analysis:
