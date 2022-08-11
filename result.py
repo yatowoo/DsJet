@@ -6,7 +6,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description='FF results')
 parser.add_argument('-f','--file', default='/mnt/d/DsJet/systematics/merged_full0714/pp_data/unfolding_results.root', help='Unfolded data results')
-parser.add_argument('-m','--model', default='charm_fastsimu_Ds.root', help='Model outputs')
+parser.add_argument('-m','--model', default='/mnt/d/DsJet/fastsimu/', help='Model outputs')
 parser.add_argument('--sys', default='/mnt/d/DsJet/systematics/merged_full0705/pp_data/systematics_results.root', help='Systematic uncertainties')
 parser.add_argument('-i','--iter',type=int, default=4, help='N iterations for unfolding')
 parser.add_argument('-o','--output',default='DsJet-results.root', help='Output file')
@@ -98,7 +98,7 @@ fExtra = None
 if args.extra:
   fExtra = TFile.Open(args.extra)
 fSysematics = TFile.Open(args.sys)
-fModel = TFile.Open(args.model)
+
 c = TCanvas('c1','draw',1200,1400)
 #c.Divide(N_JETBINS) # Issue - figure distorted when subcanvas.SaveAs
 
@@ -122,7 +122,7 @@ def draw_model(model_name : dict, pt_jet_l=5, pt_jet_u=7):
   """
   """
   model_vars = model_db[model_name]
-  fModel = TFile.Open(model_vars['file'])
+  fModel = TFile.Open(args.model + '/' + model_vars['file'])
   suffix = f'{pt_jet_l:.0f}_{pt_jet_u:.0f}'
   hname = f'hz_ptjet_{suffix}'
   hnameNew = f'{hname}_{model_name}'
@@ -226,7 +226,7 @@ for iptjet in range(N_JETBINS):
     hExtra.SetMarkerColor(root_plot.kRed)
     hExtra.SetLineWidth(2)
     hExtra.SetMarkerStyle(root_plot.kBlockHollow)
-    lgd.AddEntry(hExtra, f'Train705_2018')
+    lgd.AddEntry(hExtra, args.extra.split('/')[-3]) # [ana-220720test]/pp_data/unfolding_results.root
     hExtra.Draw('same')
     fOutput.WriteObject(hExtra, f'FF_Ds_extra_{name_suffix}')
   if args.dzero: # D0 comp.
