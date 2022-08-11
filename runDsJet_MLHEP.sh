@@ -1,6 +1,7 @@
 #!/bin/bash - 
 
 workdir=$HOME/work/DsJet-test
+output_dir=$HOME/work/Results
 workdir_data=$workdir/pp_data
 
 rundir=$HOME/MachineLearningHEP/machine_learning_hep
@@ -22,9 +23,10 @@ fi
 
 analysis=jet_FF
 config_name=$1
-log_name=~/log/runDsJet-$config_name-$(date +%Y%m%d%H%M).log
+log_file=~/log/runDsJet-$config_name-$(date +%Y%m%d%H%M).log
 
-echo $* > $log_name
+exec &> >(tee "$log_file")
+echo $SCRIPT $*
 set -x
 # Empty work dir
 if [ -e "$workdir_data" ];then
@@ -33,21 +35,21 @@ fi
 
 # Run analysis
 cd $rundir
-nice python do_entire_analysis.py -r $submission -d $database -a $analysis 2>&1 | tee -a $log_name
+nice python do_entire_analysis.py -r $submission -d $database -a $analysis
 
+cd $output_dir
+cp $log_file $workdir/
 # Clean dir by year
-exec >> $log_name
-exec 2>&1
-
-cd $workdir/../
-cp $log_name $workdir/
 if [ -d "$workdir/pp_2016_data" ];then
   rm -rf $workdir/pp_20*
 fi
 if [ -d "$workdir_data" ];then
-  cp -a $workdir ~/work/ana-$config_name
-  tar czf ana-$config_name.tar.gz ana-$config_name/
+  archive_dir=$output_dir/ana-$config_name
+  rm -rf $archive_dir
+  cp -a $workdir $archive_dir
+  tar czf $output_dir/ana-$config_name.tar.gz ana-$config_name/
   rm $workdir/*.log
-  echo "[+] Results saved to "$workdir/$ana-$config_name"[.tar.gz]"
+  echo "[+] Results saved to "$output_dir/ana-$config_name".tar.gz"
 fi
 set +x
+echo "[-] Log file : "$log_file
