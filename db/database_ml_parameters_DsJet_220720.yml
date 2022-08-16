@@ -235,7 +235,8 @@ DsJetpp:
     #mlplot: /data/Derived/DsppvsMult/vAN-20210223_ROOT6-1/593_20210223-2051/mlplot_AOD235_binary_P8_comb # to be removed
     #mlout: /data/Derived/DsppvsMult/vAN-20210223_ROOT6-1/593_20210223-2051/mlout_AOD235_binary_P8_comb # to be removed
     mlplot: /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/705_20220720-1829/mlplot # to be removed
-    mlout: /mnt/temp/OngoingAnalysis_DsJet/xgboost/Run2_Ds_pp13TeV_Luuk # for BDT model (xgboost)
+    #mlout: /mnt/temp/OngoingAnalysis_DsJet/xgboost/Run2_Ds_pp13TeV_Luuk # for BDT model (xgboost)
+    mlout: /mnt/temp/OngoingAnalysis_DsJet/xgboost/Run2_Ds_pp13TeV_Arthur # for BDT model (xgboost)
     opt:
       isFONLLfromROOT: true
       #TODO: UPDATE
@@ -275,12 +276,20 @@ DsJetpp:
                               /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/706_20220720-1829/pp_2018_sim_D2H/skpkldecmerged_D2HMB] #list of periods
 
     modelname: xgboost
-    modelsperptbin: [Model_pT_1_2.sav,
+    # luuk - Path: /mnt/temp/OngoingAnalysis_DsJet/xgboost/Run2_Ds_pp13TeV_Luuk/  
+    modelsperptbin_luuk: [Model_pT_1_2.sav,
                      Model_pT_2_4.sav,
                      Model_pT_4_6.sav,
                      Model_pT_6_8.sav,
                      Model_pT_8_12.sav,
                      Model_pT_12_24.sav]
+    # agal - Path: /mnt/temp/OngoingAnalysis_DsJet/xgboost/Run2_Ds_pp13TeV_Arthur/               
+    modelsperptbin: [xgboost_binaryclass_pt_cand_1.0_2.0.sav,
+                     xgboost_binaryclass_pt_cand_2.0_4.0.sav,
+                     xgboost_binaryclass_pt_cand_4.0_6.0.sav,
+                     xgboost_binaryclass_pt_cand_6.0_8.0.sav,
+                     xgboost_binaryclass_pt_cand_8.0_12.0.sav,
+                     xgboost_binaryclass_pt_cand_12.0_24.0.sav]
     modelsperptbin_hipe4ml: [ModelHandler_pT_1_2.pkl,
                              ModelHandler_pT_2_4.pkl,
                              ModelHandler_pT_4_6.pkl,
@@ -298,10 +307,11 @@ DsJetpp:
       mc: [0.3,0.3,0.3,0.3,0.3,0.3] #list of nbins
     #probcutoptimal: [0.978,0.985,0.985,0.962,0.988,0.974] #list of nbins
     #probcutoptimal: [0.9791025, 0.985, 0.976675, 0.936485, 0.97296, 0.9616025] #list of nbins #opti_1 after cutvar ±50%
-    probcutoptimal: [0.98296125, 0.985, 0.976675, 0.936485, 0.97296, 0.9616025] #list of nbins #opti_2 after cutvar ±50%
+    #probcutoptimal: [0.98296125, 0.985, 0.976675, 0.936485, 0.97296, 0.9616025] #list of nbins #opti_2 after cutvar ±50%
     #probcutoptimal: [0.95, 0.95, 0.95, 0.95, 0.95, 0.95] # default for systematics
     #probcutoptimal: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5] #opt for fitting, sb check
     #probcutoptimal: [0, 0, 0, 0, 0, 0]
+    probcutoptimal: [0.99, 0.96, 0.95, 0.92, 0.92, 0.82] # Arthur - optimal value (thesis)
 
   analysis:
     #TODO: To update
