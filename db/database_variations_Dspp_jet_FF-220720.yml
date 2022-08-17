@@ -1,0 +1,341 @@
+categories:
+    default:
+        activate: yes
+        processor: true
+        label: "default"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            default:
+                activate: [yes]
+                label: ["default"]
+                diffs: {}
+    fitting:
+        activate: yes
+        processor: false
+        label: "fitting"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            bkgfunc:
+                activate: [yes]
+                label: ["bkg. - exp."]
+                diffs:
+                    analysis:
+                        jet_FF:
+                            bkgfunc: [0]
+            masspeak:
+                activate: [no]
+                label: ["mass peak"]
+                diffs:
+                    analysis:
+                        jet_FF:
+                            masspeak:    [1.969]
+                            masspeaksec: [1.869]
+            massmin:
+                activate: [yes, yes]
+                label: 
+                    - "mass min. 1.65"
+                    - "mass min. 1.75"
+                diffs:
+                    analysis:
+                        jet_FF:
+                            massmin: [1.65, 1.75]
+            massmax:
+                activate: [yes, yes]
+                label: 
+                    - "mass max. 2.09"
+                    - "mass max. 2.21"
+                diffs:
+                    analysis:
+                        jet_FF:
+                            massmax: [2.09, 2.21]
+            rebin:
+                activate: [yes, yes]
+                label:
+                    - "rebin - 5 MeV"
+                    - "rebin - 8 MeV"
+                diffs:
+                    analysis:
+                        jet_FF:
+                            rebin: [5, 8]
+            fix_mean:
+                activate: [yes]
+                label:
+                    - "mean fix"
+                diffs:
+                    analysis:
+                        jet_FF:
+                            fix_mean: [true]
+            fix_sigma:
+                activate: [no, yes]
+                label:
+                    - "free sigma"
+                    - "fix sigma MC"
+                diffs:
+                    analysis:
+                        jet_FF:
+                                SetInitialGaussianSigma: [true, false]
+                                SetFixGaussianSigma: [false, true]
+    sideband:
+        activate: yes
+        processor: false
+        label: "sideband sub."
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            sigma:
+                activate: [yes, yes, yes, yes, yes, yes, yes, yes]
+                label:
+                    - "#it{signal} = 1.6 #sigma"
+                    - "#it{signal} = 1.7 #sigma"
+                    - "#it{signal} = 1.8 #sigma"
+                    - "#it{signal} = 1.9 #sigma"
+                    - "#it{signal} = 2.1 #sigma"
+                    - "#it{signal} = 2.2 #sigma"
+                    - "#it{signal} = 2.3 #sigma"
+                    - "#it{signal} = 2.4 #sigma"
+                diffs:
+                    analysis:
+                        jet_FF:
+                            signal_sigma: [1.6  , 1.7  , 1.8  , 1.9  , 2.1  , 2.2  , 2.3  , 2.4]
+                            sigma_scale:  [0.890, 0.911, 0.928, 0.943, 0.964, 0.972, 0.979, 0.984]
+            ranges:
+                activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes, yes]
+                label:
+                    - "#it{sb} = [8,4]#cup[4,8]"
+                    - "#it{sb} = [8,4]#cup[4,9]"
+                    - "#it{sb} = [9,4]#cup[4,8]"
+                    - "#it{sb} = [9,5]#cup[5,9]"
+                    - "#it{sb} = [9,4]#cup[5,9]"
+                    - "#it{sb} = [9,5]#cup[4,9]"
+                    - "#it{sb} = [9,4]#cup[5,8]"
+                    - "#it{sb} = [8,5]#cup[4,9]"
+                    - "#it{sb} = [9,7]#cup[4,9]"
+                    - "#it{sb} = [9,4]#cup[7,9]"
+                diffs:
+                    analysis:
+                        jet_FF:
+                            sideband_sigma_2_left:  [ 8 ,  8 , "#", "#", "#", "#", "#",  8 , "#", "#"]
+                            sideband_sigma_1_left:  ["#", "#", "#",  5 , "#",  5 , "#",  5 ,  7 , "#"]
+                            sideband_sigma_1_right: ["#", "#", "#",  5 ,  5 , "#",  5 , "#", "#",  7 ]
+                            sideband_sigma_2_right: [ 8 , "#",  8 , "#", "#", "#",  8 , "#", "#", "#"]
+            sb_right:
+                activate: [yes]
+                label: ["right sb only"]
+                diffs:
+                    analysis:
+                        jet_FF:
+                            sideband_sigma_2_right: [15]
+                            sidebandrightonly: [true]
+
+            sb_left:
+                activate: [yes]
+                label: ["left sb only"]
+                diffs:
+                    analysis:
+                        jet_FF:
+                            sidebandleftonly: [true]
+
+    feeddown:
+        activate: yes
+        processor: false
+        label: "feed-down"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            tune:
+                activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes]
+                label:
+                    - "#it{f}_{F} = 1, #it{f}_{R} = 0.5"
+                    - "#it{f}_{F} = 0.5, #it{f}_{R} = 1"
+                    - "#it{f}_{F} = 2, #it{f}_{R} = 1"
+                    - "#it{f}_{F} = 1, #it{f}_{R} = 2"
+                    - "#it{f}_{F} = 2, #it{f}_{R} = 2"
+                    - "#it{f}_{F} = 0.5, #it{f}_{R} = 0.5"
+                    - "#it{m}_{b} high"
+                    - "#it{m}_{b} low"
+                    - "no EvtGen"
+                diffs:
+                    analysis:
+                        jet_FF:
+                            powheg_path_nonprompt:
+                                - /home/yitao/work/alice-fast-simulation/output/trees_powheg_fd_F1-R05.root
+                                - /home/yitao/work/alice-fast-simulation/output/trees_powheg_fd_F05-R1.root
+                                - /home/yitao/work/alice-fast-simulation/output/trees_powheg_fd_F2-R1.root
+                                - /home/yitao/work/alice-fast-simulation/output/trees_powheg_fd_F1-R2.root
+                                - /home/yitao/work/alice-fast-simulation/output/trees_powheg_fd_F2-R2.root
+                                - /home/yitao/work/alice-fast-simulation/output/trees_powheg_fd_F05-R05.root
+                                - /home/yitao/work/alice-fast-simulation/output/trees_powheg_fd_Mhi.root
+                                - /home/yitao/work/alice-fast-simulation/output/trees_powheg_fd_Mlo.root
+                                - /home/yitao/work/alice-fast-simulation/output/trees_powheg_fd_NoEvtGen.root
+    prior:
+        activate: no
+        processor: true
+        label: "prior"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            flat:
+                activate: [yes]
+                label: ["flat"]
+                diffs:
+                    analysis:
+                        jet_FF:
+                            doprior: [true]
+                            niterunfoldingchosen: [4]
+    regularisation:
+        activate: yes
+        processor: false
+        label: "regularisation"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            iter:
+                activate: [yes, yes]
+                label: ["down (3)", "up (7)"]
+                diffs:
+                    analysis:
+                        jet_FF:
+                            niterunfoldingchosen: [3, 7]
+    normalisation:
+        activate: no
+        processor: false
+        label: "#it{#sigma}_{MB}"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            crosssection:
+                activate: [yes, yes]
+                label: ["#it{#sigma}_{V0AND} down", "#it{#sigma}_{V0AND} up"]
+                diffs:
+                    analysis:
+                        jet_r_shape_2_6:
+                            xsection_inel: [54.91, 60.69]
+    tracking:
+        activate: no
+        processor: true
+        label: "tracking eff."
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            efficiency:
+                activate: [yes, no]
+                label: ["eff. down - 0.97", "eff. down - 0.96"]
+                diffs:
+                  multi:
+                    mc:
+                        unmerged_tree_dir: [[/mnt/temp/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20220720_ROOT6-1/pp_sim/707_20220720-1829/merged/,
+                          /mnt/temp/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20220720_ROOT6-1/pp_sim/707_20220720-1829/merged/,
+                          /mnt/temp/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20220720_ROOT6-1/pp_sim/707_20220720-1829/merged/],
+                          [/mnt/temp/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20220720_ROOT6-1/pp_sim/708_20220723-0034/merged/,
+                          /mnt/temp/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20220720_ROOT6-1/pp_sim/708_20220723-0034/merged/,
+                          /mnt/temp/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20220720_ROOT6-1/pp_sim/708_20220723-0034/merged/]] #list of periods
+                        pkl: [[/mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/707_20220720-1829/pp_2016_sim_D2H/pkl,
+                            /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/707_20220720-1829/pp_2017_sim_D2H/pkl,
+                            /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/707_20220720-1829/pp_2018_sim_D2H/pkl],
+                            [/mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/708_20220723-0034/pp_2016_sim_D2H/pkl,
+                            /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/708_20220723-0034/pp_2017_sim_D2H/pkl,
+                            /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/708_20220723-0034/pp_2018_sim_D2H/pkl]] #list of periods
+                        pkl_skimmed: [[/mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/707_20220720-1829/pp_2016_sim_D2H/pklsk,
+                            /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/707_20220720-1829/pp_2017_sim_D2H/pklsk,
+                            /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/707_20220720-1829/pp_2018_sim_D2H/pklsk],
+                            [/mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/708_20220723-0034/pp_2016_sim_D2H/pklsk,
+                            /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/708_20220723-0034/pp_2017_sim_D2H/pklsk,
+                            /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/708_20220723-0034/pp_2018_sim_D2H/pklsk]] #list of periods
+                        pkl_skimmed_merge_for_ml: [[/mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/707_20220720-1829/pp_2016_sim_D2H/pklskml,
+                                 /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/707_20220720-1829/pp_2017_sim_D2H/pklskml,
+                                 /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/707_20220720-1829/pp_2018_sim_D2H/pklskml],
+                                 [/mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/708_20220723-0034/pp_2016_sim_D2H/pklskml,
+                                 /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/708_20220723-0034/pp_2017_sim_D2H/pklskml,
+                                 /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/708_20220723-0034/pp_2018_sim_D2H/pklskml]] #list of periods
+                        pkl_skimmed_merge_for_ml_all: [/mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/707_20220720-1829/pp_mc_prodD2H_mltot,
+                        /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/708_20220723-0034/pp_mc_prodD2H_mltot]
+                        pkl_evtcounter_all: [/mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/707_20220720-1829/pp_mc_prodD2H_evttot,
+                        /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/708_20220723-0034/pp_mc_prodD2H_evttot]
+
+                  ml:
+                    mlplot: [/mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/705_20220720-1829/mlplot,
+                    /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/705_20220720-1829/mlplot] # to be removed
+                    mlout: [/mnt/temp/OngoingAnalysis_DsJet/xgboost/Run2_Ds_pp13TeV_Arthur,
+                    /mnt/temp/OngoingAnalysis_DsJet/xgboost/Run2_Ds_pp13TeV_Arthur] # for BDT model (xgboost)
+ 
+                  mlapplication:
+                    mc:
+                        pkl_skimmed_dec: [[/mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/707_20220720-1829/pp_2016_sim_D2H/pklskdec,
+                        /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/707_20220720-1829/pp_2017_sim_D2H/pklskdec,
+                        /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/707_20220720-1829/pp_2018_sim_D2H/pklskdec],
+                        [/mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/708_20220723-0034/pp_2016_sim_D2H/pklskdec,
+                        /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/708_20220723-0034/pp_2017_sim_D2H/pklskdec,
+                        /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/708_20220723-0034/pp_2018_sim_D2H/pklskdec]] #list of periods
+                        pkl_skimmed_decmerged: [[/mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/707_20220720-1829/pp_2016_sim_D2H/skpkldecmerged_D2HMB,
+                              /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/707_20220720-1829/pp_2017_sim_D2H/skpkldecmerged_D2HMB,
+                              /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/707_20220720-1829/pp_2018_sim_D2H/skpkldecmerged_D2HMB],
+                              [/mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/708_20220723-0034/pp_2016_sim_D2H/skpkldecmerged_D2HMB,
+                              /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/708_20220723-0034/pp_2017_sim_D2H/skpkldecmerged_D2HMB,
+                              /mnt/temp/OngoingAnalysis_DsJet/Derived/vAN-20220720_ROOT6-1/708_20220723-0034/pp_2018_sim_D2H/skpkldecmerged_D2HMB]] #list of periods
+
+    cutvar:
+        activate: yes  # High RAM consumption
+        processor: true
+        label: "cuts"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            cutvar:
+                # Arthur - optimal [0.99, 0.96, 0.95, 0.92, 0.92, 0.82]
+                # Luuk - optimal [0.9791025, 0.985, 0.976675, 0.936485, 0.97296, 0.9616025]
+                # Prob. scan - 0-1|0.1, 0.7-1|0.05
+                # Sys. unc. - opt+/-0.1/0.01
+                #cutvar :  [0.00, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 0.995]
+                activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes] # 14, prob. scan.
+                label:
+                    - "prob cut: 0.00"
+                    - "prob cut: 0.10"
+                    - "prob cut: 0.20"
+                    - "prob cut: 0.30"
+                    - "prob cut: 0.40"
+                    - "prob cut: 0.50"
+                    - "prob cut: 0.60"
+                    - "prob cut: 0.70"
+                    - "prob cut: 0.75"
+                    - "prob cut: 0.80"
+                    - "prob cut: 0.85"
+                    - "prob cut: 0.90"
+                    - "prob cut: 0.95"
+                    - "prob cut: 0.99"
+                diffs:
+                    mlapplication:
+                        probcutoptimal:
+                            - [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+                            - [0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+                            - [0.2, 0.2, 0.2, 0.2, 0.2, 0.2]
+                            - [0.3, 0.3, 0.3, 0.3, 0.3, 0.3]
+                            - [0.4, 0.4, 0.4, 0.4, 0.4, 0.4]
+                            - [0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
+                            - [0.6, 0.6, 0.6, 0.6, 0.6, 0.6]
+                            - [0.7, 0.7, 0.7, 0.7, 0.7, 0.7]
+                            - [0.75, 0.75, 0.75, 0.75, 0.75, 0.75]
+                            - [0.8, 0.8, 0.8, 0.8, 0.8, 0.8]
+                            - [0.85, 0.85, 0.85, 0.85, 0.85, 0.85]
+                            - [0.9, 0.9, 0.9, 0.9, 0.9, 0.9]
+                            - [0.95, 0.95, 0.95, 0.95, 0.95, 0.95]
+                            - [0.995, 0.995, 0.995, 0.995, 0.995, 0.995]

@@ -368,16 +368,16 @@ DsJetpp:
         mc: null
       data: &data_out_default
         runselection: [null, null, null]
-        results: [/mnt/temp/OngoingAnalysis_DsJet/DsJet-test/pp_2016_data,
-                  /mnt/temp/OngoingAnalysis_DsJet/DsJet-test/pp_2017_data,
-                  /mnt/temp/OngoingAnalysis_DsJet/DsJet-test/pp_2018_data]
-        resultsallp: /mnt/temp/OngoingAnalysis_DsJet/DsJet-test/pp_data
+        results: [/mnt/temp/OngoingAnalysis_DsJet/systematics/default/default/pp_2016_data,
+                  /mnt/temp/OngoingAnalysis_DsJet/systematics/default/default/pp_2017_data,
+                  /mnt/temp/OngoingAnalysis_DsJet/systematics/default/default/pp_2018_data]
+        resultsallp: /mnt/temp/OngoingAnalysis_DsJet/systematics/default/default/pp_data
       mc: &mc_out_default
         runselection: [null, null, null]
-        results: [/mnt/temp/OngoingAnalysis_DsJet/DsJet-test/pp_2016_mc_prodD2H,
-                  /mnt/temp/OngoingAnalysis_DsJet/DsJet-test/pp_2017_mc_prodD2H,
-                  /mnt/temp/OngoingAnalysis_DsJet/DsJet-test/pp_2018_mc_prodD2H]
-        resultsallp: /mnt/temp/OngoingAnalysis_DsJet/DsJet-test/pp_mc_prodD2H
+        results: [/mnt/temp/OngoingAnalysis_DsJet/systematics/default/default/pp_2016_mc_prodD2H,
+                  /mnt/temp/OngoingAnalysis_DsJet/systematics/default/default/pp_2017_mc_prodD2H,
+                  /mnt/temp/OngoingAnalysis_DsJet/systematics/default/default/pp_2018_mc_prodD2H]
+        resultsallp: /mnt/temp/OngoingAnalysis_DsJet/systematics/default/default/pp_mc_prodD2H
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_default
       mc_proc: # alternative processor output used as the analyzer input
