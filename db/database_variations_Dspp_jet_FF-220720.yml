@@ -304,9 +304,10 @@ categories:
                 # Arthur - optimal [0.99, 0.96, 0.95, 0.92, 0.92, 0.82]
                 # Luuk - optimal [0.9791025, 0.985, 0.976675, 0.936485, 0.97296, 0.9616025]
                 # Prob. scan - 0-1|0.1, 0.7-1|0.05
-                # Sys. unc. - opt+/-0.1/0.01
+                # Sys. unc. - eff+/-50% | 5%
                 #cutvar :  [0.00, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 0.995]
-                activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes] # 14, prob. scan.
+                activate:  [ no,  no,  no,  no,  no,  no,  no,  no,  no,  no,  no,  no,  no,  no, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes] # 14, prob. scan.
+                #activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes,  no,  no,  no,  no,  no,  no,  no,  no,  no,  no,  no,  no,  no,  no,  no,  no,  no,  no,  no,  no] # 20, sys. unc. - Arthur
                 label:
                     - "prob cut: 0.00"
                     - "prob cut: 0.10"
@@ -322,9 +323,31 @@ categories:
                     - "prob cut: 0.90"
                     - "prob cut: 0.95"
                     - "prob cut: 0.99"
+                    - "optimal cut -0.10"
+                    - "optimal cut -0.09"
+                    - "optimal cut -0.08"
+                    - "optimal cut -0.07"
+                    - "optimal cut -0.06"
+                    - "optimal cut -0.05"
+                    - "optimal cut -0.04"
+                    - "optimal cut -0.03"
+                    - "optimal cut -0.02"
+                    - "optimal cut -0.01"
+                    #- "optimal cut 0.00"
+                    - "optimal cut 0.01"
+                    - "optimal cut 0.02"
+                    - "optimal cut 0.03"
+                    - "optimal cut 0.04"
+                    - "optimal cut 0.05"
+                    - "optimal cut 0.06"
+                    - "optimal cut 0.07"
+                    - "optimal cut 0.08"
+                    - "optimal cut 0.09"
+                    - "optimal cut 0.10"
                 diffs:
                     mlapplication:
                         probcutoptimal:
+                            # Prob. scan
                             - [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
                             - [0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
                             - [0.2, 0.2, 0.2, 0.2, 0.2, 0.2]
@@ -339,3 +362,25 @@ categories:
                             - [0.9, 0.9, 0.9, 0.9, 0.9, 0.9]
                             - [0.95, 0.95, 0.95, 0.95, 0.95, 0.95]
                             - [0.995, 0.995, 0.995, 0.995, 0.995, 0.995]
+                            # Systematics
+                            - [0.998, 0.995, 0.995, 0.995, 0.995, 0.92]
+                            - [0.997, 0.990, 0.990, 0.990, 0.990, 0.91]
+                            - [0.996, 0.985, 0.985, 0.985, 0.985, 0.90]
+                            - [0.995, 0.980, 0.980, 0.980, 0.980, 0.89]
+                            - [0.994, 0.975, 0.975, 0.975, 0.975, 0.88]
+                            - [0.993, 0.972, 0.970, 0.97, 0.97, 0.87]
+                            - [0.992, 0.970, 0.965, 0.96, 0.96, 0.86]
+                            - [0.991, 0.968, 0.960, 0.95, 0.95, 0.85]
+                            - [0.9875, 0.965, 0.955, 0.94, 0.94, 0.84]
+                            - [0.985, 0.955, 0.945, 0.93, 0.93, 0.83]
+                            #- [0.99, 0.96, 0.95, 0.92, 0.92, 0.82] # optimal - default
+                            - [0.98, 0.95, 0.94, 0.91, 0.91, 0.81]
+                            - [0.97, 0.94, 0.93, 0.90, 0.90, 0.80]
+                            - [0.96, 0.93, 0.92, 0.89, 0.89, 0.79]
+                            - [0.95, 0.92, 0.91, 0.88, 0.88, 0.78]
+                            - [0.94, 0.91, 0.90, 0.87, 0.87, 0.77]
+                            - [0.93, 0.90, 0.89, 0.86, 0.86, 0.76]
+                            - [0.92, 0.89, 0.88, 0.85, 0.85, 0.75]
+                            - [0.91, 0.88, 0.87, 0.84, 0.84, 0.74]
+                            - [0.90, 0.87, 0.86, 0.83, 0.83, 0.73]
+                            - [0.89, 0.86, 0.85, 0.82, 0.82, 0.72]
