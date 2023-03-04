@@ -223,7 +223,8 @@ D0pp:
     mltype: BinaryClassification
     ncorescrossval: 10
     mlplot: /data/Derived/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/mlplot # to be removed
-    mlout: /data/Derived/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/mlout # to be removed
+    #mlout: /data/Derived/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/mlout # to be removed
+    mloust: /mnt/temp/OngoingAnalysis_DsJet/xgboost/D0-bvolkel
 
     opt:
       isFONLLfromROOT: true
@@ -260,13 +261,20 @@ D0pp:
                               /mnt/temp/OngoingAnalysis_DsJet/DerivedD0/vAN-20220720_ROOT6-1/706_20220720-1829/pp_2018_sim_D2H/skpkldecmerged_D2HMB] #list of periods
 
     modelname: xgboost
-    modelsperptbin: [xgboost_classifierD0pp_FF_dfselection_pt_cand_1.0_2.0.sav,
-                     xgboost_classifierD0pp_FF_dfselection_pt_cand_2.0_4.0.sav,
-                     xgboost_classifierD0pp_FF_dfselection_pt_cand_4.0_6.0.sav,
-                     xgboost_classifierD0pp_FF_dfselection_pt_cand_6.0_8.0.sav,
-                     xgboost_classifierD0pp_FF_dfselection_pt_cand_8.0_12.0.sav,
-                     xgboost_classifierD0pp_FF_dfselection_pt_cand_12.0_24.0.sav,
-                     xgboost_classifierD0pp_FF_dfselection_pt_cand_24.0_48.0.sav] # sel_skim_binmin bins
+    modelsperptbin: [xgboost_classifierD0pp_dfselection_pt_cand_1.0_2.0.sav,
+                   xgboost_classifierD0pp_dfselection_pt_cand_2.0_4.0.sav,
+                  xgboost_classifierD0pp_dfselection_pt_cand_4.0_6.0.sav,
+                   xgboost_classifierD0pp_dfselection_pt_cand_6.0_8.0.sav,
+                    xgboost_classifierD0pp_dfselection_pt_cand_8.0_12.0.sav,
+                    xgboost_classifierD0pp_dfselection_pt_cand_12.0_24.0.sav,
+                    xgboost_classifierD0pp_dfselection_pt_cand_24.0_48.0.sav] # sel_skim_binmin bins
+    #modelsperptbin: [xgboost_classifierD0pp_FF_dfselection_pt_cand_1.0_2.0.sav,
+     #                xgboost_classifierD0pp_FF_dfselection_pt_cand_2.0_4.0.sav,
+      #               xgboost_classifierD0pp_FF_dfselection_pt_cand_4.0_6.0.sav,
+       #              xgboost_classifierD0pp_FF_dfselection_pt_cand_6.0_8.0.sav,
+        #             xgboost_classifierD0pp_FF_dfselection_pt_cand_8.0_12.0.sav,
+         #            xgboost_classifierD0pp_FF_dfselection_pt_cand_12.0_24.0.sav,
+          #           xgboost_classifierD0pp_FF_dfselection_pt_cand_24.0_48.0.sav] # sel_skim_binmin bins
     probcutpresel:
       data:         [0.75,0.75,0.65,0.65,0.45,0.45,0.45] # sel_skim_binmin bins
       mc:           [0.75,0.75,0.65,0.65,0.45,0.45,0.45] # sel_skim_binmin bins
