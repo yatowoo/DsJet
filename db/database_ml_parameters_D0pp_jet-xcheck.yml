@@ -172,7 +172,7 @@ D0pp:
                                  /mnt/temp/OngoingAnalysis_DsJet/DerivedD0/vAN-20220720_ROOT6-1/705_20220720-1829/pp_2018_data/pklskml] #list of periods
       pkl_skimmed_merge_for_ml_all: /mnt/temp/OngoingAnalysis_DsJet/DerivedD0/vAN-20220720_ROOT6-1/705_20220720-1829/pp_data_mltot
       pkl_evtcounter_all: /mnt/temp/OngoingAnalysis_DsJet/DerivedD0/vAN-20220720_ROOT6-1/705_20220720-1829/pp_data_evttot
-       mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2016,
+      mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2016,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2017,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2018] #list of periods
     mc:
@@ -198,7 +198,7 @@ D0pp:
                                  /mnt/temp/OngoingAnalysis_DsJet/DerivedD0/vAN-20220720_ROOT6-1/706_20220720-1829/pp_2018_sim_D2H/pklskml] #list of periods
       pkl_skimmed_merge_for_ml_all: /mnt/temp/OngoingAnalysis_DsJet/DerivedD0/vAN-20220720_ROOT6-1/706_20220720-1829/pp_mc_prodD2H_mltot
       pkl_evtcounter_all: /mnt/temp/OngoingAnalysis_DsJet/DerivedD0/vAN-20220720_ROOT6-1/706_20220720-1829/pp_mc_prodD2H_evttot
-     mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_16,
+      mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_16,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_17,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_18] #list of periods
 
@@ -223,12 +223,8 @@ D0pp:
     mltype: BinaryClassification
     ncorescrossval: 10
     mlplot: /data/Derived/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/mlplot # to be removed
-<<<<<<< HEAD
     #mlout: /data/Derived/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/mlout # to be removed
-    mloust: /mnt/temp/OngoingAnalysis_DsJet/xgboost/D0-bvolkel
-=======
-    mlout: /data/Derived/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/mlout # to be removed
->>>>>>> aea393d15dbc5c28f981dbadb85a44ede23983c7
+    mlout: /mnt/temp/OngoingAnalysis_DsJet/xgboost/D0-bvolkel
 
     opt:
       isFONLLfromROOT: true
