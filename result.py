@@ -6,7 +6,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description='FF results')
 parser.add_argument('-f','--file', default='/mnt/d/DsJet/systematics/merged_full0714/pp_data/unfolding_results.root', help='Unfolded data results')
-parser.add_argument('-m','--model', default='/mnt/d/DsJet/fastsimu/', help='Model outputs')
+parser.add_argument('-m','--model', default='charm_fastsimu_Ds.root', help='Model outputs')
 parser.add_argument('--sys', default='/mnt/d/DsJet/systematics/merged_full0705/pp_data/systematics_results.root', help='Systematic uncertainties')
 parser.add_argument('-i','--iter',type=int, default=4, help='N iterations for unfolding')
 parser.add_argument('-o','--output',default='DsJet-results.root', help='Output file')
@@ -58,12 +58,22 @@ model_db = {
 FF_db = {
   'D0':{
     'x':  [  0.5,  0.65,  0.75,  0.85,  0.95],
-    'y':  [1.381, 1.833, 1.914, 1.676, 1.833],
+    'y':  [1.405, 1.819, 1.891, 1.66, 1.82],
     'exl':[  0.1,  0.05,  0.05,  0.05,  0.05],
     'exh':[  0.1,  0.05,  0.05,  0.05,  0.05],
-    'eyl':[0.238, 0.143, 0.133, 0.095, 0.119],
-    'eyh':[0.190, 0.101, 0.119, 0.058, 0.119],
-  }
+    'eyl':[0.24, 0.13, 0.13, 0.078, 0.13],
+    'eyh':[0.2, 0.12, 0.12, 0.065, 0.12],
+    'stats_err': [0.073, 0.091, 0.082, 0.067, 0.058],
+  },
+  'Lc':{
+    'x':  [  0.5,  0.65,  0.75,  0.85,  0.95],
+    'y':  [1.51,   2.69,  1.61,  1.56,  1.12],
+    'exl':[  0.1,  0.05,  0.05,  0.05,  0.05],
+    'exh':[  0.1,  0.05,  0.05,  0.05,  0.05],
+    'eyl':[0.43, 0.41, 0.29, 0.2, 0.23],
+    'eyh':[0.43, 0.41, 0.29, 0.2, 0.23],
+    'stats_err': [0.56, 0.57, 0.38, 0.27, 0.18],
+  },
 }
 FF_db['D0']['result'] = ROOT.TGraphAsymmErrors(5,
   array('d', FF_db['D0']['x']),
@@ -98,7 +108,7 @@ fExtra = None
 if args.extra:
   fExtra = TFile.Open(args.extra)
 fSysematics = TFile.Open(args.sys)
-
+fModel = TFile.Open(args.model)
 c = TCanvas('c1','draw',1200,1400)
 #c.Divide(N_JETBINS) # Issue - figure distorted when subcanvas.SaveAs
 
@@ -122,7 +132,7 @@ def draw_model(model_name : dict, pt_jet_l=5, pt_jet_u=7):
   """
   """
   model_vars = model_db[model_name]
-  fModel = TFile.Open(args.model + '/' + model_vars['file'])
+  fModel = TFile.Open(model_vars['file'])
   suffix = f'{pt_jet_l:.0f}_{pt_jet_u:.0f}'
   hname = f'hz_ptjet_{suffix}'
   hnameNew = f'{hname}_{model_name}'
@@ -226,7 +236,7 @@ for iptjet in range(N_JETBINS):
     hExtra.SetMarkerColor(root_plot.kRed)
     hExtra.SetLineWidth(2)
     hExtra.SetMarkerStyle(root_plot.kBlockHollow)
-    lgd.AddEntry(hExtra, args.extra.split('/')[-3]) # [ana-220720test]/pp_data/unfolding_results.root
+    lgd.AddEntry(hExtra, f'Train705_2018')
     hExtra.Draw('same')
     fOutput.WriteObject(hExtra, f'FF_Ds_extra_{name_suffix}')
   if args.dzero: # D0 comp.
