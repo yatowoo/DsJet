@@ -95,7 +95,7 @@ def draw_fd_fraction(path=None):
   tg_fd_fr_sys.SetMarkerColor(root_plot.COLOR_SET_ALICE[color_i])
   tg_fd_fr_sys.SetLineWidth(0)
   tg_fd_fr_sys.SetFillColor(root_plot.COLOR_SET_ALICE_FILL[color_i])
-  tg_fd_fr_sys.SetFillStyle(3001)
+  tg_fd_fr_sys.SetFillStyle(1001)
   # val
   h_fd_fr_sys.SetMarkerStyle(root_plot.kRound)
   h_fd_fr_sys.SetLineColor(root_plot.COLOR_SET_ALICE[color_i])
@@ -284,7 +284,7 @@ def draw_inv_mass(path=None, savefile = None):
 if __name__ == '__main__':
   root_plot.ALICEStyle()
   rootFile = ROOT.TFile.Open('preliminary.root','RECREATE')
-  #draw_fd_fraction()
-  #draw_rel_sys()
-  draw_inv_mass(None, rootFile)
+  draw_fd_fraction()
+  draw_rel_sys()
+  #draw_inv_mass(None, rootFile)
   rootFile.Close()

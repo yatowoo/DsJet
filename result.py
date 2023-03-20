@@ -9,7 +9,7 @@ parser.add_argument('-f','--file', default='/mnt/d/DsJet/systematics/merged_full
 parser.add_argument('-m','--model', default='/mnt/d/DsJet/fastsimu/', help='Model outputs')
 parser.add_argument('--sys', default='/mnt/d/DsJet/systematics/merged_full0705/pp_data/systematics_results.root', help='Systematic uncertainties')
 parser.add_argument('-i','--iter',type=int, default=4, help='N iterations for unfolding')
-parser.add_argument('-o','--output',default='DsJet-results.root', help='Output file')
+parser.add_argument('-o','--output',default='DsJetFF-results.root', help='Output file')
 parser.add_argument('--extra',default=None, help='unfolding_results.root, Extra variation for comparison')
 parser.add_argument('--dzero',default=False, action='store_true', help='Compare with D0 results from ALICE')
 
@@ -78,7 +78,7 @@ FF_db['D0']['result'].SetMarkerColor(root_plot.kGreen+3)
 FF_db['D0']['result'].SetFillColor(root_plot.kGreen-8)
 FF_db['D0']['result'].SetMarkerStyle(root_plot.kBlock)
 FF_db['D0']['result'].SetMarkerSize(1.5)
-FF_db['D0']['result'].SetFillStyle(3001)
+FF_db['D0']['result'].SetFillStyle(1001)
 FF_db['D0']['result'].SetDrawOption('2P')
 
 # args.extra = '/mnt/d/DsJet/Ongoing/ana-705test/DsJet-test/pp_data/unfolding_results.root'
@@ -174,7 +174,7 @@ for iptjet in range(N_JETBINS):
   hSyserr.SetMarkerSize(1.5)
   hSyserr.SetLineWidth(0)
   hSyserr.SetFillColor(kGray+1)
-  hSyserr.SetFillStyle(3001)
+  hSyserr.SetFillStyle(1001)
     # update unfolded result
   syserrX = hSyserr.GetX()
   for ibin in range(hSyserr.GetN()):
