@@ -213,6 +213,9 @@ for iptjet in range(N_JETBINS):
     lgd.AddEntry(hModel, model_vars['label'])
     fOutput.WriteObject(hModel, f'FF_Ds_{model}_{name_suffix}')
   # Description
+  alice = root_plot.InitALICELabel(y1=-0.06, type='prel')
+  root_objs.append(alice)
+  alice.Draw('same')
   root_objs.append(TPaveText(0.16,0.65,0.55,0.85,"NDC"))
   pave = root_objs[-1]
   pave.SetFillColor(kWhite)
@@ -272,6 +275,8 @@ for iptjet in range(N_JETBINS):
   hResult.GetXaxis().SetLabelSize(0.0)
   c.cd()
   ROOT.gPad.SaveAs(f'DsJetFF_result_pt_jet_{pt_jet_l:.0f}_{pt_jet_u:.0f}.pdf')
+  ROOT.gPad.SaveAs(f'DsJetFF_result_pt_jet_{pt_jet_l:.0f}_{pt_jet_u:.0f}.eps')
+  ROOT.gPad.SaveAs(f'DsJetFF_result_pt_jet_{pt_jet_l:.0f}_{pt_jet_u:.0f}.png')
   fOutput.WriteObject(c, f'canvas_pt_jet_{pt_jet_l:.0f}_{pt_jet_u:.0f}')
 
 #c.SaveAs(args.output)
