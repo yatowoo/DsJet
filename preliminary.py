@@ -220,7 +220,7 @@ def draw_inv_mass(path=None, savefile = None):
   sigma_sec = fun_sec.GetParameter(2)
   hmass = mass_fitter.GetHistoClone()
   # Render
-  c_invmass = ROOT.TCanvas('c_invmass','Canvas for preliminary', 900, 800)
+  c_invmass = ROOT.TCanvas('c_invmass_sb','Canvas for preliminary', 900, 800)
   c_invmass.Draw()
   c_invmass.cd()
   lgd = ROOT.TLegend(0.75, 0.5, 0.95, 0.85)
@@ -247,12 +247,28 @@ def draw_inv_mass(path=None, savefile = None):
   fun_sec.Draw('same')
   lgd.AddEntry(fun_sec, 'Bkg. (D^{+} gaus.)')
   # Regions
+  nsigma_near = 5
+  nsigma_away = 10
+  nsigma_width = 5
+  nsigma_signal = 2
+  hSignal = root_plot.DrawRegion(hmass, f'hSignalRegion', mean - nsigma_signal * sigma, mean + nsigma_signal * sigma, ROOT.kRed, 3444)
+  lgd.AddEntry(hSignal, 'Signal')
+  hSBleft = root_plot.DrawRegion(hmass, f'hSBleft', mean_sec - nsigma_width * (sigma + sigma_sec), mean_sec - nsigma_width * sigma_sec, ROOT.kBlue, 3354)
+  hSBright = root_plot.DrawRegion(hmass, f'hSBright', mean + nsigma_near * sigma, mean + nsigma_away * sigma, ROOT.kBlue, 3345)
+  lgd.AddEntry(hSBleft, 'Sideband')
   lgd.Draw('same')
   # Text
   pcuts = draw_cuts()
   pcuts.Draw('same')
   alice = root_plot.InitALICELabel(y1=-0.06, type='prel')
   alice.Draw('same')
+  # system
+  pcoll = ROOT.TPaveText(0.75,0.88,0.95,0.97,"NDC")
+  pcoll.SetTextSize(0.03)
+  pcoll.SetFillColor(0)
+  pcoll.SetBorderSize(0)
+  pcoll.AddText('pp #sqrt{#it{s}} = 13 TeV')
+  pcoll.Draw('same')
   # Save
   savefile.cd()
   hmass.Write('h_invmass')

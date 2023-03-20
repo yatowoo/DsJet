@@ -273,5 +273,19 @@ def Rebin2D(h2raw, BINNING_X, BINNING_Y, name='h2new', title='New 2D histograms 
       h2.SetBinContent(i, j, val)
   return h2
 
+def DrawRegion(histo, name, left, right, color, style = 3004):
+  binMin = histo.FindBin(left)
+  binMax = histo.FindBin(right)
+  xLeft = histo.GetBinCenter(binMin) - 0.5 * histo.GetBinWidth(binMin)
+  xRight = histo.GetBinCenter(binMax) + 0.5 * histo.GetBinWidth(binMax)
+  hRegion = ROOT.TH1F(name,'',binMax-binMin+1, xLeft, xRight)
+  for i in range(binMin, binMax+1):
+    hRegion.Fill(histo.GetBinCenter(i), histo.GetBinContent(i))
+  hRegion.SetLineWidth(0)
+  hRegion.SetFillColor(color)
+  hRegion.SetFillStyle(style)
+  hRegion.Draw('same hist')
+  return hRegion
+
 if __name__ == '__main__':
   print("Utility lib for post-processing with ROOT")
