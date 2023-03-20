@@ -136,14 +136,76 @@ def draw_fd_fraction(path=None):
   # End - fd_fr
   input()
 
+def save_canvas(c : ROOT.TCanvas, name = None):
+  if name is None:
+    name = c.GetName()
+  c.Write()
+  c.SaveAs(name + '.eps')
+  c.SaveAs(name + '.pdf')
+  c.SaveAs(name + '.png')
+  c.SaveAs(name + '.root')
+
+
 def draw_rel_sys(path=None):
   c_rel_sys = ROOT.TCanvas('c_rel_sys','Canvas for preliminary', 900, 800)
   c_rel_sys.SetRightMargin(0.25)
+  c_rel_sys.Draw()
+  c_rel_sys.cd()
   leg_relativesys = ROOT.TLegend(.77, .2, 0.95, .85)
+  color_i = 0
+  gr_stats = ROOT.TGraphErrors(N_BINS,
+                         array('d', FF_db['xbins']),
+                        array('d',[0.0]*5),
+                         array('d', FF_db['xwidth']),
+                         array('d', FF_db['result']['rel_stat']))
+  gr_stats.SetName('gr_rel_stats')
+  gr_stats.SetLineWidth(3)
+  gr_stats.SetLineColor(root_plot.COLOR_SET_ALICE[color_i])
+  gr_stats.SetMarkerColor(root_plot.COLOR_SET_ALICE[color_i])
+  gr_stats.Draw('AP')
+  leg_relativesys.AddEntry(gr_stats, 'stat. unc.', 'E')
+  gr_relsys = [gr_stats]
+  for cat, vals in FF_db['rel_sys'].items():
+    color_i +=1
+    gr_now = ROOT.TGraphErrors(N_BINS,
+                         array('d', FF_db['xbins']),
+                         array('d',[0.0]*5),
+                         array('d', FF_db['xwidth']),
+                         array('d', vals))
+    gr_now.SetName('gr_rel_sys_' + cat)
+    gr_now.SetLineColor(root_plot.COLOR_SET_ALICE[color_i])
+    gr_now.SetMarkerColor(root_plot.COLOR_SET_ALICE[color_i])
+    gr_now.SetLineWidth(3)
+    gr_now.SetFillStyle(0)
+    gr_now.Draw('2')
+    gr_now.Write()
+    gr_relsys.append(gr_now)
+    leg_relativesys.AddEntry(gr_now, cat, 'F')
+  # Render
+  leg_relativesys.Draw('same')
+  gr_stats.GetXaxis().SetRangeUser(0.4, 1)
+  gr_stats.GetYaxis().SetRangeUser(-0.32, 0.8)
+  gr_stats.GetYaxis().SetTitle('Relative systematic uncertainty')
+  gr_stats.GetXaxis().SetTitle('#it{z}_{#parallel}^{ch}')
+  pcuts = draw_cuts()
+  pcuts.Draw('same')
+  alice = root_plot.InitALICELabel(y1=-0.06, type='prel')
+  alice.Draw('same')
+  # system
+  pcoll = ROOT.TPaveText(0.56,0.88,0.70,0.97,"NDC")
+  pcoll.SetTextSize(0.03)
+  pcoll.SetFillColor(0)
+  pcoll.SetBorderSize(0)
+  pcoll.AddText('pp #sqrt{#it{s}} = 13 TeV')
+  pcoll.Draw('same')
+  # Save
+  gr_stats.Write()
+  save_canvas(c_rel_sys)
   input()
 
 if __name__ == '__main__':
   root_plot.ALICEStyle()
   rootFile = ROOT.TFile.Open('preliminary.root','RECREATE')
-  draw_fd_fraction()
+  #draw_fd_fraction()
+  draw_rel_sys()
   rootFile.Close()
