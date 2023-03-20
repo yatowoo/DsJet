@@ -129,12 +129,8 @@ def draw_fd_fraction(path=None):
   # Save
   tg_fd_fr_sys.Write()
   h_fd_fr_sys.Write()
-  c_fd_fr_sys.Write()
-  c_fd_fr_sys.SaveAs('c_fd_fr_sys.eps')
-  c_fd_fr_sys.SaveAs('c_fd_fr_sys.pdf')
-  c_fd_fr_sys.SaveAs('c_fd_fr_sys.root')
+  save_canvas(c_fd_fr_sys)
   # End - fd_fr
-  input()
 
 def save_canvas(c : ROOT.TCanvas, name = None):
   if name is None:
@@ -201,10 +197,12 @@ def draw_rel_sys(path=None):
   # Save
   gr_stats.Write()
   save_canvas(c_rel_sys)
-  input()
 
 def draw_inv_mass(path=None, savefile = None):
   # Require: AliHFInvMassFitter (AliPhysics env.)
+  if not getattr(ROOT, 'AliHFInvMassFitter', False):
+    print('[x] AliHFInvMassFitter not found. Skip plotting inv. mass.')
+    return
   # Input: fitter
   yieldsFile = ROOT.TFile.Open('~/PhD/DsJet/HP23/results/yields.root')
   dir_fitting = yieldsFile.Get('pt_cand6_8_0.90pt_jet_7.00_15.00')
@@ -279,12 +277,11 @@ def draw_inv_mass(path=None, savefile = None):
   fun_sig.Write('fun_sig')
   save_canvas(c_invmass)
   yieldsFile.Close()
-  input()
 
 if __name__ == '__main__':
   root_plot.ALICEStyle()
   rootFile = ROOT.TFile.Open('preliminary.root','RECREATE')
   draw_fd_fraction()
   draw_rel_sys()
-  #draw_inv_mass(None, rootFile)
+  draw_inv_mass(None, rootFile)
   rootFile.Close()
