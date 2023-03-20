@@ -4,14 +4,21 @@
 
 import argparse
 
-parser = argparse.ArgumentParser(description='FF results')
-parser.add_argument('-f','--file', default='/mnt/d/DsJet/systematics/merged_full0714/pp_data/unfolding_results.root', help='Unfolded data results')
-parser.add_argument('-m','--model', default='/mnt/d/DsJet/fastsimu/', help='Model outputs')
-parser.add_argument('--sys', default='/mnt/d/DsJet/systematics/merged_full0705/pp_data/systematics_results.root', help='Systematic uncertainties')
+# Directory contents
+# results/
+# - unfolding_results.root
+# - systematics_results.root
+# - yields.root
+# model/
+# - [pythia8_]charm/beauty_fastsimu_D[].root
+
+parser = argparse.ArgumentParser(description='DsJet pp FF - preliminary figures')
+parser.add_argument('-p','--path', default='HP23/results/', help='Directory of results ROOT files, pp_data/')
+parser.add_argument('-m','--model', default='HP23/model/', help='Directory of model ROOT files, model/')
+parser.add_argument('--sys', default='HP23/results/systematics_results.root', help='Systematic uncertainties')
 parser.add_argument('-i','--iter',type=int, default=4, help='N iterations for unfolding')
-parser.add_argument('-o','--output',default='DsJet-results.root', help='Output file')
+parser.add_argument('-o','--output',default='DsJetFF-preliminary.root', help='Output file')
 parser.add_argument('--extra',default=None, help='unfolding_results.root, Extra variation for comparison')
-parser.add_argument('--dzero',default=False, action='store_true', help='Compare with D0 results from ALICE')
 
 args = parser.parse_args()
 
@@ -204,7 +211,7 @@ def draw_inv_mass(path=None, savefile = None):
     print('[x] AliHFInvMassFitter not found. Skip plotting inv. mass.')
     return
   # Input: fitter
-  yieldsFile = ROOT.TFile.Open('~/PhD/DsJet/HP23/results/yields.root')
+  yieldsFile = ROOT.TFile.Open(args.path + '/yields.root')
   dir_fitting = yieldsFile.Get('pt_cand6_8_0.90pt_jet_7.00_15.00')
   mass_fitter = dir_fitting.Get('fitter2')
   # Fitting info.
