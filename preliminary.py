@@ -406,6 +406,14 @@ def convert_model_data():
   pprint.pprint(FF_db['model_data'])
   pass
 
+def draw_result():
+  # Ds data vs model comparison
+  pass
+
+def draw_result_ratio():
+  # Ds / D0 comparison
+  pass
+
 if __name__ == '__main__':
   #convert_model_data()
   #exit()

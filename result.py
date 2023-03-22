@@ -29,22 +29,22 @@ root_plot.ALICEStyle()
 # Output from feeddown.py (alice-fast-simulation)
 model_db = {
   "pythia6":{
-    "label": "POWHEG + PYTHIA 6",
+    "label": "POWHEG+PYTHIA6",
     "file": "charm_fastsimu_Ds.root",
     "color": root_plot.kRed+1,
     "line": 2, # dashed
   },
   "pythia8":{
-    "label": "PYTHIA 8 Monash",
+    "label": "Monash",
     "file": "pythia8_charm_fastsimu_Ds.root",
     "color": root_plot.kBlue+1,
-    "line": 2, # dashed
+    "line": 6, # dashed
   },
   "pythia8_cr2":{
-    "label": "PYTHIA 8 CR Mode 2",
+    "label": "CR-BLC Mode 2",
     "file": "pythia8cr2_charm_fastsimu_Ds.root",
     "color": root_plot.kGreen+3,
-    "line": 2, # dashed
+    "line": 9, # dashed
   },
   "pythia8_cr0":{
     "label": "PYTHIA 8 CR Mode 0",
@@ -99,7 +99,7 @@ if args.extra:
   fExtra = TFile.Open(args.extra)
 fSysematics = TFile.Open(args.sys)
 
-c = TCanvas('c1','draw',1200,1400)
+c = TCanvas('c1','draw',1200,1200)
 #c.Divide(N_JETBINS) # Issue - figure distorted when subcanvas.SaveAs
 
 def add_text(pave : TPaveText, s : str, color=None, size=0.04, align=11):
@@ -156,22 +156,29 @@ for iptjet in range(N_JETBINS):
   # + stats. unc. - TH1 or TGraphErrors  (no marker, no legend)
   hResult = fResult.Get(hname_result)
   hResult.UseCurrentStyle()
-  hResult.SetMarkerStyle(20)
-  hResult.SetMarkerSize(0)
+  hResult.SetMarkerStyle(root_plot.kRoundHollow)
+  hResult.SetMarkerSize(2)
   hResult.SetLineWidth(2)
   hResult.SetLineColor(kBlack)
   hResult.SetMarkerColor(kBlack)
   hResult.SetXTitle('#it{z}_{#parallel}^{ch}')
-  hResult.SetYTitle("1/#it{N}_{jets} d#it{N}/d#it{z}_{#parallel}^{ch} (self normalised)")
+  hResult.SetYTitle("(1/#it{N}_{jet}) d#it{N}/d#it{z}_{#parallel}^{ch}")
+  hResult.GetYaxis().SetTitle('(1/#it{N}_{jet}) d#it{N}/d#it{z}_{#parallel}^{ch}')
+  hResult.GetYaxis().SetTitleOffset(0.9)
+  hResult.GetYaxis().SetTitleSize(0.07)
+  hResult.GetYaxis().SetLabelSize(0.06)
+  hResult.GetXaxis().SetRangeUser(0.4,1.0)
+  hResult.GetYaxis().SetRangeUser(0.5, 2. * hResult.GetMaximum())
+  # syst. unc.
   hSyserr = fSysematics.Get(f'tgsys_pt_jet_{pt_jet_l:.2f}_{pt_jet_u:.2f}')
   hSyserr.SetName(f'FF_Ds_sysunc_pt_jet_{pt_jet_l:.2f}_{pt_jet_u:.2f}')
   hSyserr.UseCurrentStyle()
-  hSyserr.GetYaxis().SetTitle('1/#it{N}_{jet} d#it{N}/d#it{z}_{#parallel}^{ch}')
+  hSyserr.GetYaxis().SetTitle('(1/#it{N}_{jet}) d#it{N}/d#it{z}_{#parallel}^{ch}')
   hSyserr.GetYaxis().SetTitleOffset(1.0)
   hSyserr.GetYaxis().SetTitleSize(0.07)
   hSyserr.GetYaxis().SetLabelSize(0.06)
-  hSyserr.SetMarkerStyle(root_plot.kRound)
-  hSyserr.SetMarkerSize(1.5)
+  hSyserr.SetMarkerStyle(root_plot.kRoundHollow)
+  hSyserr.SetMarkerSize(2)
   hSyserr.SetLineWidth(0)
   hSyserr.SetFillColor(kGray+1)
   hSyserr.SetFillStyle(1001)
@@ -185,42 +192,56 @@ for iptjet in range(N_JETBINS):
   pMain, pRatio = root_objs[-1]
   c.cd()
   pMain.SetBottomMargin(0.0)
-  pRatio.SetGrid(True)
   pRatio.SetTopMargin(0.0)
   pRatio.SetBottomMargin(0.3)
   pMain.cd()
-  hSyserr.Draw('A2 P')
-  hSyserr.GetXaxis().SetRangeUser(Z_BINNING[0],Z_BINNING[-1])
+  hSyserr.GetXaxis().SetRangeUser(0.4,1.0)
   hSyserr.GetYaxis().SetRangeUser(0.1, 2. * hResult.GetMaximum())
+  hResult.Draw('E0')
+  hSyserr.Draw('2 P')
   hResult.Draw('same')
   hSyserr.GetYaxis().SetTitleOffset(0.8)
   # Output
   fOutput.WriteObject(hSyserr, f'FF_Ds_sysunc_{name_suffix}')
   fOutput.WriteObject(hResult, f'FF_Ds_statsunc_{name_suffix}')
   # Main
+  hModels = {}
+  for model in model_plotting:
+    model_vars = model_db[model]
+    hModels[model] = draw_model(model, pt_jet_l, pt_jet_u)
+    hModels[model].Draw('same')
+    fOutput.WriteObject(hModels[model], f'FF_Ds_{model}_{name_suffix}')
     # Legend
-  dsjetTxt = newObj(TPaveText(0.63,0.88,0.95,0.92,"NDC"))
+  lgdLeft = 0.62
+  lgdRight = 0.95
+  dsjetTxt = newObj(TPaveText(lgdLeft,0.88,0.95,0.92,"NDC"))
   dsjetTxt.SetFillColor(kWhite)
   root_plot.add_text(dsjetTxt, 'D_{s}^{+}-tagged jets')
   dsjetTxt.Draw('same')
-  lgd = newObj(TLegend(0.63,0.63,0.95,0.88))
-  lgd.SetTextSize(0.033)
-  lgd.AddEntry(hSyserr,'data, pp #sqrt{#it{s}} = 13 TeV')
-  for model in model_plotting:
-    model_vars = model_db[model]
-    hModel = draw_model(model, pt_jet_l, pt_jet_u)
-    hModel.Draw('same')
-    lgd.AddEntry(hModel, model_vars['label'])
-    fOutput.WriteObject(hModel, f'FF_Ds_{model}_{name_suffix}')
+  lgd = newObj(TLegend(lgdLeft,0.78,0.95,0.88))
+  lgd.SetTextSize(0.04)
+  lgd.SetFillColorAlpha(0,0)
+  lgd.AddEntry(hSyserr,'data')
+  lgd.AddEntry(hModels['pythia6'],'POWHEG+PYTHIA 6')
+  pythiaTxt = newObj(TPaveText(lgdLeft,0.73,0.95,0.77,"NDC"))
+  pythiaTxt.SetFillColor(kWhite)
+  root_plot.add_text(pythiaTxt, 'PYTHIA 8:')
+  pythiaTxt.Draw('same')
+  lgd_pythia = newObj(TLegend(lgdLeft,0.63,0.95,0.73))
+  lgd_pythia.SetFillColorAlpha(0,0)
+  lgd_pythia.SetTextSize(0.04)
+  lgd_pythia.AddEntry(hModels['pythia8'], 'Monash')
+  lgd_pythia.AddEntry(hModels['pythia8_cr2'], 'CR-BLC Mode 2')
   # Description
   alice = root_plot.InitALICELabel(y1=-0.06, type='prel')
   root_objs.append(alice)
   alice.Draw('same')
-  root_objs.append(TPaveText(0.16,0.65,0.55,0.85,"NDC"))
+  root_objs.append(TPaveText(0.16,0.58,0.54,0.88,"NDC"))
   pave = root_objs[-1]
   pave.SetFillColor(kWhite)
+  root_plot.add_text(pave, 'pp #sqrt{#it{s}} = 13 TeV')
   root_plot.add_text(pave, 'charged jets, anti-#it{k}_{T}, #it{R} = 0.4')
-  root_plot.add_text(pave, f'{pt_jet_l} < #it{{p}}_{{T}}^{{jet ch.}} < {pt_jet_u} GeV/#it{{c}}, ' +'|#it{#eta}_{jet}| #leq 0.5')
+  root_plot.add_text(pave, f'{pt_jet_l} < #it{{p}}_{{T}}^{{jet ch.}} < {pt_jet_u} GeV/#it{{c}}, ' +'|#it{#eta}_{jet ch.}| #leq 0.5')
   root_plot.add_text(pave, f'{pt_cand_l[iptjet]} < #it{{p}}_{{T}}^{{D_{{s}}}} < {pt_cand_u[iptjet]} GeV/#it{{c}}, ' +'|#it{y}_{D_{s}^{+}}| #leq 0.8')
     # variation
   if args.extra:
@@ -237,6 +258,7 @@ for iptjet in range(N_JETBINS):
     lgd.AddEntry(FF_db['D0']['result'],'D^{0}-tagged jets')
     fOutput.WriteObject(FF_db['D0']['result'], f'FF_D0_ALICEpp13TeV_{name_suffix}')
   lgd.Draw('same')
+  lgd_pythia.Draw('same')
   pave.Draw("same")
   # Ratio
   hRatioPrimary = None
@@ -257,10 +279,13 @@ for iptjet in range(N_JETBINS):
     pRatio.cd()
     ymin = min(ymin, hRatio.GetMinimum())
     ymax = max(ymax, hRatio.GetMaximum()+0.3)
+    hRatio.GetYaxis().SetRangeUser(ymin, ymax)
+    hRatio.GetXaxis().SetRangeUser(0.4, 1.0)
     if model == model_plotting[0]:
       hRatioPrimary = hRatio
       hRatio.GetYaxis().SetNdivisions(505)
       hRatio.GetYaxis().SetRangeUser(ymin, ymax)
+      hRatio.GetXaxis().SetRangeUser(0.4, 1.0)
       hRatio.SetTitleSize(0.15,"xy")
       hRatio.GetXaxis().SetTitleOffset(0.8)
       hRatio.GetYaxis().SetTitleOffset(0.45)
@@ -271,7 +296,9 @@ for iptjet in range(N_JETBINS):
       hRatio.Draw('same')
     fOutput.WriteObject(hRatio, f'FFratio_Ds_{model}_{name_suffix}')
   if hRatioPrimary:
-    hRatioPrimary.GetYaxis().SetRangeUser(ymin, ymax)
+    #hRatioPrimary.GetYaxis().SetRangeUser(ymin, ymax)
+    hRatioPrimary.GetYaxis().SetRangeUser(0.2, 2.13)
+    hRatioPrimary.GetXaxis().SetRangeUser(0.4, 1.0)
   hResult.GetXaxis().SetLabelSize(0.0)
   c.cd()
   ROOT.gPad.SaveAs(f'DsJetFF_result_pt_jet_{pt_jet_l:.0f}_{pt_jet_u:.0f}.pdf')
