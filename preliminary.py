@@ -46,6 +46,7 @@ FF_db = {
   },
   'result':{
     'value':[1.1401532487992456, 1.724176622691029, 1.2898143999709701, 1.6379722484777985, 3.067730231261713],
+    'sys_err':[0.293077, 0.294699, 0.181021, 0.13501, 0.243771],
     'stat_err':[0.3328854826107637, 0.3089413083853938, 0.23251800218472218, 0.17782185013302257, 0.16535576809128452],
     'rel_stat':[0.29196556073610513, 0.17918193781285008, 0.18027245019900187, 0.10856218736201183, 0.053901665278852144],
   },
@@ -58,6 +59,15 @@ FF_db = {
     'tracking eff.':[0.01637722317315104,0.061091962851334614,0.016021437713521137,0.005160642569285007,0.050197412160425156],
     'BDT selection':[0.20095998586001837,0.1525976556037381,0.09708925345975195,0.04363196444248601,0.044546410921448856],
   },
+  'result_D0':{
+    'x':  [  0.5,  0.65,  0.75,  0.85,  0.95],
+    'y':  [1.381, 1.833, 1.914, 1.676, 1.833],
+    'exl':[  0.1,  0.05,  0.05,  0.05,  0.05],
+    'exh':[  0.1,  0.05,  0.05,  0.05,  0.05],
+    'eyl':[0.238, 0.143, 0.133, 0.095, 0.119],
+    'eyh':[0.190, 0.101, 0.119, 0.058, 0.119],
+    'stats':[0.073, 0.091, 0.082, 0.067, 0.058],
+  },
   'model':{
     'Ds': {
       'pythia6_powheg':'charm_fastsimu_Ds.root',
@@ -66,23 +76,23 @@ FF_db = {
       'pythia8_cr2':'pythia8cr2_charm_fastsimu_Ds.root',
     },
     'D0':{
-      'pythia6_powheg':'charm_fastsimu_Ds.root',
+      'pythia6_powheg':'charm_fastsimu_D0.root',
       'pythia8':'pythia8_charm_fastsimu_D0.root',
       'pythia8_cr0':'pythia8cr0_charm_fastsimu_D0.root',
       'pythia8_cr2':'pythia8cr2_charm_fastsimu_D0.root',
     },
   },
   'model_data':{
-'D0': {'pythia6_powheg': {'err': [0.014267697148673934,
-                                   0.02560060180321059,
-                                   0.02715782802604143,
-                                   0.027143527657493702,
-                                   0.03058950679066015],
-                           'val': [1.033103448275862,
-                                   1.6630541871921185,
-                                   1.8715270935960573,
-                                   1.869556650246306,
-                                   2.529655172413794]},
+'D0': {'pythia6_powheg': {'err': [0.005755199817989637,
+                                   0.010061199781847198,
+                                   0.010610018638697824,
+                                   0.010599502053268551,
+                                   0.010945446694122516],
+                           'val': [1.1308491693418001,
+                                   1.7280385219204728,
+                                   1.9217025564121173,
+                                   1.91789488483258,
+                                   2.1706656981512293]},
         'pythia8': {'err': [0.005755087835737462,
                             0.009050394755741105,
                             0.008887086887476716,
@@ -412,7 +422,156 @@ def draw_result():
 
 def draw_result_ratio():
   # Ds / D0 comparison
-  pass
+    # D0
+  h_dzero = ROOT.TH1F('hz_D0','FF D0',N_BINS,array('d', Z_BINNING))
+  tg_dzero_sys = ROOT.TGraphAsymmErrors(5,
+    array('d', FF_db['result_D0']['x']),
+    array('d', FF_db['result_D0']['y']),
+    array('d', FF_db['result_D0']['exl']),
+    array('d', FF_db['result_D0']['exh']),
+    array('d', FF_db['result_D0']['eyl']),
+    array('d', FF_db['result_D0']['eyh']))
+    # Ds
+  h_ds = ROOT.TH1F('hz_Ds','FF Ds',N_BINS,array('d', Z_BINNING))
+  tg_ds_sys = ROOT.TGraphAsymmErrors(5,
+    array('d', FF_db['xbins']),
+    array('d', FF_db['result']['value']),
+    array('d', FF_db['xwidth']),
+    array('d', FF_db['xwidth']),
+    array('d', FF_db['result']['sys_err']),
+    array('d', FF_db['result']['sys_err']))
+  # Ratio
+  hratio_pythia8 = ROOT.TH1F('hratio_py8','FF Ds/D0',N_BINS,array('d', Z_BINNING))
+  hratio_py8cr2 = ROOT.TH1F('hratio_py8cr2','FF Ds/D0',N_BINS,array('d', Z_BINNING))
+  for i in range(0,N_BINS):
+    h_dzero.SetBinContent(i+1, FF_db['result_D0']['y'][i])
+    h_dzero.SetBinError(i+1, FF_db['result_D0']['stats'][i])
+    h_ds.SetBinContent(i+1, FF_db['result']['value'][i])
+    h_ds.SetBinError(i+1, FF_db['result']['stat_err'][i])
+    hratio_pythia8.SetBinContent(i+1, FF_db['model_data']['Ds']['pythia8']['val'][i] / FF_db['model_data']['D0']['pythia8']['val'][i])
+    hratio_py8cr2.SetBinContent(i+1, FF_db['model_data']['Ds']['pythia8_cr2']['val'][i] / FF_db['model_data']['D0']['pythia8_cr2']['val'][i])
+  hratio = h_ds.Clone('hratio_dsd0_data')
+  hratio.Divide(h_dzero)
+  # Render
+    # Pads
+  c_FF_ratio = TCanvas('c_FF_ratio','preliminary plots',1200,1200)
+  pMain, pRatio = root_plot.NewRatioPads(c_FF_ratio.cd(), f'padz', f'padratio', gap=0.0, ratio=0.4)
+  c_FF_ratio.cd()
+  pMain.SetBottomMargin(0.0)
+  pRatio.SetTopMargin(0.0)
+  pRatio.SetBottomMargin(0.3)
+  # Main
+  pMain.cd()
+    # Color, Marker and line
+    # Ds
+  h_ds.UseCurrentStyle()
+  h_ds.SetMarkerStyle(root_plot.kRoundHollow)
+  h_ds.SetMarkerSize(2)
+  h_ds.SetLineWidth(2)
+  h_ds.SetLineColor(kBlack)
+  h_ds.SetMarkerColor(kBlack)
+  tg_ds_sys.SetLineColor(kBlack)
+  tg_ds_sys.SetMarkerColor(kBlack)
+  tg_ds_sys.SetMarkerStyle(root_plot.kRoundHollow)
+  tg_ds_sys.SetMarkerSize(2)
+  tg_ds_sys.SetLineWidth(0)
+  tg_ds_sys.SetFillColorAlpha(root_plot.kGray+1, 0.9)
+  tg_ds_sys.SetFillStyle(1001)
+    # D0
+  h_dzero.SetMarkerStyle(root_plot.kBlockHollow)
+  h_dzero.SetMarkerSize(2)
+  h_dzero.SetLineWidth(2)
+  h_dzero.SetLineColor(root_plot.kCyan+2)
+  h_dzero.SetMarkerColor(root_plot.kCyan+2)
+  tg_dzero_sys.SetLineColor(root_plot.kCyan+2)
+  tg_dzero_sys.SetMarkerColor(root_plot.kCyan+2)
+  tg_dzero_sys.SetMarkerStyle(root_plot.kBlockHollow)
+  tg_dzero_sys.SetMarkerSize(2)
+  tg_dzero_sys.SetLineWidth(0)
+  tg_dzero_sys.SetFillColorAlpha(root_plot.kCyan-8, 0.9)
+  tg_dzero_sys.SetFillStyle(1001)
+    # Axis
+  h_ds.GetXaxis().SetRangeUser(0.4,1.0)
+  h_ds.GetYaxis().SetRangeUser(0.1, 2. * h_ds.GetMaximum())
+  h_ds.SetXTitle('#it{z}_{#parallel}^{ch}')
+  h_ds.GetYaxis().SetTitle('(1/#it{N}_{jet}) d#it{N}/d#it{z}_{#parallel}^{ch}')
+  h_ds.GetYaxis().SetTitleOffset(0.8)
+  h_ds.GetYaxis().SetTitleSize(0.08)
+  h_ds.GetYaxis().SetLabelSize(0.09)
+    # Draw main
+  ROOT.gStyle.SetErrorX(0)
+  h_ds.Draw('E0')
+  tg_ds_sys.Draw('2 P')
+  h_ds.Draw('same')
+  tg_dzero_sys.Draw('2 P')
+  h_dzero.Draw('same')
+    # Text
+  mainTextSize = 0.06
+  alice = root_plot.InitALICELabel(y1=-0.06, type='prel', size=mainTextSize)
+  alice.Draw('same')
+  pave = ROOT.TPaveText(0.16,0.45,0.54,0.85,"NDC")
+  pave.SetFillColor(kWhite)
+  root_plot.add_text(pave, 'pp #sqrt{#it{s}} = 13 TeV', size=mainTextSize)
+  root_plot.add_text(pave, 'charged jets, anti-#it{k}_{T}, #it{R} = 0.4', size=mainTextSize)
+  root_plot.add_text(pave, '7 < #it{p}_{T}^{jet ch.} < 15 GeV/#it{c}, ' +'|#it{#eta}_{jet ch.}| #leq 0.5', size=mainTextSize)
+  root_plot.add_text(pave, '3 < #it{p}_{T}^{h} < 15 GeV/#it{c}, ' +'|#it{y}_{h}| #leq 0.8', size=mainTextSize)
+  pave.Draw('same')
+    # Legend
+  lgd = ROOT.TLegend(0.66,0.78,0.95,0.93)
+  lgd.SetTextSize(mainTextSize)
+  lgd.SetFillColorAlpha(0,0)
+  lgd.AddEntry(tg_ds_sys, 'D_{s}^{+}-tagged jets')
+  lgd.AddEntry(tg_dzero_sys, 'D^{0}-tagged jets')
+  lgd.Draw('same')
+  # Ratio
+  pRatio.cd()
+    # data
+  hratio.SetMarkerStyle(root_plot.kDiamondHollow)
+  hratio.SetMarkerSize(3)
+  hratio.SetLineWidth(4)
+  hratio.SetLineColor(root_plot.kOrange-1)
+  hratio.SetMarkerColor(root_plot.kOrange-1)
+  hratio.GetXaxis().SetRangeUser(0.4,1.0)
+  hratio.GetYaxis().SetRangeUser(0.1, 2.13)
+  hratio.SetXTitle('#it{z}_{#parallel}^{ch}')
+  hratio.GetYaxis().SetTitle('D_{s}^{+}/D^{0}')
+  hratio.GetYaxis().SetNdivisions(505)
+  hratio.SetTitleSize(0.13,"xy")
+  hratio.GetXaxis().SetTitleOffset(0.8)
+  hratio.GetYaxis().SetTitleOffset(0.51)
+  hratio.GetXaxis().SetLabelSize(0.12)
+  hratio.GetYaxis().SetLabelSize(0.12)
+    # model
+  hratio_pythia8.SetLineStyle(2)
+  hratio_pythia8.SetLineColor(root_plot.kRed+1)
+  hratio_pythia8.SetLineWidth(4)
+  hratio_py8cr2.SetLineStyle(9)
+  hratio_py8cr2.SetLineColor(root_plot.kGreen+3)
+  hratio_py8cr2.SetLineWidth(4)
+   # Draw
+  hratio.Draw('E0')
+  hratio_pythia8.Draw('same')
+  hratio_py8cr2.Draw('same')
+    # Legend
+  ratioTextSize = 0.08
+  lgd_data = ROOT.TLegend(0.16, 0.84, 0.50, 0.93)
+  lgd_data.SetTextSize(ratioTextSize)
+  lgd_data.AddEntry(hratio, 'data')
+  lgd_data.Draw('same')
+  lgd_model = ROOT.TLegend(0.30, 0.7, 0.6, 0.95)
+  lgd_model.SetTextSize(ratioTextSize)
+  lgd_model.AddEntry(hratio_pythia8, 'PYTHIA 8 Monash')
+  lgd_model.AddEntry(hratio_py8cr2, 'PYTHIA 8 CR-BLC Mode 2')
+  lgd_model.Draw('same')
+  # Save
+  h_ds.Write()
+  h_dzero.Write()
+  tg_ds_sys.Write()
+  tg_dzero_sys.Write()
+  hratio.Write()
+  hratio_pythia8.Write()
+  hratio_py8cr2.Write()
+  save_canvas(c_FF_ratio)
 
 if __name__ == '__main__':
   #convert_model_data()
@@ -422,4 +581,5 @@ if __name__ == '__main__':
   draw_fd_fraction()
   draw_rel_sys()
   draw_inv_mass(None, rootFile)
+  draw_result_ratio()
   rootFile.Close()

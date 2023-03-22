@@ -196,14 +196,14 @@ def SetColorAndStyle(obj, c = None, s = None, size = 1.0):
   obj.SetMarkerStyle(s)
   obj.SetMarkerSize(size)
 
-def NewRatioPads(c, nameUpper, nameLower, gap=0.05):
+def NewRatioPads(c, nameUpper, nameLower, gap=0.05, ratio=0.3):
   c.Clear()
   c.Draw()
-  padMain = ROOT.TPad(nameUpper,nameUpper, 0, 0.3, 1, 1.0)
+  padMain = ROOT.TPad(nameUpper,nameUpper, 0, ratio, 1, 1.0)
   padMain.SetBottomMargin(gap*0.4)
   padMain.Draw()
   c.cd()
-  padRatio = ROOT.TPad(nameLower,nameLower, 0, 0.0, 1, 0.3)
+  padRatio = ROOT.TPad(nameLower,nameLower, 0, 0.0, 1, ratio)
   padRatio.SetTopMargin(gap*0.6)
   padRatio.SetBottomMargin(0.25)
   #padRatio.SetGrid(1)
