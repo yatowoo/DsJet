@@ -163,12 +163,12 @@ def draw_cuts(range=None):
   ptxt = ROOT.TPaveText(0.15,0.68,0.60,0.90,"NDC")
   ptxt.SetTextAlign(13)
   ptxt.SetBorderSize(0)
-  ptxt.SetTextSize(0.03)
+  ptxt.SetTextSize(0.035)
   ptxt.SetFillColor(0)
   ptxt.SetTextFont(42)
   ptxt.AddText('D_{s}^{+}-tagged charged jets, anti-#it{k}_{T}, #it{R} = 0.4')
-  ptxt.AddText('7 < #it{p}_{T}^{jet ch.} < 15 GeV/#it{c}, ' +'|#it{#eta}_{jet}| #leq 0.5')
-  ptxt.AddText('3 < #it{p}_{T}^{D_{s}} < 15 GeV/#it{c}, ' +'|#it{y}_{D_{s}^{+}}| #leq 0.8')
+  ptxt.AddText('7 < #it{p}_{T}^{jet ch.} < 15 GeV/#it{c}, ' +'|#it{#eta}_{jet ch.}| #leq 0.5')
+  ptxt.AddText('3 < #it{p}_{T}^{D_{s}^{+}} < 15 GeV/#it{c}, ' +'|#it{y}_{D_{s}^{+}}| #leq 0.8')
   return ptxt
 
 def draw_fd_fraction(path=None):
@@ -192,7 +192,7 @@ def draw_fd_fraction(path=None):
   # sys.
   tg_fd_fr_sys.UseCurrentStyle()
   tg_fd_fr_sys.GetYaxis().SetTitle('Feed-down fraction')
-  tg_fd_fr_sys.GetYaxis().SetRangeUser(0.02, 0.63)
+  tg_fd_fr_sys.GetYaxis().SetRangeUser(0., 0.63)
   tg_fd_fr_sys.GetXaxis().SetTitle('#it{z}_{#parallel}^{ch}')
   tg_fd_fr_sys.GetXaxis().SetRangeUser(0.4, 1.0)
   tg_fd_fr_sys.SetMarkerStyle(root_plot.kRound)
@@ -285,7 +285,7 @@ def draw_rel_sys(path=None):
   # Render
   leg_relativesys.Draw('same')
   gr_stats.GetXaxis().SetRangeUser(0.4, 1)
-  gr_stats.GetYaxis().SetRangeUser(-0.32, 0.8)
+  gr_stats.GetYaxis().SetRangeUser(-0.35, 0.8)
   gr_stats.GetYaxis().SetTitle('Relative systematic uncertainty')
   gr_stats.GetXaxis().SetTitle('#it{z}_{#parallel}^{ch}')
   pcuts = draw_cuts()
@@ -326,11 +326,11 @@ def draw_inv_mass(path=None, savefile = None):
   c_invmass = ROOT.TCanvas('c_invmass_sb','Canvas for preliminary', 900, 800)
   c_invmass.Draw()
   c_invmass.cd()
-  lgd = ROOT.TLegend(0.75, 0.5, 0.95, 0.85)
+  lgd = ROOT.TLegend(0.72, 0.5, 0.95, 0.85)
   hmass.SetXTitle('Invariant mass (GeV/#it{c}^{2})')
-  hmass.SetYTitle('Counts / (6 MeV/#it{c})')
+  hmass.SetYTitle('Counts per 6 MeV/#it{c}')
   hmass.GetXaxis().SetRangeUser(1.71, 2.14)
-  hmass.GetYaxis().SetRangeUser(0,340)
+  hmass.GetYaxis().SetRangeUser(0,360)
   hmass.SetMarkerStyle(root_plot.kRoundHollow)
   hmass.SetLineWidth(2)
   hmass.Draw()
@@ -357,7 +357,7 @@ def draw_inv_mass(path=None, savefile = None):
   hSignal = root_plot.DrawRegion(hmass, f'hSignalRegion', mean - nsigma_signal * sigma, mean + nsigma_signal * sigma, ROOT.kRed, 3444)
   lgd.AddEntry(hSignal, 'Signal')
   hSBleft = root_plot.DrawRegion(hmass, f'hSBleft', mean_sec - nsigma_width * (sigma + sigma_sec), mean_sec - nsigma_width * sigma_sec, ROOT.kBlue, 3354)
-  hSBright = root_plot.DrawRegion(hmass, f'hSBright', mean + nsigma_near * sigma, mean + nsigma_away * sigma, ROOT.kBlue, 3345)
+  hSBright = root_plot.DrawRegion(hmass, f'hSBright', mean + nsigma_near * sigma, mean + nsigma_away * sigma, ROOT.kBlue, 3354)
   lgd.AddEntry(hSBleft, 'Sideband')
   lgd.Draw('same')
   # Text
@@ -366,7 +366,7 @@ def draw_inv_mass(path=None, savefile = None):
   alice = root_plot.InitALICELabel(y1=-0.06, type='prel')
   alice.Draw('same')
   # system
-  pcoll = ROOT.TPaveText(0.75,0.88,0.95,0.97,"NDC")
+  pcoll = ROOT.TPaveText(0.72,0.88,0.90,0.97,"NDC")
   pcoll.SetTextSize(0.03)
   pcoll.SetFillColor(0)
   pcoll.SetBorderSize(0)
