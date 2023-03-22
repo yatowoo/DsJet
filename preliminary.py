@@ -3,6 +3,8 @@
 # Render ALICE preliminary figures
 
 import argparse
+from copy import deepcopy
+import pprint
 
 # Directory contents
 # results/
@@ -55,11 +57,107 @@ FF_db = {
     'regularisation':[0.006843147890322303,0.007205349759254949,0.02774227241756033,0.006693637288929119,0.000977903589641402],
     'tracking eff.':[0.01637722317315104,0.061091962851334614,0.016021437713521137,0.005160642569285007,0.050197412160425156],
     'BDT selection':[0.20095998586001837,0.1525976556037381,0.09708925345975195,0.04363196444248601,0.044546410921448856],
+  },
+  'model':{
+    'Ds': {
+      'pythia6_powheg':'charm_fastsimu_Ds.root',
+      'pythia8':'pythia8_charm_fastsimu_Ds.root',
+      'pythia8_cr0':'pythia8cr0_charm_fastsimu_Ds.root',
+      'pythia8_cr2':'pythia8cr2_charm_fastsimu_Ds.root',
+    },
+    'D0':{
+      'pythia6_powheg':'charm_fastsimu_Ds.root',
+      'pythia8':'pythia8_charm_fastsimu_D0.root',
+      'pythia8_cr0':'pythia8cr0_charm_fastsimu_D0.root',
+      'pythia8_cr2':'pythia8cr2_charm_fastsimu_D0.root',
+    },
+  },
+  'model_data':{
+'D0': {'pythia6_powheg': {'err': [0.014267697148673934,
+                                   0.02560060180321059,
+                                   0.02715782802604143,
+                                   0.027143527657493702,
+                                   0.03058950679066015],
+                           'val': [1.033103448275862,
+                                   1.6630541871921185,
+                                   1.8715270935960573,
+                                   1.869556650246306,
+                                   2.529655172413794]},
+        'pythia8': {'err': [0.005755087835737462,
+                            0.009050394755741105,
+                            0.008887086887476716,
+                            0.008312667525287918,
+                            0.008516749747177522],
+                    'val': [1.5227727510005218,
+                            1.8829389246563428,
+                            1.8155994431877485,
+                            1.5884809465808252,
+                            1.6674351835740384]},
+        'pythia8_cr0': {'err': [0.006971863055522793,
+                                0.01033484997225083,
+                                0.010088942033209092,
+                                0.009659365778679903,
+                                0.009866403429310678],
+                        'val': [1.637497551100373,
+                                1.7991249265330118,
+                                1.7145265757555954,
+                                1.5716295720213966,
+                                1.639723823489252]},
+        'pythia8_cr2': {'err': [0.006872749453741715,
+                                0.010304331667496055,
+                                0.010174568114966217,
+                                0.009712075998997566,
+                                0.00972131071348784],
+                        'val': [1.6080765118492324,
+                                1.8074044483086795,
+                                1.762169402309923,
+                                1.6056091457038457,
+                                1.6086639799790865]}},
+ 'Ds': {'pythia6_powheg': {'err': [0.014267697148673934,
+                                   0.02560060180321059,
+                                   0.02715782802604143,
+                                   0.027143527657493702,
+                                   0.03058950679066015],
+                           'val': [1.033103448275862,
+                                   1.6630541871921185,
+                                   1.8715270935960573,
+                                   1.869556650246306,
+                                   2.529655172413794]},
+        'pythia8': {'err': [0.012681745176149813,
+                            0.0206925871642257,
+                            0.0202843674173749,
+                            0.01955503770291138,
+                            0.020832531673832477],
+                    'val': [1.3802144022372411,
+                            1.837333954789094,
+                            1.765555814495454,
+                            1.6408762526217668,
+                            1.9958051736192037]},
+        'pythia8_cr0': {'err': [0.01602641624487138,
+                                0.02445993644423467,
+                                0.02430472465875974,
+                                0.023186660951181284,
+                                0.024947792835945053],
+                        'val': [1.5053745094693742,
+                                1.7532844224535065,
+                                1.7311039071830727,
+                                1.5754990615935847,
+                                1.929363589831087]},
+        'pythia8_cr2': {'err': [0.01568584454415444,
+                                0.024597593151126543,
+                                0.024250053881836948,
+                                0.023217658951022534,
+                                0.024712353469748646],
+                        'val': [1.4627417998317915,
+                                1.7984861227922626,
+                                1.7480235492010079,
+                                1.6023549201009255,
+                                1.9256518082422207]}},
   }
 }
 
 Z_BINNING = [0.4,0.6,0.7,0.8,0.9,1.0]
-N_BINS = len(Z_BINNING)
+N_BINS = len(Z_BINNING)-1
 
 def draw_cuts(range=None):
   ptxt = ROOT.TPaveText(0.15,0.68,0.60,0.90,"NDC")
@@ -285,7 +383,32 @@ def draw_inv_mass(path=None, savefile = None):
   save_canvas(c_invmass)
   yieldsFile.Close()
 
+def convert_model_data():
+  fout = ROOT.TFile.Open(args.model + '/' + 'FF_pythia_hz_DsD0_ptjet_7_15_rebin.root', 'RECREATE')
+  for cand in ['Ds', 'D0']:
+    for name, modelfile in FF_db['model'][cand].items():
+      f = ROOT.TFile.Open(args.model + '/' + modelfile)
+      if f.IsOpen():
+        print('[-] Processing : ' + modelfile)
+      mdata = {'val':[],'err':[]}
+      hModelRaw = f.Get('hz_ptjet_7_15')
+      hModel = hModelRaw.Rebin(N_BINS, 'hz_'+cand+'_'+name+'_rebin', array('d', Z_BINNING))
+      isolatedCandJet = hModelRaw.GetBinContent(hModelRaw.FindBin(1.001)) + hModel.GetBinContent(hModel.FindBin(0.99))
+      hModel.SetBinContent(hModel.FindBin(0.99), isolatedCandJet)
+      hModel.Scale(1./hModel.Integral(),'width')
+      for i in range(1,N_BINS+1):
+        mdata['val'].append(hModel.GetBinContent(i))
+        mdata['err'].append(hModel.GetBinError(i))
+      FF_db['model_data'][cand][name] = deepcopy(mdata)
+      fout.WriteObject(hModel, hModel.GetName())
+      f.Close()
+  fout.Close()
+  pprint.pprint(FF_db['model_data'])
+  pass
+
 if __name__ == '__main__':
+  #convert_model_data()
+  #exit()
   root_plot.ALICEStyle()
   rootFile = ROOT.TFile.Open('preliminary.root','RECREATE')
   draw_fd_fraction()
