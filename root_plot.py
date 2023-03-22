@@ -72,7 +72,7 @@ def InitALICELabel(x1 = 0.02, y1 = -0.18, x2 = 0.35, y2 = -0.02, size=0.04, type
   elif(type == "prel"):
     text = "ALICE Preliminary"
   txt = pTxtALICE.AddText(text)
-  txt.SetTextFont(42) # Helvetica Bold
+  #txt.SetTextFont(42) # Helvetica Bold
   return pTxtALICE
 
 def PrintFigure(name):
@@ -196,17 +196,17 @@ def SetColorAndStyle(obj, c = None, s = None, size = 1.0):
   obj.SetMarkerStyle(s)
   obj.SetMarkerSize(size)
 
-def NewRatioPads(c, nameUpper, nameLower, gap=0.05):
+def NewRatioPads(c, nameUpper, nameLower, gap=0.05, ratio=0.3):
   c.Clear()
   c.Draw()
-  padMain = ROOT.TPad(nameUpper,nameUpper, 0, 0.3, 1, 1.0)
+  padMain = ROOT.TPad(nameUpper,nameUpper, 0, ratio, 1, 1.0)
   padMain.SetBottomMargin(gap*0.4)
   padMain.Draw()
   c.cd()
-  padRatio = ROOT.TPad(nameLower,nameLower, 0, 0.0, 1, 0.3)
+  padRatio = ROOT.TPad(nameLower,nameLower, 0, 0.0, 1, ratio)
   padRatio.SetTopMargin(gap*0.6)
   padRatio.SetBottomMargin(0.25)
-  padRatio.SetGrid(1)
+  #padRatio.SetGrid(1)
   padRatio.Draw()
   return padMain, padRatio
 
@@ -272,6 +272,20 @@ def Rebin2D(h2raw, BINNING_X, BINNING_Y, name='h2new', title='New 2D histograms 
       val /= x.GetBinWidth(i) * y.GetBinWidth(j) * h2raw.GetSum()
       h2.SetBinContent(i, j, val)
   return h2
+
+def DrawRegion(histo, name, left, right, color, style = 3004):
+  binMin = histo.FindBin(left)
+  binMax = histo.FindBin(right)
+  xLeft = histo.GetBinCenter(binMin) - 0.5 * histo.GetBinWidth(binMin)
+  xRight = histo.GetBinCenter(binMax) + 0.5 * histo.GetBinWidth(binMax)
+  hRegion = ROOT.TH1F(name,'',binMax-binMin+1, xLeft, xRight)
+  for i in range(binMin, binMax+1):
+    hRegion.Fill(histo.GetBinCenter(i), histo.GetBinContent(i))
+  hRegion.SetLineWidth(0)
+  hRegion.SetFillColor(color)
+  hRegion.SetFillStyle(style)
+  hRegion.Draw('same hist')
+  return hRegion
 
 if __name__ == '__main__':
   print("Utility lib for post-processing with ROOT")
