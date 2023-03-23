@@ -243,16 +243,17 @@ for iptjet in range(N_JETBINS):
   lgd_pythia.AddEntry(hModels['pythia8'], 'Monash')
   lgd_pythia.AddEntry(hModels['pythia8_cr2'], 'CR-BLC Mode 2')
   # Description
-  alice = root_plot.InitALICELabel(y1=-0.06, type='prel')
+  alice = root_plot.InitALICELabel(y1=-0.06, type='prel', size=0.045)
   root_objs.append(alice)
   alice.Draw('same')
   root_objs.append(TPaveText(0.16,0.58,0.54,0.88,"NDC"))
   pave = root_objs[-1]
   pave.SetFillColor(kWhite)
-  root_plot.add_text(pave, 'pp #sqrt{#it{s}} = 13 TeV')
-  root_plot.add_text(pave, 'charged jets, anti-#it{k}_{T}, #it{R} = 0.4')
-  root_plot.add_text(pave, f'{pt_jet_l} < #it{{p}}_{{T}}^{{jet ch.}} < {pt_jet_u} GeV/#it{{c}}, ' +'|#it{#eta}_{jet ch.}| #leq 0.5')
-  root_plot.add_text(pave, f'{pt_cand_l[iptjet]} < #it{{p}}_{{T}}^{{D_{{s}}}} < {pt_cand_u[iptjet]} GeV/#it{{c}}, ' +'|#it{y}_{D_{s}^{+}}| #leq 0.8')
+  paveTextSize = 0.043
+  root_plot.add_text(pave, 'pp #sqrt{#it{s}} = 13 TeV', size=paveTextSize)
+  root_plot.add_text(pave, 'charged jets, anti-#it{k}_{T}, #it{R} = 0.4', size=paveTextSize)
+  root_plot.add_text(pave, f'{pt_jet_l} < #it{{p}}_{{T}}^{{jet ch.}} < {pt_jet_u} GeV/#it{{c}}, ' +'|#it{#eta}_{jet ch.}| #leq 0.5', size=paveTextSize)
+  root_plot.add_text(pave, f'{pt_cand_l[iptjet]} < #it{{p}}_{{T}}^{{D_{{s}}}} < {pt_cand_u[iptjet]} GeV/#it{{c}}, ' +'|#it{y}_{D_{s}^{+}}| #leq 0.8', size=paveTextSize)
     # variation
   if args.extra:
     hExtra = fExtra.Get(hname_result)

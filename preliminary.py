@@ -174,7 +174,7 @@ def draw_cuts(range=None):
   ptxt = ROOT.TPaveText(0.15,0.68,0.60,0.90,"NDC")
   ptxt.SetTextAlign(13)
   ptxt.SetBorderSize(0)
-  ptxt.SetTextSize(0.035)
+  ptxt.SetTextSize(0.03)
   ptxt.SetFillColor(0)
   ptxt.SetTextFont(42)
   ptxt.AddText('D_{s}^{+}-tagged charged jets, anti-#it{k}_{T}, #it{R} = 0.4')
@@ -183,7 +183,7 @@ def draw_cuts(range=None):
   return ptxt
 
 def draw_fd_fraction(path=None):
-  c_fd_fr_sys = ROOT.TCanvas('c_fd_fr', 'canvas for preliminary', 1600,1200)
+  c_fd_fr_sys = ROOT.TCanvas('c_fd_fr', 'canvas for preliminary', 1200,1200)
   tg_fd_fr_sys = ROOT.TGraphAsymmErrors(N_BINS,
     array('d', FF_db['fd_fr']['x']),
     array('d', FF_db['fd_fr']['y']),
@@ -224,15 +224,20 @@ def draw_fd_fraction(path=None):
   # Cuts
   pcuts = draw_cuts()
   # add legend
-  ptxtR = ROOT.TPaveText(0.63,0.85,0.95,0.95,"NDC")
+  ptxtR = ROOT.TPaveText(0.65,0.90,0.95,0.95,"NDC")
   ptxtR.SetTextSize(0.03)
   ptxtR.SetFillColor(0)
   ptxtR.SetBorderSize(0)
   ptxtR.AddText('pp #sqrt{#it{s}} = 13 TeV')
-  ptxtR.AddText('POWHEG + PYTHIA 6 + EvtGen')
+
+  ptxtM = ROOT.TPaveText(0.62,0.65,0.95,0.70,"NDC")
+  ptxtM.SetTextSize(0.025)
+  ptxtM.SetFillColor(0)
+  ptxtM.SetBorderSize(0)
+  ptxtM.AddText('POWHEG+PYTHIA 6+EvtGen')
   # Legend
-  lgd = ROOT.TLegend(0.63,0.63,0.95,0.80)
-  lgd.SetTextSize(0.033)
+  lgd = ROOT.TLegend(0.62,0.55,0.95,0.65)
+  lgd.SetTextSize(0.025)
   lgd.AddEntry(h_fd_fr_sys, 'POWHEG estimation')
   lgd.AddEntry(tg_fd_fr_sys, 'POWHEG uncertainty')
   # Render
@@ -242,6 +247,7 @@ def draw_fd_fraction(path=None):
   lgd.Draw('same')
   pcuts.Draw('same')
   ptxtR.Draw('same')
+  ptxtM.Draw('same')
   # Save
   tg_fd_fr_sys.Write()
   h_fd_fr_sys.Write()
@@ -259,7 +265,7 @@ def save_canvas(c : ROOT.TCanvas, name = None):
 
 
 def draw_rel_sys(path=None):
-  c_rel_sys = ROOT.TCanvas('c_rel_sys','Canvas for preliminary', 900, 800)
+  c_rel_sys = ROOT.TCanvas('c_rel_sys','Canvas for preliminary', 1200, 900)
   c_rel_sys.SetRightMargin(0.25)
   c_rel_sys.Draw()
   c_rel_sys.cd()
@@ -334,7 +340,7 @@ def draw_inv_mass(path=None, savefile = None):
   sigma_sec = fun_sec.GetParameter(2)
   hmass = mass_fitter.GetHistoClone()
   # Render
-  c_invmass = ROOT.TCanvas('c_invmass_sb','Canvas for preliminary', 900, 800)
+  c_invmass = ROOT.TCanvas('c_invmass_sb','Canvas for preliminary', 1200, 1200)
   c_invmass.Draw()
   c_invmass.cd()
   lgd = ROOT.TLegend(0.72, 0.5, 0.95, 0.85)
@@ -603,8 +609,8 @@ if __name__ == '__main__':
   #exit()
   root_plot.ALICEStyle()
   rootFile = ROOT.TFile.Open('preliminary.root','RECREATE')
-  #draw_fd_fraction()
-  #draw_rel_sys()
-  #draw_inv_mass(None, rootFile)
+  draw_fd_fraction()
+  draw_rel_sys()
+  draw_inv_mass(None, rootFile)
   draw_result_ratio()
   rootFile.Close()
