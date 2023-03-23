@@ -5,6 +5,7 @@
 import argparse
 from copy import deepcopy
 import pprint
+import math
 
 # Directory contents
 # results/
@@ -443,6 +444,8 @@ def draw_result_ratio():
   # Ratio
   hratio_pythia8 = ROOT.TH1F('hratio_py8','FF Ds/D0',N_BINS,array('d', Z_BINNING))
   hratio_py8cr2 = ROOT.TH1F('hratio_py8cr2','FF Ds/D0',N_BINS,array('d', Z_BINNING))
+  db_dsdzero_ratio = []
+  db_dsdzero_ratio_sys_err = []
   for i in range(0,N_BINS):
     h_dzero.SetBinContent(i+1, FF_db['result_D0']['y'][i])
     h_dzero.SetBinError(i+1, FF_db['result_D0']['stats'][i])
@@ -450,8 +453,21 @@ def draw_result_ratio():
     h_ds.SetBinError(i+1, FF_db['result']['stat_err'][i])
     hratio_pythia8.SetBinContent(i+1, FF_db['model_data']['Ds']['pythia8']['val'][i] / FF_db['model_data']['D0']['pythia8']['val'][i])
     hratio_py8cr2.SetBinContent(i+1, FF_db['model_data']['Ds']['pythia8_cr2']['val'][i] / FF_db['model_data']['D0']['pythia8_cr2']['val'][i])
+    # ratio_val
+    ratio_val = FF_db['result']['value'][i] / FF_db['result_D0']['y'][i]
+    db_dsdzero_ratio.append(ratio_val)
+    ratio_err_ds = FF_db['result']['sys_err'][i] / FF_db['result']['value'][i]
+    ratio_err_dzero = FF_db['result_D0']['eyl'][i] / FF_db['result_D0']['y'][i]
+    db_dsdzero_ratio_sys_err.append(ratio_val * math.sqrt(ratio_err_ds**2 + ratio_err_dzero**2))
   hratio = h_ds.Clone('hratio_dsd0_data')
   hratio.Divide(h_dzero)
+  tg_ds_ratio_sys = ROOT.TGraphAsymmErrors(5,
+    array('d', FF_db['xbins']),
+    array('d', db_dsdzero_ratio),
+    array('d', FF_db['xwidth']),
+    array('d', FF_db['xwidth']),
+    array('d', db_dsdzero_ratio_sys_err),
+    array('d', db_dsdzero_ratio_sys_err))
   # Render
     # Pads
   c_FF_ratio = TCanvas('c_FF_ratio','preliminary plots',1200,1200)
@@ -541,6 +557,13 @@ def draw_result_ratio():
   hratio.GetYaxis().SetTitleOffset(0.51)
   hratio.GetXaxis().SetLabelSize(0.12)
   hratio.GetYaxis().SetLabelSize(0.12)
+  tg_ds_ratio_sys.SetLineColor(root_plot.kOrange-1)
+  tg_ds_ratio_sys.SetMarkerColor(root_plot.kOrange-1)
+  tg_ds_ratio_sys.SetMarkerStyle(root_plot.kDiamondHollow)
+  tg_ds_ratio_sys.SetMarkerSize(3)
+  tg_ds_ratio_sys.SetLineWidth(0)
+  tg_ds_ratio_sys.SetFillColorAlpha(root_plot.kOrange-9, 0.9)
+  tg_ds_ratio_sys.SetFillStyle(1001)
     # model
   hratio_pythia8.SetLineStyle(2)
   hratio_pythia8.SetLineColor(root_plot.kRed+1)
@@ -550,13 +573,15 @@ def draw_result_ratio():
   hratio_py8cr2.SetLineWidth(4)
    # Draw
   hratio.Draw('E0')
+  tg_ds_ratio_sys.Draw('2 P')
+  hratio.Draw('same')
   hratio_pythia8.Draw('same')
   hratio_py8cr2.Draw('same')
     # Legend
   ratioTextSize = 0.08
   lgd_data = ROOT.TLegend(0.16, 0.84, 0.50, 0.93)
   lgd_data.SetTextSize(ratioTextSize)
-  lgd_data.AddEntry(hratio, 'data')
+  lgd_data.AddEntry(tg_ds_ratio_sys, 'data')
   lgd_data.Draw('same')
   lgd_model = ROOT.TLegend(0.30, 0.7, 0.6, 0.95)
   lgd_model.SetTextSize(ratioTextSize)
@@ -578,8 +603,8 @@ if __name__ == '__main__':
   #exit()
   root_plot.ALICEStyle()
   rootFile = ROOT.TFile.Open('preliminary.root','RECREATE')
-  draw_fd_fraction()
-  draw_rel_sys()
-  draw_inv_mass(None, rootFile)
+  #draw_fd_fraction()
+  #draw_rel_sys()
+  #draw_inv_mass(None, rootFile)
   draw_result_ratio()
   rootFile.Close()
