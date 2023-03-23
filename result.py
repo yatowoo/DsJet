@@ -31,14 +31,14 @@ model_db = {
   "pythia6":{
     "label": "POWHEG+PYTHIA6",
     "file": "charm_fastsimu_Ds.root",
-    "color": root_plot.kRed+1,
-    "line": 2, # dashed
+    "color": root_plot.kBlue+1,
+    "line": 6, # dashed
   },
   "pythia8":{
     "label": "Monash",
     "file": "pythia8_charm_fastsimu_Ds.root",
-    "color": root_plot.kBlue+1,
-    "line": 6, # dashed
+    "color": root_plot.kRed+1,
+    "line": 2, # dashed
   },
   "pythia8_cr2":{
     "label": "CR-BLC Mode 2",
@@ -108,13 +108,8 @@ fExtra = None
 if args.extra:
   fExtra = TFile.Open(args.extra)
 fSysematics = TFile.Open(args.sys)
-<<<<<<< HEAD
-fModel = TFile.Open(args.model)
-c = TCanvas('c1','draw',1200,1400)
-=======
 
 c = TCanvas('c1','draw',1200,1200)
->>>>>>> plot
 #c.Divide(N_JETBINS) # Issue - figure distorted when subcanvas.SaveAs
 
 def add_text(pave : TPaveText, s : str, color=None, size=0.04, align=11):
@@ -137,7 +132,7 @@ def draw_model(model_name : dict, pt_jet_l=5, pt_jet_u=7):
   """
   """
   model_vars = model_db[model_name]
-  fModel = TFile.Open(model_vars['file'])
+  fModel = TFile.Open(args.model + '/' + model_vars['file'])
   suffix = f'{pt_jet_l:.0f}_{pt_jet_u:.0f}'
   hname = f'hz_ptjet_{suffix}'
   hnameNew = f'{hname}_{model_name}'
@@ -276,44 +271,53 @@ for iptjet in range(N_JETBINS):
   lgd_pythia.Draw('same')
   pave.Draw("same")
   # Ratio
-  hRatioPrimary = None
-  ymin, ymax = 0.1, 2.4
+  pRatio.cd()
+  ymin, ymax = 0.2, 2.13
+  hRatioData = hResult.Clone('hRatioData')
+  hRatioData_sys = hSyserr.Clone('hRatioData_sys')
+  for i in range(5):
+    val = hRatioData.GetBinContent(i+1)
+    stat_err = hRatioData.GetBinError(i+1)
+    hRatioData.SetBinContent(i+1, 1.0)
+    hRatioData.SetBinError(i+1, stat_err / val)
+    hRatioData_sys.SetPointY(i, 1.0)
+    hRatioData_sys.SetPointEYlow(i, hRatioData_sys.GetErrorYlow(i) / val)
+    hRatioData_sys.SetPointEYhigh(i, hRatioData_sys.GetErrorYhigh(i) / val)
+  # Render
+  hRatioData.GetYaxis().SetNdivisions(505)
+  hRatioData.SetYTitle('MC/data')
+  hRatioData.SetXTitle('#it{z}_{#parallel}^{ch}')
+  hRatioData.GetYaxis().SetRangeUser(0.2, 2.13)
+  hRatioData.GetXaxis().SetRangeUser(0.4, 1.0)
+  hRatioData.SetTitleSize(0.15,"xy")
+  hRatioData.GetXaxis().SetTitleOffset(0.8)
+  hRatioData.GetYaxis().SetTitleOffset(0.45)
+  hRatioData.GetXaxis().SetLabelSize(0.13)
+  hRatioData.GetYaxis().SetLabelSize(0.13)
+  hRatioData.Draw('E0')
+  hRatioData_sys.Draw('2 P')
+  hRatioData.Draw('same')
   for model in model_plotting:
     model_vars = model_db[model]
     hModel = model_db[model]['hist_z']
     hRatio = newObj(hModel.Clone(f'{model}_hratio_ptjet_{pt_jet_l:.0f}_{pt_jet_u:.0f}'))
     hRatio.Divide(hResult)
+    for i in range(5):
+      hRatio.SetBinError(i+1, 0.0)
     hRatio.SetLineStyle(model_vars['line'])
     hRatio.SetLineColor(model_vars["color"])
-    hRatio.SetLineWidth(2)
+    hRatio.SetLineWidth(3 )
     hRatio.SetMarkerSize(1.5)
     hRatio.SetMarkerColor(model_vars['color'])
     hRatio.SetYTitle('MC/data')
     hRatio.SetXTitle('#it{z}_{#parallel}^{ch}')
-    hRatio.SetDrawOption('E0')
     pRatio.cd()
     ymin = min(ymin, hRatio.GetMinimum())
     ymax = max(ymax, hRatio.GetMaximum()+0.3)
     hRatio.GetYaxis().SetRangeUser(ymin, ymax)
     hRatio.GetXaxis().SetRangeUser(0.4, 1.0)
-    if model == model_plotting[0]:
-      hRatioPrimary = hRatio
-      hRatio.GetYaxis().SetNdivisions(505)
-      hRatio.GetYaxis().SetRangeUser(ymin, ymax)
-      hRatio.GetXaxis().SetRangeUser(0.4, 1.0)
-      hRatio.SetTitleSize(0.15,"xy")
-      hRatio.GetXaxis().SetTitleOffset(0.8)
-      hRatio.GetYaxis().SetTitleOffset(0.45)
-      hRatio.GetXaxis().SetLabelSize(0.13)
-      hRatio.GetYaxis().SetLabelSize(0.13)
-      hRatio.Draw('E0')
-    else:
-      hRatio.Draw('same')
+    hRatio.Draw('same')
     fOutput.WriteObject(hRatio, f'FFratio_Ds_{model}_{name_suffix}')
-  if hRatioPrimary:
-    #hRatioPrimary.GetYaxis().SetRangeUser(ymin, ymax)
-    hRatioPrimary.GetYaxis().SetRangeUser(0.2, 2.13)
-    hRatioPrimary.GetXaxis().SetRangeUser(0.4, 1.0)
   hResult.GetXaxis().SetLabelSize(0.0)
   c.cd()
   ROOT.gPad.SaveAs(f'DsJetFF_result_pt_jet_{pt_jet_l:.0f}_{pt_jet_u:.0f}.pdf')
