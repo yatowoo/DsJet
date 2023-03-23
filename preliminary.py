@@ -448,7 +448,7 @@ def draw_result_ratio():
     array('d', FF_db['result']['sys_err']),
     array('d', FF_db['result']['sys_err']))
   # Ratio
-  hratio_pythia8 = ROOT.TH1F('hratio_py8','FF Ds/D0',N_BINS,array('d', Z_BINNING))
+  hratio_powheg = ROOT.TH1F('hratio_powheg','FF Ds/D0',N_BINS,array('d', Z_BINNING))
   hratio_py8cr2 = ROOT.TH1F('hratio_py8cr2','FF Ds/D0',N_BINS,array('d', Z_BINNING))
   db_dsdzero_ratio = []
   db_dsdzero_ratio_sys_err = []
@@ -457,7 +457,7 @@ def draw_result_ratio():
     h_dzero.SetBinError(i+1, FF_db['result_D0']['stats'][i])
     h_ds.SetBinContent(i+1, FF_db['result']['value'][i])
     h_ds.SetBinError(i+1, FF_db['result']['stat_err'][i])
-    hratio_pythia8.SetBinContent(i+1, FF_db['model_data']['Ds']['pythia8']['val'][i] / FF_db['model_data']['D0']['pythia8']['val'][i])
+    hratio_powheg.SetBinContent(i+1, FF_db['model_data']['Ds']['pythia6_powheg']['val'][i] / FF_db['model_data']['D0']['pythia6_powheg']['val'][i])
     hratio_py8cr2.SetBinContent(i+1, FF_db['model_data']['Ds']['pythia8_cr2']['val'][i] / FF_db['model_data']['D0']['pythia8_cr2']['val'][i])
     # ratio_val
     ratio_val = FF_db['result']['value'][i] / FF_db['result_D0']['y'][i]
@@ -571,9 +571,9 @@ def draw_result_ratio():
   tg_ds_ratio_sys.SetFillColorAlpha(root_plot.kOrange-9, 0.9)
   tg_ds_ratio_sys.SetFillStyle(1001)
     # model
-  hratio_pythia8.SetLineStyle(2)
-  hratio_pythia8.SetLineColor(root_plot.kRed+1)
-  hratio_pythia8.SetLineWidth(4)
+  hratio_powheg.SetLineStyle(2)
+  hratio_powheg.SetLineColor(root_plot.kRed+1)
+  hratio_powheg.SetLineWidth(4)
   hratio_py8cr2.SetLineStyle(9)
   hratio_py8cr2.SetLineColor(root_plot.kGreen+3)
   hratio_py8cr2.SetLineWidth(4)
@@ -581,7 +581,7 @@ def draw_result_ratio():
   hratio.Draw('E0')
   tg_ds_ratio_sys.Draw('2 P')
   hratio.Draw('same')
-  hratio_pythia8.Draw('same')
+  hratio_powheg.Draw('same')
   hratio_py8cr2.Draw('same')
     # Legend
   ratioTextSize = 0.08
@@ -591,7 +591,7 @@ def draw_result_ratio():
   lgd_data.Draw('same')
   lgd_model = ROOT.TLegend(0.30, 0.7, 0.6, 0.95)
   lgd_model.SetTextSize(ratioTextSize)
-  lgd_model.AddEntry(hratio_pythia8, 'PYTHIA 8 Monash')
+  lgd_model.AddEntry(hratio_powheg, 'POWHEG + PYTHIA 6')
   lgd_model.AddEntry(hratio_py8cr2, 'PYTHIA 8 CR-BLC Mode 2')
   lgd_model.Draw('same')
   # Save
@@ -600,7 +600,7 @@ def draw_result_ratio():
   tg_ds_sys.Write()
   tg_dzero_sys.Write()
   hratio.Write()
-  hratio_pythia8.Write()
+  hratio_powheg.Write()
   hratio_py8cr2.Write()
   save_canvas(c_FF_ratio)
 
