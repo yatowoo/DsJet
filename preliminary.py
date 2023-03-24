@@ -167,6 +167,33 @@ FF_db = {
   }
 }
 
+model_style = {
+  "pythia6":{
+    "label": "POWHEG+PYTHIA6",
+    "file": "charm_fastsimu_Ds.root",
+    "color": root_plot.kBlue+1,
+    "line": 6, # dashed
+  },
+  "pythia8":{
+    "label": "Monash",
+    "file": "pythia8_charm_fastsimu_Ds.root",
+    "color": root_plot.kRed+1,
+    "line": 2, # dashed
+  },
+  "pythia8_cr2":{
+    "label": "CR-BLC Mode 2",
+    "file": "pythia8cr2_charm_fastsimu_Ds.root",
+    "color": root_plot.kGreen+3,
+    "line": 9, # dashed
+  },
+  "pythia8_cr0":{
+    "label": "PYTHIA 8 CR Mode 0",
+    "file": "charm_fastsimu_Ds.root",
+    "color": root_plot.kMagenta+1,
+    "line": 2, # dashed
+  },
+}
+
 Z_BINNING = [0.4,0.6,0.7,0.8,0.9,1.0]
 N_BINS = len(Z_BINNING)-1
 
@@ -182,6 +209,18 @@ def draw_cuts(range=None, pt_ds_l=3, pt_ds_u=15):
   ptxt.AddText(f'{pt_ds_l}' + ' < #it{p}_{T}^{D_{s}^{+}} < '+ f'{pt_ds_u}' + ' GeV/#it{c}, ' +'|#it{y}_{D_{s}^{+}}| #leq 0.8')
   return ptxt
 
+def init_hist(name, binning : list, vals = None, errs = None):
+  nbins = len(binning) -1
+  h = ROOT.TH1F(name,'title',nbins,array('d', binning))
+  h.SetDirectory(0x0)
+  if vals is None:
+    return h
+  for i in range(nbins):
+    h.SetBinContent(i+1, vals[i])
+    if errs is not None:
+      h.SetBinError(i+1, errs[i])
+  return h
+
 def draw_fd_fraction(path=None):
   c_fd_fr_sys = ROOT.TCanvas('c_fd_fr', 'canvas for preliminary', 1200,1200)
   tg_fd_fr_sys = ROOT.TGraphAsymmErrors(N_BINS,
@@ -191,11 +230,8 @@ def draw_fd_fraction(path=None):
     array('d', FF_db['fd_fr']['exh']),
     array('d', FF_db['fd_fr']['eyl']),
     array('d', FF_db['fd_fr']['eyh']))
-  h_fd_fr_sys = ROOT.TGraphErrors(N_BINS,
-    array('d', FF_db['fd_fr']['x']),
-    array('d', FF_db['fd_fr']['y']),
-    array('d', FF_db['fd_fr']['exl']),
-    array('d', FF_db['fd_fr']['stats']))
+  tg_fd_fr_sys.SetName('tg_fd_fr_sys')
+  h_fd_fr_sys = init_hist('h_fd_fr_sys', Z_BINNING, FF_db['fd_fr']['y'], FF_db['fd_fr']['stats'])
   # Style
   c_fd_fr_sys.Draw()
   color_i = 2 # Blue
@@ -217,9 +253,10 @@ def draw_fd_fraction(path=None):
   h_fd_fr_sys.SetLineWidth(2)
   h_fd_fr_sys.SetMarkerSize(2)
   h_fd_fr_sys.SetMarkerColor(root_plot.COLOR_SET_ALICE[color_i])
-  #tg_fd_fr_sys.GetYaxis().SetTitleOffset(1.0)
-  #tg_fd_fr_sys.GetYaxis().SetTitleSize(0.07)
-  #tg_fd_fr_sys.GetYaxis().SetLabelSize(0.06)
+  h_fd_fr_sys.GetYaxis().SetTitle('Feed-down fraction')
+  h_fd_fr_sys.GetYaxis().SetRangeUser(0., 0.63)
+  h_fd_fr_sys.GetXaxis().SetTitle('#it{z}_{#parallel}^{ch}')
+  h_fd_fr_sys.GetXaxis().SetRangeUser(0.4, 1.0)
   # Cuts
   pcuts = draw_cuts()
   pcuts.SetFillColorAlpha(0,0)
@@ -246,8 +283,9 @@ def draw_fd_fraction(path=None):
   lgd.AddEntry(h_fd_fr_sys, 'Feed-down fraction')
   lgd.AddEntry(tg_fd_fr_sys, 'POWHEG uncertainty')
   # Render
-  tg_fd_fr_sys.Draw('A2 P')
-  h_fd_fr_sys.Draw('P')
+  h_fd_fr_sys.Draw('E0')
+  tg_fd_fr_sys.Draw('2 P')
+  h_fd_fr_sys.Draw('same')
   lgd.Draw('same')
   pcuts.Draw('same')
   ptxtR.Draw('same')
@@ -269,7 +307,6 @@ def save_canvas(c : ROOT.TCanvas, name = None):
   c.SaveAs(name + '.png')
   c.SaveAs(name + '.root')
 
-
 def draw_rel_sys(path=None):
   c_rel_sys = ROOT.TCanvas('c_rel_sys','Canvas for preliminary', 1200, 900)
   c_rel_sys.SetRightMargin(0.25)
@@ -277,16 +314,11 @@ def draw_rel_sys(path=None):
   c_rel_sys.cd()
   leg_relativesys = ROOT.TLegend(.77, .2, 0.95, .85)
   color_i = 0
-  gr_stats = ROOT.TGraphErrors(N_BINS,
-                         array('d', FF_db['xbins']),
-                        array('d',[0.0]*5),
-                         array('d', FF_db['xwidth']),
-                         array('d', FF_db['result']['rel_stat']))
-  gr_stats.SetName('gr_rel_stats')
+  gr_stats = init_hist('gr_rel_stats', Z_BINNING, [0.0]*5, FF_db['result']['rel_stat'])
   gr_stats.SetLineWidth(3)
   gr_stats.SetLineColor(root_plot.COLOR_SET_ALICE[color_i])
   gr_stats.SetMarkerColor(root_plot.COLOR_SET_ALICE[color_i])
-  gr_stats.Draw('AP')
+  gr_stats.Draw('E0')
   leg_relativesys.AddEntry(gr_stats, 'stat. unc.', 'E')
   gr_relsys = [gr_stats]
   for cat, vals in FF_db['rel_sys'].items():
@@ -360,7 +392,7 @@ def draw_inv_mass(path=None, savefile = None):
   hmass.SetMarkerStyle(root_plot.kRoundHollow)
   hmass.SetLineWidth(2)
   hmass.Draw()
-  lgd.AddEntry(hmass, 'data')
+  lgd.AddEntry(hmass, 'Data')
   fun_tot.SetLineColor(root_plot.kRed)
   fun_tot.SetMarkerSize(0)
   fun_tot.SetLineWidth(2)
@@ -385,7 +417,7 @@ def draw_inv_mass(path=None, savefile = None):
   lgd.AddEntry(hSignal, 'Signal region','F')
   hSBleft = root_plot.DrawRegion(hmass, f'hSBleft', mean_sec - nsigma_width * (sigma + sigma_sec), mean_sec - nsigma_width * sigma_sec, ROOT.kBlue, 3354)
   hSBright = root_plot.DrawRegion(hmass, f'hSBright', mean + nsigma_near * sigma, mean + nsigma_away * sigma, ROOT.kBlue, 3354)
-  lgd.AddEntry(hSBleft, 'Side-band', 'F')
+  lgd.AddEntry(hSBleft, 'Sideband', 'F')
   lgd.Draw('same')
   # Text
   pcuts = draw_cuts(pt_ds_l=6, pt_ds_u=8)
@@ -460,6 +492,7 @@ def draw_result_ratio():
     array('d', FF_db['result']['sys_err']))
   # Ratio
   hratio_powheg = ROOT.TH1F('hratio_powheg','FF Ds/D0',N_BINS,array('d', Z_BINNING))
+  hratio_pythia8 = ROOT.TH1F('hratio_pythia8','FF Ds/D0',N_BINS,array('d', Z_BINNING))
   hratio_py8cr2 = ROOT.TH1F('hratio_py8cr2','FF Ds/D0',N_BINS,array('d', Z_BINNING))
   db_dsdzero_ratio = []
   db_dsdzero_ratio_sys_err = []
@@ -469,6 +502,7 @@ def draw_result_ratio():
     h_ds.SetBinContent(i+1, FF_db['result']['value'][i])
     h_ds.SetBinError(i+1, FF_db['result']['stat_err'][i])
     hratio_powheg.SetBinContent(i+1, FF_db['model_data']['Ds']['pythia6_powheg']['val'][i] / FF_db['model_data']['D0']['pythia6_powheg']['val'][i])
+    hratio_pythia8.SetBinContent(i+1, FF_db['model_data']['Ds']['pythia8']['val'][i] / FF_db['model_data']['D0']['pythia8']['val'][i])
     hratio_py8cr2.SetBinContent(i+1, FF_db['model_data']['Ds']['pythia8_cr2']['val'][i] / FF_db['model_data']['D0']['pythia8_cr2']['val'][i])
     # ratio_val
     ratio_val = FF_db['result']['value'][i] / FF_db['result_D0']['y'][i]
@@ -566,7 +600,7 @@ def draw_result_ratio():
   hratio.SetLineColor(root_plot.kOrange-1)
   hratio.SetMarkerColor(root_plot.kOrange-1)
   hratio.GetXaxis().SetRangeUser(0.4,1.0)
-  hratio.GetYaxis().SetRangeUser(0.1, 2.13)
+  hratio.GetYaxis().SetRangeUser(0.35, 2.13)
   hratio.SetXTitle('#it{z}_{#parallel}^{ch}')
   hratio.GetYaxis().SetTitle('D_{s}^{+}/D^{0}')
   hratio.GetYaxis().SetNdivisions(505)
@@ -583,29 +617,34 @@ def draw_result_ratio():
   tg_ds_ratio_sys.SetFillColorAlpha(root_plot.kOrange-9, 0.9)
   tg_ds_ratio_sys.SetFillStyle(1001)
     # model
-  hratio_powheg.SetLineStyle(2)
-  hratio_powheg.SetLineColor(root_plot.kRed+1)
+  hratio_powheg.SetLineStyle(model_style['pythia6']['line'])
+  hratio_powheg.SetLineColor(model_style['pythia6']['color'])
   hratio_powheg.SetLineWidth(4)
-  hratio_py8cr2.SetLineStyle(9)
-  hratio_py8cr2.SetLineColor(root_plot.kGreen+3)
+  hratio_pythia8.SetLineStyle(model_style['pythia8']['line'])
+  hratio_pythia8.SetLineColor(model_style['pythia8']['color'])
+  hratio_pythia8.SetLineWidth(4)
+  hratio_py8cr2.SetLineStyle(model_style['pythia8_cr2']['line'])
+  hratio_py8cr2.SetLineColor(model_style['pythia8_cr2']['color'])
   hratio_py8cr2.SetLineWidth(4)
    # Draw
   hratio.Draw('E0')
   tg_ds_ratio_sys.Draw('2 P')
   hratio_powheg.Draw('same')
+  hratio_pythia8.Draw('same')
   hratio_py8cr2.Draw('same')
   hratio.Draw('same')
   pRatio.RedrawAxis()
     # Legend
-  ratioTextSize = 0.08
+  ratioTextSize = 0.065
   lgd_data = ROOT.TLegend(0.16, 0.84, 0.50, 0.93)
   lgd_data.SetTextSize(ratioTextSize)
-  lgd_data.AddEntry(tg_ds_ratio_sys, 'data')
+  lgd_data.AddEntry(tg_ds_ratio_sys, 'Data')
   lgd_data.Draw('same')
   lgd_model = ROOT.TLegend(0.32, 0.7, 0.6, 0.95)
   lgd_model.SetTextSize(ratioTextSize)
-  lgd_model.AddEntry(hratio_powheg, 'POWHEG + PYTHIA 6')
-  lgd_model.AddEntry(hratio_py8cr2, 'PYTHIA 8 CR-BLC Mode 2')
+  lgd_model.AddEntry(hratio_powheg, 'POWHEG + PYTHIA 6', 'L')
+  lgd_model.AddEntry(hratio_pythia8, 'PYTHIA 8 Monash', 'L')
+  lgd_model.AddEntry(hratio_py8cr2, 'PYTHIA 8 CR-BLC Mode 2', 'L')
   lgd_model.Draw('same')
   # Save
   h_ds.Write()
@@ -616,14 +655,15 @@ def draw_result_ratio():
   hratio_powheg.Write()
   hratio_py8cr2.Write()
   save_canvas(c_FF_ratio, 'DsJetFF-pp13TeV-DsD0-ratio')
+  input()
 
 if __name__ == '__main__':
   #convert_model_data()
   #exit()
   root_plot.ALICEStyle()
   rootFile = ROOT.TFile.Open('preliminary.root','RECREATE')
-  draw_fd_fraction()
-  draw_rel_sys()
-  draw_inv_mass(None, rootFile)
+  #draw_fd_fraction()
+  #draw_rel_sys()
+  #draw_inv_mass(None, rootFile)
   draw_result_ratio()
   rootFile.Close()
