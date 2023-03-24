@@ -198,7 +198,6 @@ def draw_fd_fraction(path=None):
     array('d', FF_db['fd_fr']['stats']))
   # Style
   c_fd_fr_sys.Draw()
-  alice = root_plot.InitALICELabel(y1=-0.06, type='prel')
   color_i = 2 # Blue
   # sys.
   tg_fd_fr_sys.UseCurrentStyle()
@@ -223,22 +222,29 @@ def draw_fd_fraction(path=None):
   #tg_fd_fr_sys.GetYaxis().SetLabelSize(0.06)
   # Cuts
   pcuts = draw_cuts()
+  pcuts.SetFillColorAlpha(0,0)
+  pcuts.SetBorderSize(0)
+  alice = root_plot.InitALICELabel(y1=-0.10, type='prel')
+  alice.SetFillColorAlpha(0,0)
+  alice.SetBorderSize(0)
   # add legend
-  ptxtR = ROOT.TPaveText(0.65,0.90,0.95,0.95,"NDC")
+  ptxtR = ROOT.TPaveText(0.65,0.88,0.95,0.93,"NDC")
   ptxtR.SetTextSize(0.03)
-  ptxtR.SetFillColor(0)
+  ptxtR.SetFillColorAlpha(0,0)
   ptxtR.SetBorderSize(0)
   ptxtR.AddText('pp #sqrt{#it{s}} = 13 TeV')
 
-  ptxtM = ROOT.TPaveText(0.62,0.65,0.95,0.70,"NDC")
+  c_fd_fr_sys.SetTopMargin(0.05)
+  ptxtM = ROOT.TPaveText(0.35,0.95,1.00,1.00,"NDC")
   ptxtM.SetTextSize(0.025)
-  ptxtM.SetFillColor(0)
+  ptxtM.SetTextAlign(33)
+  ptxtM.SetFillColorAlpha(0,0)
   ptxtM.SetBorderSize(0)
-  ptxtM.AddText('POWHEG+PYTHIA 6+EvtGen')
+  ptxtM.AddText('Feed-down contribution from POWHEG+PYTHIA6+EvtGen')
   # Legend
-  lgd = ROOT.TLegend(0.62,0.55,0.95,0.65)
+  lgd = ROOT.TLegend(0.62,0.58,0.95,0.68)
   lgd.SetTextSize(0.025)
-  lgd.AddEntry(h_fd_fr_sys, 'POWHEG estimation')
+  lgd.AddEntry(h_fd_fr_sys, 'MC estimation')
   lgd.AddEntry(tg_fd_fr_sys, 'POWHEG uncertainty')
   # Render
   tg_fd_fr_sys.Draw('A2 P')
