@@ -170,7 +170,7 @@ FF_db = {
 Z_BINNING = [0.4,0.6,0.7,0.8,0.9,1.0]
 N_BINS = len(Z_BINNING)-1
 
-def draw_cuts(range=None):
+def draw_cuts(range=None, pt_ds_l=3, pt_ds_u=15):
   ptxt = ROOT.TPaveText(0.15,0.68,0.60,0.90,"NDC")
   ptxt.SetTextAlign(13)
   ptxt.SetBorderSize(0)
@@ -179,7 +179,7 @@ def draw_cuts(range=None):
   ptxt.SetTextFont(42)
   ptxt.AddText('D_{s}^{+}-tagged charged jets, anti-#it{k}_{T}, #it{R} = 0.4')
   ptxt.AddText('7 < #it{p}_{T}^{jet ch.} < 15 GeV/#it{c}, ' +'|#it{#eta}_{jet ch.}| #leq 0.5')
-  ptxt.AddText('3 < #it{p}_{T}^{D_{s}^{+}} < 15 GeV/#it{c}, ' +'|#it{y}_{D_{s}^{+}}| #leq 0.8')
+  ptxt.AddText(f'{pt_ds_l}' + ' < #it{p}_{T}^{D_{s}^{+}} < '+ f'{pt_ds_u}' + ' GeV/#it{c}, ' +'|#it{y}_{D_{s}^{+}}| #leq 0.8')
   return ptxt
 
 def draw_fd_fraction(path=None):
@@ -220,11 +220,14 @@ def draw_fd_fraction(path=None):
   #tg_fd_fr_sys.GetYaxis().SetTitleOffset(1.0)
   #tg_fd_fr_sys.GetYaxis().SetTitleSize(0.07)
   #tg_fd_fr_sys.GetYaxis().SetLabelSize(0.06)
+  c_fd_fr_sys.SetTopMargin(0.05)
   # Cuts
   pcuts = draw_cuts()
+  pcuts.SetY1NDC(0.63)
+  pcuts.SetY2NDC(0.85)
   pcuts.SetFillColorAlpha(0,0)
   pcuts.SetBorderSize(0)
-  alice = root_plot.InitALICELabel(y1=-0.10, type='prel')
+  alice = root_plot.InitALICELabel(type='prel')
   alice.SetFillColorAlpha(0,0)
   alice.SetBorderSize(0)
   # add legend
@@ -234,8 +237,7 @@ def draw_fd_fraction(path=None):
   ptxtR.SetBorderSize(0)
   ptxtR.AddText('pp #sqrt{#it{s}} = 13 TeV')
 
-  c_fd_fr_sys.SetTopMargin(0.05)
-  ptxtM = ROOT.TPaveText(0.35,0.95,1.00,1.00,"NDC")
+  ptxtM = ROOT.TPaveText(0.35,0.96,1.00,1.00,"NDC")
   ptxtM.SetTextSize(0.025)
   ptxtM.SetTextAlign(33)
   ptxtM.SetFillColorAlpha(0,0)
@@ -244,20 +246,20 @@ def draw_fd_fraction(path=None):
   # Legend
   lgd = ROOT.TLegend(0.62,0.58,0.95,0.68)
   lgd.SetTextSize(0.025)
-  lgd.AddEntry(h_fd_fr_sys, 'MC estimation')
+  lgd.AddEntry(h_fd_fr_sys, 'Feed-down fraction')
   lgd.AddEntry(tg_fd_fr_sys, 'POWHEG uncertainty')
   # Render
   tg_fd_fr_sys.Draw('A2 P')
-  alice.Draw('same')
   h_fd_fr_sys.Draw('P')
   lgd.Draw('same')
   pcuts.Draw('same')
   ptxtR.Draw('same')
   ptxtM.Draw('same')
+  alice.Draw('same')
   # Save
   tg_fd_fr_sys.Write()
   h_fd_fr_sys.Write()
-  save_canvas(c_fd_fr_sys)
+  save_canvas(c_fd_fr_sys, 'DsJetFF-pp13TeV-feeddown-fraction-model')
   # End - fd_fr
 
 def save_canvas(c : ROOT.TCanvas, name = None):
@@ -324,7 +326,7 @@ def draw_rel_sys(path=None):
   pcoll.Draw('same')
   # Save
   gr_stats.Write()
-  save_canvas(c_rel_sys)
+  save_canvas(c_rel_sys, 'DsJetFF-pp13TeV-relative-stat-sys-unc-by-categories')
 
 def draw_inv_mass(path=None, savefile = None):
   # Require: AliHFInvMassFitter (AliPhysics env.)
@@ -351,7 +353,7 @@ def draw_inv_mass(path=None, savefile = None):
   c_invmass.cd()
   lgd = ROOT.TLegend(0.72, 0.5, 0.95, 0.85)
   hmass.SetXTitle('Invariant mass (GeV/#it{c}^{2})')
-  hmass.SetYTitle('Counts per 6 MeV/#it{c}')
+  hmass.SetYTitle('Counts per 6 MeV/#it{c}^{2}')
   hmass.GetXaxis().SetRangeUser(1.71, 2.14)
   hmass.GetYaxis().SetRangeUser(0,360)
   hmass.SetMarkerStyle(root_plot.kRoundHollow)
@@ -362,7 +364,7 @@ def draw_inv_mass(path=None, savefile = None):
   fun_tot.SetLineWidth(2)
   fun_tot.SetNpx(500)
   fun_tot.Draw('same')
-  lgd.AddEntry(fun_tot, 'Total fitting')
+  lgd.AddEntry(fun_tot, 'Total fit')
   fun_bkg.SetLineColor(root_plot.kBlue)
   fun_bkg.SetNpx(500)
   fun_bkg.SetLineWidth(2)
@@ -378,13 +380,13 @@ def draw_inv_mass(path=None, savefile = None):
   nsigma_width = 5
   nsigma_signal = 2
   hSignal = root_plot.DrawRegion(hmass, f'hSignalRegion', mean - nsigma_signal * sigma, mean + nsigma_signal * sigma, ROOT.kRed, 3444)
-  lgd.AddEntry(hSignal, 'Signal')
+  lgd.AddEntry(hSignal, 'Signal region')
   hSBleft = root_plot.DrawRegion(hmass, f'hSBleft', mean_sec - nsigma_width * (sigma + sigma_sec), mean_sec - nsigma_width * sigma_sec, ROOT.kBlue, 3354)
   hSBright = root_plot.DrawRegion(hmass, f'hSBright', mean + nsigma_near * sigma, mean + nsigma_away * sigma, ROOT.kBlue, 3354)
-  lgd.AddEntry(hSBleft, 'Sideband')
+  lgd.AddEntry(hSBleft, 'Side-band')
   lgd.Draw('same')
   # Text
-  pcuts = draw_cuts()
+  pcuts = draw_cuts(pt_ds_l=6, pt_ds_u=8)
   pcuts.Draw('same')
   alice = root_plot.InitALICELabel(y1=-0.06, type='prel')
   alice.Draw('same')
@@ -403,7 +405,7 @@ def draw_inv_mass(path=None, savefile = None):
   fun_bkg.Write('fun_bkg')
   fun_sec.Write('fun_sec')
   fun_sig.Write('fun_sig')
-  save_canvas(c_invmass)
+  save_canvas(c_invmass, 'DsJetFF-pp13TeV-Ds-invmass-fitting-sideband')
   yieldsFile.Close()
 
 def convert_model_data():
@@ -608,7 +610,7 @@ def draw_result_ratio():
   hratio.Write()
   hratio_powheg.Write()
   hratio_py8cr2.Write()
-  save_canvas(c_FF_ratio)
+  save_canvas(c_FF_ratio, 'DsJetFF-pp13TeV-DsD0-ratio')
 
 if __name__ == '__main__':
   #convert_model_data()

@@ -54,7 +54,7 @@ def ALICEStyle(graypalette = False):
   ROOT.gStyle.SetLegendFillColor(kWhite)
   ROOT.gStyle.SetLegendFont(42)
 
-def InitALICELabel(x1 = 0.02, y1 = -0.18, x2 = 0.35, y2 = -0.02, size=0.04, type="perf"):
+def InitALICELabel(x1 = 0.02, y1 = -0.06, x2 = 0.35, y2 = -0.02, size=0.04, type="perf"):
   PAD_EDGE_LEFT = ROOT.gPad.GetLeftMargin()
   PAD_EDGE_RIGHT = 1 - ROOT.gPad.GetRightMargin()
   PAD_EDGE_BOTTOM   = ROOT.gPad.GetBottomMargin()
