@@ -52,7 +52,7 @@ FF_db = {
     'rel_stat':[0.29196556073610513, 0.17918193781285008, 0.18027245019900187, 0.10856218736201183, 0.053901665278852144],
   },
   'rel_sys':{
-    'fitting':[0.14185705179160712,0.03061390913998445,0.07577470424896529,0.06120050575454162,0.024889099453537927],
+    'yield extraction':[0.14185705179160712,0.03061390913998445,0.07577470424896529,0.06120050575454162,0.024889099453537927],
     'sideband sub.':[0.0686720676948628,0.042903688258697066,0.03827440866798068,0.029273180558109357,0.024117004021977913],
     'feed-down':[0.04019865724926155,0.005071693716729552,0.005155782039157784,0.015023007949582081,0.023734388439575732],
     'prior':[0.012191799431693155,0.0045381358105456154,0.02185222418873305,0.012186804310170933,0.004490828621826153],
@@ -220,32 +220,29 @@ def draw_fd_fraction(path=None):
   #tg_fd_fr_sys.GetYaxis().SetTitleOffset(1.0)
   #tg_fd_fr_sys.GetYaxis().SetTitleSize(0.07)
   #tg_fd_fr_sys.GetYaxis().SetLabelSize(0.06)
-  c_fd_fr_sys.SetTopMargin(0.05)
   # Cuts
   pcuts = draw_cuts()
-  pcuts.SetY1NDC(0.63)
-  pcuts.SetY2NDC(0.85)
   pcuts.SetFillColorAlpha(0,0)
   pcuts.SetBorderSize(0)
   alice = root_plot.InitALICELabel(type='prel')
   alice.SetFillColorAlpha(0,0)
   alice.SetBorderSize(0)
   # add legend
-  ptxtR = ROOT.TPaveText(0.65,0.88,0.95,0.93,"NDC")
+  ptxtR = ROOT.TPaveText(0.72,0.88,0.90,0.97,"NDC")
   ptxtR.SetTextSize(0.03)
   ptxtR.SetFillColorAlpha(0,0)
   ptxtR.SetBorderSize(0)
   ptxtR.AddText('pp #sqrt{#it{s}} = 13 TeV')
 
-  ptxtM = ROOT.TPaveText(0.35,0.96,1.00,1.00,"NDC")
-  ptxtM.SetTextSize(0.025)
-  ptxtM.SetTextAlign(33)
+  ptxtM = ROOT.TPaveText(0.13,0.14,0.95,0.18,"NDC")
+  ptxtM.SetTextSize(0.028)
+  ptxtM.SetTextAlign(11)
   ptxtM.SetFillColorAlpha(0,0)
   ptxtM.SetBorderSize(0)
   ptxtM.AddText('Feed-down contribution from POWHEG+PYTHIA6+EvtGen')
   # Legend
-  lgd = ROOT.TLegend(0.62,0.58,0.95,0.68)
-  lgd.SetTextSize(0.025)
+  lgd = ROOT.TLegend(0.60,0.58,0.95,0.68)
+  lgd.SetTextSize(0.03)
   lgd.AddEntry(h_fd_fr_sys, 'Feed-down fraction')
   lgd.AddEntry(tg_fd_fr_sys, 'POWHEG uncertainty')
   # Render
@@ -256,6 +253,7 @@ def draw_fd_fraction(path=None):
   ptxtR.Draw('same')
   ptxtM.Draw('same')
   alice.Draw('same')
+  ROOT.gPad.RedrawAxis()
   # Save
   tg_fd_fr_sys.Write()
   h_fd_fr_sys.Write()
@@ -308,6 +306,7 @@ def draw_rel_sys(path=None):
     gr_relsys.append(gr_now)
     leg_relativesys.AddEntry(gr_now, cat, 'F')
   # Render
+  ROOT.gPad.RedrawAxis()
   leg_relativesys.Draw('same')
   gr_stats.GetXaxis().SetRangeUser(0.4, 1)
   gr_stats.GetYaxis().SetRangeUser(-0.35, 0.8)
@@ -356,34 +355,37 @@ def draw_inv_mass(path=None, savefile = None):
   hmass.SetYTitle('Counts per 6 MeV/#it{c}^{2}')
   hmass.GetXaxis().SetRangeUser(1.71, 2.14)
   hmass.GetYaxis().SetRangeUser(0,360)
+  hmass.SetMarkerColor(root_plot.kBlack)
+  hmass.SetLineColor(root_plot.kBlack)
   hmass.SetMarkerStyle(root_plot.kRoundHollow)
   hmass.SetLineWidth(2)
   hmass.Draw()
   lgd.AddEntry(hmass, 'data')
   fun_tot.SetLineColor(root_plot.kRed)
+  fun_tot.SetMarkerSize(0)
   fun_tot.SetLineWidth(2)
   fun_tot.SetNpx(500)
   fun_tot.Draw('same')
-  lgd.AddEntry(fun_tot, 'Total fit')
+  lgd.AddEntry(fun_tot, 'Total fit','L')
   fun_bkg.SetLineColor(root_plot.kBlue)
   fun_bkg.SetNpx(500)
   fun_bkg.SetLineWidth(2)
   fun_bkg.Draw('same')
-  lgd.AddEntry(fun_bkg, 'Bkg. (pol2)')
+  lgd.AddEntry(fun_bkg, 'Bkg. (pol2)', 'L')
   fun_sec.SetLineWidth(2)
   fun_sec.SetNpx(500)
   fun_sec.Draw('same')
-  lgd.AddEntry(fun_sec, 'Bkg. (D^{+} gaus.)')
+  lgd.AddEntry(fun_sec, 'Bkg. (D^{+} gaus.)', 'L')
   # Regions
   nsigma_near = 5
   nsigma_away = 10
   nsigma_width = 5
   nsigma_signal = 2
   hSignal = root_plot.DrawRegion(hmass, f'hSignalRegion', mean - nsigma_signal * sigma, mean + nsigma_signal * sigma, ROOT.kRed, 3444)
-  lgd.AddEntry(hSignal, 'Signal region')
+  lgd.AddEntry(hSignal, 'Signal region','F')
   hSBleft = root_plot.DrawRegion(hmass, f'hSBleft', mean_sec - nsigma_width * (sigma + sigma_sec), mean_sec - nsigma_width * sigma_sec, ROOT.kBlue, 3354)
   hSBright = root_plot.DrawRegion(hmass, f'hSBright', mean + nsigma_near * sigma, mean + nsigma_away * sigma, ROOT.kBlue, 3354)
-  lgd.AddEntry(hSBleft, 'Side-band')
+  lgd.AddEntry(hSBleft, 'Side-band', 'F')
   lgd.Draw('same')
   # Text
   pcuts = draw_cuts(pt_ds_l=6, pt_ds_u=8)
@@ -397,6 +399,7 @@ def draw_inv_mass(path=None, savefile = None):
   pcoll.SetBorderSize(0)
   pcoll.AddText('pp #sqrt{#it{s}} = 13 TeV')
   pcoll.Draw('same')
+  ROOT.gPad.RedrawAxis()
   # Save
   savefile.cd()
   hmass.Write('h_invmass')
@@ -535,6 +538,7 @@ def draw_result_ratio():
   h_ds.Draw('same')
   tg_dzero_sys.Draw('2 P')
   h_dzero.Draw('same')
+  pMain.RedrawAxis()
     # Text
   mainTextSize = 0.06
   alice = root_plot.InitALICELabel(y1=-0.06, type='prel', size=mainTextSize)
@@ -588,16 +592,17 @@ def draw_result_ratio():
    # Draw
   hratio.Draw('E0')
   tg_ds_ratio_sys.Draw('2 P')
-  hratio.Draw('same')
   hratio_powheg.Draw('same')
   hratio_py8cr2.Draw('same')
+  hratio.Draw('same')
+  pRatio.RedrawAxis()
     # Legend
   ratioTextSize = 0.08
   lgd_data = ROOT.TLegend(0.16, 0.84, 0.50, 0.93)
   lgd_data.SetTextSize(ratioTextSize)
   lgd_data.AddEntry(tg_ds_ratio_sys, 'data')
   lgd_data.Draw('same')
-  lgd_model = ROOT.TLegend(0.30, 0.7, 0.6, 0.95)
+  lgd_model = ROOT.TLegend(0.32, 0.7, 0.6, 0.95)
   lgd_model.SetTextSize(ratioTextSize)
   lgd_model.AddEntry(hratio_powheg, 'POWHEG + PYTHIA 6')
   lgd_model.AddEntry(hratio_py8cr2, 'PYTHIA 8 CR-BLC Mode 2')

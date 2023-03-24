@@ -221,6 +221,8 @@ for iptjet in range(N_JETBINS):
     hModels[model] = draw_model(model, pt_jet_l, pt_jet_u)
     hModels[model].Draw('same')
     fOutput.WriteObject(hModels[model], f'FF_Ds_{model}_{name_suffix}')
+  hResult.Draw('same')
+  ROOT.gPad.RedrawAxis()
     # Legend
   lgdLeft = 0.62
   lgdRight = 0.95
@@ -298,6 +300,7 @@ for iptjet in range(N_JETBINS):
   hRatioData.Draw('E0')
   hRatioData_sys.Draw('2 P')
   hRatioData.Draw('same')
+  ROOT.gPad.RedrawAxis()
   for model in model_plotting:
     model_vars = model_db[model]
     hModel = model_db[model]['hist_z']
@@ -319,6 +322,7 @@ for iptjet in range(N_JETBINS):
     hRatio.GetXaxis().SetRangeUser(0.4, 1.0)
     hRatio.Draw('same')
     fOutput.WriteObject(hRatio, f'FFratio_Ds_{model}_{name_suffix}')
+  hRatioData.Draw('same')
   hResult.GetXaxis().SetLabelSize(0.0)
   c.cd()
   ROOT.gPad.SaveAs(f'DsJetFF_result_pt_jet_{pt_jet_l:.0f}_{pt_jet_u:.0f}.pdf')
